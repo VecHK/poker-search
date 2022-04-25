@@ -2,18 +2,14 @@ import React, { useEffect, useState } from 'react';
 import { Unpromise } from '../../utils/base';
 import { closeAllWindow } from '../../utils/layout';
 import { getSearchword, openSearchWindows } from '../../utils/search';
+
+import SearchForm from './components/SearchForm'
+
 import './Control.css';
 
 const queryKeyword = getSearchword()
 
 type Control = Unpromise<ReturnType<typeof openSearchWindows>>
-
-function closeSearchWindow(controll: Control) {
-  const ids = controll.getMatrix().flat().map(u => u.windowId)
-  controll.clearFocusChangedHandler()
-  controll.clearRemoveHandler()
-  closeAllWindow(ids)
-}
 
 function createStep() {
   let _continue = true
@@ -23,7 +19,7 @@ function createStep() {
   }
 }
 
-const Panel: React.FC = () => {
+const ControlApp: React.FC = () => {
   const [isOpen, setOpen] = useState(false)
   const [keyword, setKeyword] = useState(queryKeyword)
   const [submitedKeyword, submit] = useState<string | false>(false)
@@ -74,29 +70,30 @@ const Panel: React.FC = () => {
 
   return (
     <div className="container">
-      <input value={keyword} onChange={(e) => {
-        const value = e.currentTarget.value
-        setKeyword(value)
-      }} />
-      <button onClick={() => {
-        if (controll === undefined) {
-          return
-        }
-        const ids = controll.getMatrix().flat().map(u => u.windowId)
-        // setText(ids.join(', '))
+      <SearchForm
+        keyword={keyword}
+        setKeyword={setKeyword}
+        onSubmit={({ keyword: newSearchKeyword }) => {
+          if (controll !== undefined) {
+            const ids = controll.getMatrix().flat().map(u => u.windowId)
+            // setText(ids.join(', '))
+    
+            controll.clearFocusChangedHandler()
+            controll.clearRemoveHandler()
+            closeAllWindow(ids)
 
-        controll.clearFocusChangedHandler()
-        controll.clearRemoveHandler()
-        closeAllWindow(ids)
-
-        // set
-        submit(keyword)
-        setStep(createStep())
-      }}>submit</button>
+            submit(newSearchKeyword)
+            setStep(createStep())
+          } else {
+            submit(newSearchKeyword)
+            setStep(createStep())
+          }
+        }}
+      />
       {/* <div>ID: {nowId}</div> */}
       <div><code><pre>{text}</pre></code></div>
     </div>
   );
 };
 
-export default Panel;
+export default ControlApp;

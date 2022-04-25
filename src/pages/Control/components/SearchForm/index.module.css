@@ -1,0 +1,45 @@
+.SearchInputFrame {
+  display: flex;
+  border-radius: 50px;
+  border: solid #3a3a45 2px;
+
+  height: 40px;
+  align-items: center;
+  justify-content: left;
+  overflow: hidden;
+}
+
+.Input {
+  background-color: transparent;
+  background-color: rgba(0, 0, 0, 0.1);
+  border: 0;
+  line-height: 32px;
+  font-size: 20px;
+  flex-grow: 2;
+  padding-left: 10px;
+  padding-right: 10px;
+  outline: none;
+}
+
+.IconSubmit:hover {
+  background-color: #3a3a45;
+}
+.IconSubmit {
+  all: unset;
+  cursor: pointer;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  min-width: 32px;
+  width: 32px;
+  height: 100%;
+  
+  padding-left: 10px;
+  padding-right: 10px;
+}
+.IconSubmitImg {
+  width: 100%;
+  height: 100%;
+}

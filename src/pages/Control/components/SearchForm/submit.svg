@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 103.49 86.61">
+  <defs>
+    <style>
+      .cls-1{
+        fill:#fff;
+        stroke:#3a3a45;
+        stroke-miterlimit:10;
+        stroke-width:4px;
+      }
+      .cls-2{
+        font-size:59px;
+        fill:#3a3a45;
+        font-family:BoteraTFE-RegularStencil, Botera TFE;
+      }
+    </style>
+  </defs>
+  <title>无底 Logo</title>
+  <g id="图层_2" data-name="图层 2">
+    <g id="图层_1-2" data-name="图层 1">
+      <rect class="cls-1" x="12.14" y="12.32" width="45.75" height="66.93" rx="9.64" transform="translate(-18.2 23.64) rotate(-30)"/>
+      <rect class="cls-1" x="27.56" y="4.58" width="50.1" height="73.29" rx="9.64" transform="translate(-5.23 7.72) rotate(-8)"/>
+      <rect class="cls-1" x="44.15" y="3.81" width="54" height="79" rx="9.64" transform="translate(5.48 -7.93) rotate(6.64)"/>
+      <text class="cls-2" transform="translate(52.08 61.71) rotate(6.64)">P</text>
+    </g>
+  </g>
+</svg>
