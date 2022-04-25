@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from 'react'
+import React, { useMemo, useState } from 'react'
 import s from './index.module.css'
 
 import IconSubmit from './submit.svg'
@@ -8,14 +8,20 @@ const SearchForm: React.FC<{
   setKeyword: React.Dispatch<React.SetStateAction<string>>
   onSubmit: (e: { keyword: string }) => void
 }> = ({ keyword, setKeyword, onSubmit }) => {
+  const [focus, setFocus] = useState(false)
+  const focusClass = focus ? s.Focus : ''
+
   return (
     <form
-      className={s.SearchInputFrame}
-      onSubmit={(e) => {
-        onSubmit(formDataTransform(e))
-      }}
+      className={`${s.SearchInputForm} ${focusClass}`}
+      onSubmit={(e) => onSubmit(formDataTransform(e))}
     >
-      <KeywordInput value={keyword} setValue={setKeyword} />
+      <KeywordInput
+        value={keyword}
+        setValue={setKeyword}
+        onFocus={() => setFocus(true)}
+        onBlur={() => setFocus(false)}
+      />
       <SubmitButton />
     </form>
   )
@@ -39,19 +45,23 @@ const formDataTransform = (e: React.FormEvent<HTMLFormElement>) => {
 const KeywordInput: React.FC<{
   value: string
   setValue: React.Dispatch<React.SetStateAction<string>>
-}> = ({ value, setValue }) => useMemo(() => {
+  onFocus: React.FocusEventHandler<HTMLInputElement>
+  onBlur: React.FocusEventHandler<HTMLInputElement>
+}> = ({ value, setValue, onFocus, onBlur }) => useMemo(() => {
   return (
     <input
       alt="input-keyword"
       name="keyword"
       className={s.Input}
       value={value}
+      onFocus={onFocus}
+      onBlur={onBlur}
       onInput={e => {
         setValue(e.currentTarget.value)
       }}
     />
   )
-}, [value, setValue])
+}, [onBlur, onFocus, setValue, value])
 
 const SubmitButton: React.FC = () => useMemo(() => {
   return (
