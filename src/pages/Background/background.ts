@@ -84,8 +84,8 @@ chrome.omnibox.onInputEntered.addListener((text) => {
   console.log('text', text)
   chrome.windows.create({
     type: 'popup',
-    width: cfg.ControlWindowWidth,
-    height: cfg.ControlWindowHeight,
+    width: cfg.CONTROL_WINDOW_WIDTH,
+    height: cfg.CONTROL_WINDOW_HEIGHT,
     left: 0,
     top: 0,
     url: chrome.runtime.getURL(`/control.html?q=${encodeURIComponent(text)}`)

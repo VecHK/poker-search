@@ -1,3 +1,4 @@
+import cfg, { getTitleBarHeight } from "../config"
 import { Base, initBase } from "./base"
 import { calcRealPos } from "./pos"
 import { toSearchURL } from "./search"
@@ -243,10 +244,10 @@ export async function createSearch(
   stop: () => void,
   search_list: Search[]
 ) {
-  const windowWidth = 380
-  const windowHeight = 1000
-  const gapHorizontal = 30
-  const gapVertical = 30
+  const windowWidth = cfg.SEARCH_WINDOW_WIDTH
+  const windowHeight = cfg.SEARCH_WINDOW_HEIGHT
+  const gapHorizontal = cfg.SEARCH_WINDOW_GAP_HORIZONTAL
+  const gapVertical = getTitleBarHeight()
   // const Info = { windowWidth, windowHeight, gapHorizontal, gapVertical }
   const base = await initBase({ windowWidth, windowHeight, gapHorizontal, gapVertical })
 

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import cfg, { setTitleBarHeight } from '../../config';
 import { Unpromise } from '../../utils/base';
 import { closeAllWindow } from '../../utils/layout';
 import { getSearchword, openSearchWindows } from '../../utils/search';
@@ -19,6 +20,11 @@ function createStep() {
     stop() { _continue = false }
   }
 }
+
+function detectTitleBarHeight() {
+  return cfg.CONTROL_WINDOW_HEIGHT - window.innerHeight
+}
+setTitleBarHeight(detectTitleBarHeight())
 
 const ControlApp: React.FC = () => {
   const [isOpen, setOpen] = useState(false)
@@ -52,20 +58,20 @@ const ControlApp: React.FC = () => {
   useEffect(() => {
     setOpen(true)
     if (submitedKeyword !== false) {
-      // openSearchWindows(submitedKeyword, canContinue, stop).then(newControll => {
-      //   setControll(newControll)
-      //   newControll.setRemoveHandler()
-      //   newControll.setFocusChangedHandler()
-      // }).catch(err => {
-      //   // alert(`${err.cancel}`)
-      //   if (err.cancel) {
-      //     // 提前取消
-      //     const ids = err.ids as number[]
-      //     closeAllWindow(ids)
-      //     window.close()
-      //     // chrome.runtime.id
-      //   }
-      // })
+      openSearchWindows(submitedKeyword, canContinue, stop).then(newControll => {
+        setControll(newControll)
+        newControll.setRemoveHandler()
+        newControll.setFocusChangedHandler()
+      }).catch(err => {
+        // alert(`${err.cancel}`)
+        if (err.cancel) {
+          // 提前取消
+          const ids = err.ids as number[]
+          closeAllWindow(ids)
+          window.close()
+          // chrome.runtime.id
+        }
+      })
     }
   }, [canContinue, stop, submitedKeyword])
 
