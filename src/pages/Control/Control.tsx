@@ -52,20 +52,20 @@ const ControlApp: React.FC = () => {
   useEffect(() => {
     setOpen(true)
     if (submitedKeyword !== false) {
-      openSearchWindows(submitedKeyword, canContinue, stop).then(newControll => {
-        setControll(newControll)
-        newControll.setRemoveHandler()
-        newControll.setFocusChangedHandler()
-      }).catch(err => {
-        // alert(`${err.cancel}`)
-        if (err.cancel) {
-          // 提前取消
-          const ids = err.ids as number[]
-          closeAllWindow(ids)
-          window.close()
-          // chrome.runtime.id
-        }
-      })
+      // openSearchWindows(submitedKeyword, canContinue, stop).then(newControll => {
+      //   setControll(newControll)
+      //   newControll.setRemoveHandler()
+      //   newControll.setFocusChangedHandler()
+      // }).catch(err => {
+      //   // alert(`${err.cancel}`)
+      //   if (err.cancel) {
+      //     // 提前取消
+      //     const ids = err.ids as number[]
+      //     closeAllWindow(ids)
+      //     window.close()
+      //     // chrome.runtime.id
+      //   }
+      // })
     }
   }, [canContinue, stop, submitedKeyword])
 

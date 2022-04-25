@@ -8,11 +8,13 @@
   ;
 }
 .SearchInputForm {
+  width: 320px;
+  height: 40px;
+  
   display: flex;
   border-radius: 50px;
   border: solid #3a3a45 2px;
 
-  height: 40px;
   align-items: center;
   justify-content: left;
   overflow: hidden;
@@ -37,7 +39,7 @@
   line-height: 32px;
   font-size: 20px;
   flex-grow: 2;
-  padding-left: 10px;
+  padding-left: 20px;
   padding-right: 10px;
   outline: none;
 }
