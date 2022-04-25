@@ -1,3 +1,5 @@
+<img src="src/assets/img/icon-128.png" width="100"/>
+
 # Poker
 
 一种搜索工具的 Chrome 插件。
