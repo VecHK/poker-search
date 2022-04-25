@@ -1,0 +1,9 @@
+{
+  "extends": "react-app",
+  "globals": {
+    "chrome": "readonly"
+  },
+  "rules": {
+    "no-loop-func": "off"
+  }
+}
