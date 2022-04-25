@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 284 284">
+  <defs>
+    <style>
+      .cls-1{fill:#3a3a45;}
+      .cls-2{fill:red;stroke:#fff;stroke-miterlimit:10;stroke-width:10px;}
+    </style>
+  </defs>
+  <title>资源 1</title>
+  <g id="图层_2" data-name="图层 2">
+    <g id="图层_1-2" data-name="图层 1">
+      <circle class="cls-1" cx="142" cy="142" r="142" />
+      <line class="cls-2" x1="144" y1="41" x2="144" y2="243" />
+      <line class="cls-2" x1="143.32" y1="42.48" x2="108" y2="145" />
+      <line class="cls-2" x1="143.65" y1="130.38" x2="108" y2="145" />
+      <line class="cls-2" x1="144.63" y1="42.72" x2="168" y2="176" />
+      <line class="cls-2" x1="144.42" y1="156.99" x2="168" y2="176" />
+    </g>
+  </g>
+</svg>

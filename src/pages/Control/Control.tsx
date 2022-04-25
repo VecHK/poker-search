@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Unpromise } from '../../utils/base';
 import { closeAllWindow } from '../../utils/layout';
 import { getSearchword, openSearchWindows } from '../../utils/search';
+import ArrowButtonGroup from './components/ArrowGroup';
 
 import SearchForm from './components/SearchForm'
 
@@ -90,10 +91,8 @@ const ControlApp: React.FC = () => {
           }
         }}
       />
-      {/* <div>ID: {nowId}</div> */}
-      <div><code><pre>{text}</pre></code></div>
+      <ArrowButtonGroup onClick={(type) => { alert(`点击了 ${type}`) }} />
     </div>
-  );
-};
-
-export default ControlApp;
+  )
+}
+export default ControlApp
