@@ -39,7 +39,7 @@ var options = {
     options: path.join(__dirname, 'src', 'pages', 'Options', 'index.ts'),
     popup: path.join(__dirname, 'src', 'pages', 'Popup', 'index.ts'),
     background: path.join(__dirname, 'src', 'Background', 'index.ts'),
-    contentScript: path.join(__dirname, 'src', 'pages', 'Content', 'index.js'),
+    contentScript: path.join(__dirname, 'src', 'Content', 'index.ts'),
     devtools: path.join(__dirname, 'src', 'pages', 'Devtools', 'index.ts'),
     panel: path.join(__dirname, 'src', 'pages', 'Panel', 'index.ts'),
     control: path.join(__dirname, 'src', 'pages', 'Control', 'index.ts'),
@@ -136,7 +136,7 @@ var options = {
     new CopyWebpackPlugin({
       patterns: [
         {
-          from: 'src/pages/Content/content.styles.css',
+          from: 'src/Content/content.styles.css',
           to: path.join(__dirname, 'build'),
           force: true,
         },
