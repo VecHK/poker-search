@@ -12,7 +12,7 @@ export function calcPos(
     info.gapHorizontal
   )
   const left = totalWidth - info.windowWidth
-  const top = line * info.gapVertical
+  const top = line * info.titleBarHeight
   return [left, top]
 }
 

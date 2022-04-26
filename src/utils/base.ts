@@ -60,7 +60,7 @@ export async function initBase(info: {
   windowHeight: number
   windowWidth: number
   gapHorizontal: number
-  gapVertical: number
+  titleBarHeight: number
 }) {
   const limit = await getCurrentDisplayLimit()
 

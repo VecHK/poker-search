@@ -2,8 +2,10 @@ html, body {
   background-color: transparent;
   padding: 0;
   margin: 0;
+  overflow: hidden;
 }
 .container {
+  background-color: rgb(245, 245, 245);
   box-sizing: border-box;
   padding-top: 4px;
   width: 100vw;

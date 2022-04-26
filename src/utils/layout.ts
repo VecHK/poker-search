@@ -1,5 +1,4 @@
-import cfg, { getTitleBarHeight } from "../config"
-import { Base, initBase } from "./base"
+import { Base } from "./base"
 import { calcRealPos } from "./pos"
 import { toSearchURL } from "./search"
 
@@ -239,18 +238,17 @@ export const closeAllWindow = (ids: number[]) => {
 }
 
 // export type GetControl = Unpromise<ReturnType<typeof CreateLayout>>
-export async function createSearch(
+export async function createSearch({
+  base,
+  canContinue,
+stop,
+search_list,
+}: {
+  base: Base,
   canContinue: () => boolean,
   stop: () => void,
   search_list: Search[]
-) {
-  const base = await initBase({
-    windowWidth: cfg.SEARCH_WINDOW_WIDTH,
-    windowHeight: cfg.SEARCH_WINDOW_HEIGHT,
-    gapHorizontal: cfg.SEARCH_WINDOW_GAP_HORIZONTAL,
-    gapVertical: getTitleBarHeight()
-  })
-
+}) {
   const urls = search_list.map(({ keyword, urlPattern }) => {
     return toSearchURL(keyword, urlPattern)
   })

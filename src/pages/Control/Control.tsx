@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Unpromise } from '../../utils/base';
+import { Base, Unpromise } from '../../utils/base';
 import { closeAllWindow } from '../../utils/layout';
 import { getSearchword, openSearchWindows } from '../../utils/search';
 import ArrowButtonGroup from './components/ArrowGroup';
@@ -35,7 +35,7 @@ const useWindowFocus = (initFocusValue: boolean) => {
   return focus
 }
 
-const ControlApp: React.FC = () => {
+const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
   const windowIsFocus = useWindowFocus(true)
   const [isOpen, setOpen] = useState(false)
   const [keyword, setKeyword] = useState(queryKeyword)
@@ -76,7 +76,12 @@ const ControlApp: React.FC = () => {
   useEffect(() => {
     if (submitedKeyword !== false) {
       setOpen(true)
-      openSearchWindows(submitedKeyword, canContinue, stop).then(newControll => {
+      openSearchWindows({
+        base,
+        keyword: submitedKeyword,
+        canContinue,
+        stop,
+      }).then(newControll => {
         setControll(newControll)
         newControll.setRemoveHandler()
         newControll.setFocusChangedHandler()
@@ -91,7 +96,7 @@ const ControlApp: React.FC = () => {
         }
       })
     }
-  }, [callCloseAllWindow, canContinue, stop, submitedKeyword])
+  }, [base, callCloseAllWindow, canContinue, stop, submitedKeyword])
 
   return (
     <div className="container">
