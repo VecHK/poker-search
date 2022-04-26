@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Base, Unpromise } from '../../utils/base';
-import { closeAllWindow } from '../../utils/layout';
-import { getSearchword, openSearchWindows } from '../../utils/search';
+import { closeAllWindow, createSearch } from '../../utils/layout';
+import { getSearchword } from '../../utils/search';
 import ArrowButtonGroup from './components/ArrowGroup';
 
 import SearchForm from './components/SearchForm'
@@ -10,7 +10,7 @@ import './Control.css';
 
 const queryKeyword = getSearchword()
 
-type Control = Unpromise<ReturnType<typeof openSearchWindows>>
+type Control = Unpromise<ReturnType<typeof createSearch>>
 
 function createStep() {
   let _continue = true
@@ -73,30 +73,40 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
     }
   }, [controll, onCloseAllWindow, stop])
 
+  const moveControlWindow = useCallback(async () => {
+    const { id } = await chrome.windows.getCurrent()
+    if (id !== undefined) {
+      const [top, left] = base.getControlWindowPos(base.total_line)
+      await chrome.windows.update(id, { top, left })
+    }
+  }, [base])
+
   useEffect(() => {
     if (submitedKeyword !== false) {
       setOpen(true)
-      openSearchWindows({
-        base,
-        keyword: submitedKeyword,
-        canContinue,
-        stop,
-      }).then(newControll => {
-        setControll(newControll)
-        newControll.setRemoveHandler()
-        newControll.setFocusChangedHandler()
-      }).catch(err => {
-        // alert(`${err.cancel}`)
-        if (err.cancel) {
-          // 提前取消
-          const ids = err.ids as number[]
-          callCloseAllWindow(ids)
-          window.close()
-          // chrome.runtime.id
-        }
+      moveControlWindow().then(() => {
+        createSearch({
+          base,
+          keyword: submitedKeyword,
+          canContinue,
+          stop,
+        }).then(newControll => {
+          setControll(newControll)
+          newControll.setRemoveHandler()
+          newControll.setFocusChangedHandler()
+        }).catch(err => {
+          // alert(`${err.cancel}`)
+          if (err.cancel) {
+            // 提前取消
+            const ids = err.ids as number[]
+            callCloseAllWindow(ids)
+            window.close()
+            // chrome.runtime.id
+          }
+        })
       })
     }
-  }, [base, callCloseAllWindow, canContinue, stop, submitedKeyword])
+  }, [base, callCloseAllWindow, canContinue, moveControlWindow, stop, submitedKeyword])
 
   return (
     <div className="container">

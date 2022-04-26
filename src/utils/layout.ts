@@ -1,6 +1,6 @@
 import { Base } from "./base"
 import { calcRealPos } from "./pos"
-import { toSearchURL } from "./search"
+import { constructSearchList, toSearchURL } from "./search"
 
 export function timeout(timing: number) {
   return new Promise(res => setTimeout(res, timing))
@@ -103,7 +103,7 @@ function createStartMatrix(
   const reverseUrlMatrix = [...urlMatrix].reverse()
 
   return MapMatrix(reverseUrlMatrix, (url, line, index) => {
-    const [left, top] = calcRealPos(base, line, index)
+    const [left, top] = calcRealPos(base, line, index, reverseUrlMatrix.length)
 
     return {
       url,
@@ -170,32 +170,16 @@ async function renderMatrix(
       const isWin = base.platform.os === 'win'
       const focused = isWin || isLastLine
 
-      const [left, top] = calcRealPos(base, lineNumber, idx)
+      const [left, top] = calcRealPos(base, lineNumber, idx, line.length)
       const p = chrome.windows.update(u.windowId, {
         focused,
         left,
         top,
       })
-      // if (base.platform.os === 'win') {
-      //   await p
-      // }
       promises.push(p)
     }
   }
-  // const promises = MapMatrix(matrix, (u, lineNumber, idx) => {
-  //   const focused = lineNumber === (matrix.length - 1)
 
-  //   const [left, top] = calcTruePos(base, lineNumber, idx)
-  //   const p = chrome.windows.update(u.windowId, {
-  //     focused,
-  //     left,
-  //     top,
-  //   })
-  //   if (base.platform.os === 'win') {
-  //     // await p
-  //   }
-  //   return p
-  // }).flat()
   return Promise.all(promises)
 }
 
@@ -204,19 +188,6 @@ const pickItem = <T extends unknown>(arr: T[], idx: number) => [
   arr.slice(0, idx),
   arr.slice(idx + 1, arr.length)
 ] as const
-
-function runOnce<Args extends unknown[]>(fn: (...args: Args) => void) {
-  let lock = false
-  return [
-    (...args: Args) => {
-      if (!lock) {
-        lock = true
-        return fn(...args)
-      }
-    },
-    () => lock = false
-  ] as const
-}
 
 export type LayoutInfo = {
   width: number
@@ -240,15 +211,16 @@ export const closeAllWindow = (ids: number[]) => {
 // export type GetControl = Unpromise<ReturnType<typeof CreateLayout>>
 export async function createSearch({
   base,
+  keyword,
   canContinue,
-stop,
-search_list,
+  stop,
 }: {
-  base: Base,
-  canContinue: () => boolean,
-  stop: () => void,
-  search_list: Search[]
+  base: Base
+  keyword: string
+  canContinue: () => boolean
+  stop: () => void
 }) {
+  const search_list = constructSearchList(keyword, base.searchPatternList)
   const urls = search_list.map(({ keyword, urlPattern }) => {
     return toSearchURL(keyword, urlPattern)
   })

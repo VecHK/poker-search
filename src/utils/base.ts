@@ -1,8 +1,18 @@
+import cfg from "../config"
+import { SearchPatternList } from "./search"
+
 export const calcTotalWidth = (multi: number, width: number, gap: number) => {
   if (multi === 1) {
     return width * multi
   } else {
     return (width * multi) + (gap * (multi - 1))
+  }
+}
+export const calcTotalHeight = (multi: number, windowHeight: number, titleBarHeight: number) => {
+  if (multi === 1) {
+    return windowHeight
+  } else {
+    return (multi * titleBarHeight) + (windowHeight - titleBarHeight)
   }
 }
 
@@ -37,7 +47,8 @@ async function getCurrentDisplayLimit() {
   })
 }
 
-function calcMaxWindowPerLine(
+// 计算横向最大能容纳的窗口数
+function calcMaxColumns(
   maxWidth: number, windowWidth: number, gapHorizontal: number
 ) {
   type totalWidth = number
@@ -61,19 +72,49 @@ export async function initBase(info: {
   windowWidth: number
   gapHorizontal: number
   titleBarHeight: number
+  searchPatternList: SearchPatternList
 }) {
   const limit = await getCurrentDisplayLimit()
 
-  const [max_window_per_line, totalWidth] = calcMaxWindowPerLine(
+  const [max_window_per_line, totalWidth] = calcMaxColumns(
     limit.width, info.windowWidth, info.gapHorizontal
   )
 
   const startX = Math.round((limit.width - totalWidth) / 2)
-  const startY = Math.round((limit.height - info.windowHeight) / 2)
+
+  function getTotalHeight(rowCount: number) {
+    const totalWindowsHeight = calcTotalHeight(
+      rowCount, info.windowHeight, info.titleBarHeight
+    )
+    const totalHeight = (
+      totalWindowsHeight + info.gapHorizontal + cfg.CONTROL_WINDOW_HEIGHT
+    )
+    return totalHeight
+  }
+
+  function getStartY(rowCount: number) {
+    const totalHeight = getTotalHeight(rowCount)
+    const startY = Math.round((limit.height - totalHeight) / 2)
+    return startY
+  }
+
+  const total_line = Math.ceil(info.searchPatternList.length / max_window_per_line)
 
   return Object.freeze({
     ...limit,
-    startX, startY, max_window_per_line,
-    info
+    info,
+    startX,
+    max_window_per_line,
+    total_line,
+    getTotalHeight,
+    getStartY,
+    searchPatternList: info.searchPatternList,
+    getControlWindowPos(rowCount: number) {
+      const totalHeight = getTotalHeight(rowCount)
+
+      const top = totalHeight - cfg.CONTROL_WINDOW_HEIGHT + getStartY(5) + limit.minY
+      const left = ((limit.width - cfg.CONTROL_WINDOW_WIDTH) / 2) + limit.minX
+      return [top, left]
+    }
   })
 }

@@ -16,11 +16,16 @@ export function calcPos(
   return [left, top]
 }
 
-export function calcRealPos(base: Base, line: number, index: number) {
+export function calcRealPos(
+  base: Base,
+  line: number, // line can be 0
+  index: number,
+  totalLineCount: number
+) {
   const [left, top] = calcPos(base.info, line, index)
 
   const trueLeft = left + base.startX + base.minX
-  const trueTop = top + base.startY + base.minY
+  const trueTop = top + base.getStartY(totalLineCount) + base.minY
 
   return [trueLeft, trueTop] as const
 }
