@@ -1,5 +1,5 @@
-import cfg from "../../config"
-import { createBase } from "../../utils/base"
+import cfg from '../config'
+import { createBase } from '../utils/base'
 
 console.log('TypeScriptBackground')
 

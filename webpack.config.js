@@ -38,7 +38,7 @@ var options = {
   entry: {
     options: path.join(__dirname, 'src', 'pages', 'Options', 'index.ts'),
     popup: path.join(__dirname, 'src', 'pages', 'Popup', 'index.ts'),
-    background: path.join(__dirname, 'src', 'pages', 'Background', 'index.ts'),
+    background: path.join(__dirname, 'src', 'Background', 'index.ts'),
     contentScript: path.join(__dirname, 'src', 'pages', 'Content', 'index.js'),
     devtools: path.join(__dirname, 'src', 'pages', 'Devtools', 'index.ts'),
     panel: path.join(__dirname, 'src', 'pages', 'Panel', 'index.ts'),
