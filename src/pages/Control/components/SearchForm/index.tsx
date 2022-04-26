@@ -1,13 +1,15 @@
 import React, { useMemo, useState } from 'react'
 import s from './index.module.css'
 
-import IconSubmit from './submit.svg'
+import IconSubmitSrc from './submit.svg'
+import IconSubmitClickedSrc from './submit-clicked.svg'
 
 const SearchForm: React.FC<{
   keyword: string
+  submitButtonActive: boolean
   setKeyword: React.Dispatch<React.SetStateAction<string>>
   onSubmit: (e: { keyword: string }) => void
-}> = ({ keyword, setKeyword, onSubmit }) => {
+}> = ({ keyword, submitButtonActive, setKeyword, onSubmit }) => {
   const [focus, setFocus] = useState(false)
   const focusClass = focus ? s.Focus : ''
 
@@ -22,7 +24,7 @@ const SearchForm: React.FC<{
         onFocus={() => setFocus(true)}
         onBlur={() => setFocus(false)}
       />
-      <SubmitButton />
+      <SubmitButton active={submitButtonActive} />
     </form>
   )
 }
@@ -63,17 +65,24 @@ const KeywordInput: React.FC<{
   )
 }, [onBlur, onFocus, setValue, value])
 
-const SubmitButton: React.FC = () => useMemo(() => {
+const SubmitButton: React.FC<{ active: boolean }> = ({ active }) => {
+  const imgNode = useMemo(() => {
+    const src = active ? IconSubmitClickedSrc : IconSubmitSrc
+    return (
+      <img
+        alt="submit-keyword"
+        src={src}
+        className={s.IconSubmitImg}
+      />
+    )
+  }, [active])
+
   return (
     <button
       type="submit"
       className={s.IconSubmit}
     >
-      <img
-        alt="submit-keyword"
-        src={IconSubmit}
-        className={s.IconSubmitImg}
-      />
+      {imgNode}
     </button>
   )
-}, [])
+  }

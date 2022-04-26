@@ -1,5 +1,4 @@
-import React, { useEffect, useState } from 'react';
-import cfg, { setTitleBarHeight } from '../../config';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Unpromise } from '../../utils/base';
 import { closeAllWindow } from '../../utils/layout';
 import { getSearchword, openSearchWindows } from '../../utils/search';
@@ -21,12 +20,23 @@ function createStep() {
   }
 }
 
-function detectTitleBarHeight() {
-  return cfg.CONTROL_WINDOW_HEIGHT - window.innerHeight
+const useWindowFocus = (initFocusValue: boolean) => {
+  const [ focus, setFocus ] = useState(initFocusValue)
+  useEffect(() => {
+    const focusHandler = () => setFocus(true)
+    const blurHandler = () => setFocus(false)
+    window.addEventListener("focus", focusHandler)
+    window.addEventListener("blur", blurHandler)
+    return () => {
+      window.removeEventListener("blur", focusHandler)
+      window.removeEventListener("blur", blurHandler)
+    }
+  }, [])
+  return focus
 }
-setTitleBarHeight(detectTitleBarHeight())
 
 const ControlApp: React.FC = () => {
+  const windowIsFocus = useWindowFocus(true)
   const [isOpen, setOpen] = useState(false)
   const [keyword, setKeyword] = useState(queryKeyword)
   const [submitedKeyword, submit] = useState<string | false>(false)
@@ -34,6 +44,17 @@ const ControlApp: React.FC = () => {
   const [controll, setControll] = useState<Control | undefined>(undefined)
   const [text, setText] = useState('text')
   const [{ canContinue, stop }, setStep] = useState(createStep())
+
+  const callCloseAllWindow = useCallback((ids: number[]) => {
+    setOpen(false)
+    closeAllWindow(ids)
+  }, [])
+  const onCloseAllWindow = useCallback((con: Control) => {
+    const ids = con.getMatrix().flat().map(u => u.windowId)
+    con.clearFocusChangedHandler()
+    con.clearRemoveHandler()
+    callCloseAllWindow(ids)
+  }, [callCloseAllWindow])
 
   useEffect(() => {
     submit(queryKeyword)
@@ -43,21 +64,18 @@ const ControlApp: React.FC = () => {
     const handler = () => {
       stop()
       if (controll !== undefined) {
-        const ids = controll.getMatrix().flat().map(u => u.windowId)
-        controll.clearFocusChangedHandler()
-        controll.clearRemoveHandler()
-        closeAllWindow(ids)
+        onCloseAllWindow(controll)
       }
     }
     window.addEventListener('beforeunload', handler)
     return () => {
       window.removeEventListener('beforeunload', handler)
     }
-  }, [controll, stop])
+  }, [controll, onCloseAllWindow, stop])
 
   useEffect(() => {
-    setOpen(true)
     if (submitedKeyword !== false) {
+      setOpen(true)
       openSearchWindows(submitedKeyword, canContinue, stop).then(newControll => {
         setControll(newControll)
         newControll.setRemoveHandler()
@@ -67,28 +85,24 @@ const ControlApp: React.FC = () => {
         if (err.cancel) {
           // 提前取消
           const ids = err.ids as number[]
-          closeAllWindow(ids)
+          callCloseAllWindow(ids)
           window.close()
           // chrome.runtime.id
         }
       })
     }
-  }, [canContinue, stop, submitedKeyword])
+  }, [callCloseAllWindow, canContinue, stop, submitedKeyword])
 
   return (
     <div className="container">
+      {windowIsFocus}
       <SearchForm
         keyword={keyword}
         setKeyword={setKeyword}
+        submitButtonActive={windowIsFocus}
         onSubmit={({ keyword: newSearchKeyword }) => {
           if (controll !== undefined) {
-            const ids = controll.getMatrix().flat().map(u => u.windowId)
-            // setText(ids.join(', '))
-    
-            controll.clearFocusChangedHandler()
-            controll.clearRemoveHandler()
-            closeAllWindow(ids)
-
+            onCloseAllWindow(controll)
             submit(newSearchKeyword)
             setStep(createStep())
           } else {

@@ -244,12 +244,12 @@ export async function createSearch(
   stop: () => void,
   search_list: Search[]
 ) {
-  const windowWidth = cfg.SEARCH_WINDOW_WIDTH
-  const windowHeight = cfg.SEARCH_WINDOW_HEIGHT
-  const gapHorizontal = cfg.SEARCH_WINDOW_GAP_HORIZONTAL
-  const gapVertical = getTitleBarHeight()
-  // const Info = { windowWidth, windowHeight, gapHorizontal, gapVertical }
-  const base = await initBase({ windowWidth, windowHeight, gapHorizontal, gapVertical })
+  const base = await initBase({
+    windowWidth: cfg.SEARCH_WINDOW_WIDTH,
+    windowHeight: cfg.SEARCH_WINDOW_HEIGHT,
+    gapHorizontal: cfg.SEARCH_WINDOW_GAP_HORIZONTAL,
+    gapVertical: getTitleBarHeight()
+  })
 
   const urls = search_list.map(({ keyword, urlPattern }) => {
     return toSearchURL(keyword, urlPattern)

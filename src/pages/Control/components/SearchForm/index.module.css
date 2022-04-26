@@ -44,8 +44,10 @@
   outline: none;
 }
 
+.IconSubmit:active {
+}
 .IconSubmit:hover {
-  background-color: #3a3a45;
+  background-color: rgb(58 58 69 / 8%);
 }
 .IconSubmit {
   all: unset;
