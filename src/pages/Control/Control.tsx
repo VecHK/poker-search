@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Base, Unpromise } from '../../utils/base';
+import { Base } from '../../utils/base';
 import { closeAllWindow, createSearch } from '../../utils/layout';
 import { getSearchword } from '../../utils/search';
 import ArrowButtonGroup from './components/ArrowGroup';
@@ -76,7 +76,7 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
   const moveControlWindow = useCallback(async () => {
     const { id } = await chrome.windows.getCurrent()
     if (id !== undefined) {
-      const [top, left] = base.getControlWindowPos(base.total_line)
+      const [top, left] = base.calcControlWindowPos()
       await chrome.windows.update(id, { top, left })
     }
   }, [base])

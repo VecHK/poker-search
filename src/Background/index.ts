@@ -84,7 +84,7 @@ chrome.omnibox.onInputEntered.addListener((text) => {
   // text
   console.log('text', text)
   createBase(false).then(base => {
-    const [top, left] = base.getControlWindowPos(base.total_line)
+    const [top, left] = base.calcControlWindowPos()
     chrome.windows.create({
       type: 'popup',
       width: cfg.CONTROL_WINDOW_WIDTH,

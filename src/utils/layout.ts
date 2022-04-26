@@ -1,5 +1,5 @@
 import { Base } from "./base"
-import { calcRealPos } from "./pos"
+import { calcPos } from "./pos"
 import { constructSearchList, toSearchURL } from "./search"
 
 export function timeout(timing: number) {
@@ -103,13 +103,13 @@ function createStartMatrix(
   const reverseUrlMatrix = [...urlMatrix].reverse()
 
   return MapMatrix(reverseUrlMatrix, (url, line, index) => {
-    const [left, top] = calcRealPos(base, line, index, reverseUrlMatrix.length)
+    const [l, t] = calcPos(base.info, line, index)
 
     return {
       url,
       focused: line === (reverseUrlMatrix.length - 1),
-      left,
-      top,
+      left: base.toRealLeft(l),
+      top: base.toRealTop(t),
     } as const
   })
 }
@@ -161,7 +161,6 @@ async function constructSearchWindows(
 async function renderMatrix(
   base: Base,
   matrix: Array<Array<SearchWindow>>,
-  // focused: boolean
 ) {
   const promises: Promise<chrome.windows.Window>[] = []
   for (let [lineNumber, line] of matrix.entries()) {
@@ -170,11 +169,12 @@ async function renderMatrix(
       const isWin = base.platform.os === 'win'
       const focused = isWin || isLastLine
 
-      const [left, top] = calcRealPos(base, lineNumber, idx, line.length)
+      const [l, t] = calcPos(base.info, lineNumber, idx)
+
       const p = chrome.windows.update(u.windowId, {
         focused,
-        left,
-        top,
+        left: base.toRealLeft(l),
+        top: base.toRealTop(t),
       })
       promises.push(p)
     }
