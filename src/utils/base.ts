@@ -1,5 +1,5 @@
-import cfg from "../config"
-import { SearchPatternList } from "./search"
+import cfg, { getTitleBarHeight, setTitleBarHeight } from "../config"
+import { getSearchPatternList, SearchPatternList } from "./search"
 
 export const calcTotalWidth = (multi: number, width: number, gap: number) => {
   if (multi === 1) {
@@ -116,5 +116,29 @@ export async function initBase(info: {
       const left = ((limit.width - cfg.CONTROL_WINDOW_WIDTH) / 2) + limit.minX
       return [top, left]
     }
+  })
+}
+
+function detectTitleBarHeight() {
+  return cfg.CONTROL_WINDOW_HEIGHT - window.innerHeight
+}
+function processTitleBarHeight(detectTitleBar: boolean) {
+  if (detectTitleBar) {
+    const titleBarHeight = detectTitleBarHeight()
+    setTitleBarHeight(detectTitleBarHeight())
+    return titleBarHeight
+  } else {
+    return getTitleBarHeight()
+  }
+}
+
+export function createBase(detectTitleBar: boolean) {
+  const titleBarHeight = processTitleBarHeight(detectTitleBar)
+  return initBase({
+    windowWidth: cfg.SEARCH_WINDOW_WIDTH,
+    windowHeight: cfg.SEARCH_WINDOW_HEIGHT,
+    gapHorizontal: cfg.SEARCH_WINDOW_GAP_HORIZONTAL,
+    titleBarHeight,
+    searchPatternList: getSearchPatternList()
   })
 }

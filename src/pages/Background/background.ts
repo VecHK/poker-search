@@ -1,4 +1,5 @@
 import cfg from "../../config"
+import { createBase } from "../../utils/base"
 
 console.log('TypeScriptBackground')
 
@@ -82,13 +83,16 @@ regRules()
 chrome.omnibox.onInputEntered.addListener((text) => {
   // text
   console.log('text', text)
-  chrome.windows.create({
-    type: 'popup',
-    width: cfg.CONTROL_WINDOW_WIDTH,
-    height: cfg.CONTROL_WINDOW_HEIGHT,
-    left: 0,
-    top: 0,
-    url: chrome.runtime.getURL(`/control.html?q=${encodeURIComponent(text)}`)
+  createBase(false).then(base => {
+    const [top, left] = base.getControlWindowPos(base.total_line)
+    chrome.windows.create({
+      type: 'popup',
+      width: cfg.CONTROL_WINDOW_WIDTH,
+      height: cfg.CONTROL_WINDOW_HEIGHT,
+      left,
+      top,
+      url: chrome.runtime.getURL(`/control.html?q=${encodeURIComponent(text)}`)
+    })
   })
 })
 
