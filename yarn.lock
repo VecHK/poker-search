@@ -1119,6 +1119,11 @@
   resolved "https://registry.yarnpkg.com/@rushstack/eslint-patch/-/eslint-patch-1.1.3.tgz#6801033be7ff87a6b7cadaf5b337c9f366a3c4b0"
   integrity sha512-WiBSI6JBIhC6LRIsB2Kwh8DsGTlbBU+mLRxJmAe3LjHTdkDpwIbEOZgoXBbZilk/vlfjK8i6nKRAvIRn1XaIMw==
 
+"@types/bezier-js@^4.1.0":
+  version "4.1.0"
+  resolved "https://registry.yarnpkg.com/@types/bezier-js/-/bezier-js-4.1.0.tgz#e1b023cc0a6e53492d0249a0711a3e73d1dfc8fe"
+  integrity sha512-ElU16s8E6Pr6magp8ihwH1O8pbUJASbMND/qgUc9RsLmP3lMLHiDMRXdjtaObwW5GPtOVYOsXDUIhTIluT+yaw==
+
 "@types/body-parser@*":
   version "1.19.2"
   resolved "https://registry.yarnpkg.com/@types/body-parser/-/body-parser-1.19.2.tgz#aea2059e28b7658639081347ac4fab3de166e6f0"
@@ -1859,6 +1864,16 @@ batch@0.6.1:
   version "0.6.1"
   resolved "https://registry.yarnpkg.com/batch/-/batch-0.6.1.tgz#dc34314f4e679318093fc760272525f94bf25c16"
   integrity sha1-3DQxT05nkxgJP8dgJyUl+UvyXBY=
+
+bezier-easing@^2.1.0:
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/bezier-easing/-/bezier-easing-2.1.0.tgz#c04dfe8b926d6ecaca1813d69ff179b7c2025d86"
+  integrity sha1-wE3+i5JtbsrKGBPWn/F5t8ICXYY=
+
+bezier-js@^6.1.0:
+  version "6.1.0"
+  resolved "https://registry.yarnpkg.com/bezier-js/-/bezier-js-6.1.0.tgz#162b7bdbabe866e3a796285a89d71085140755ec"
+  integrity sha512-oc8fkHqG0R+dQuNiXVbPMB0cc8iDqkLAjbA2gq26QmV8tZqW9GGI7iNEX1ioRWlZperQS7v5BX03+9FLVWZbSw==
 
 big.js@^5.2.2:
   version "5.2.2"

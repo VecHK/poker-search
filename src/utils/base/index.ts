@@ -113,12 +113,12 @@ export async function initBase(info: RequireInfo) {
   })
 }
 
-export function createBase(detectTitleBar: boolean) {
-  const titleBarHeight = processTitleBarHeight(detectTitleBar)
+export async function createBase(detectTitleBar: boolean) {
+  const titleBarHeight = await processTitleBarHeight(detectTitleBar)
   return initBase({
     windowWidth: cfg.SEARCH_WINDOW_WIDTH,
     windowHeight: cfg.SEARCH_WINDOW_HEIGHT,
-    gapHorizontal: cfg.SEARCH_WINDOW_GAP_HORIZONTAL,
+    gapHorizontal: await cfg.SEARCH_WINDOW_GAP_HORIZONTAL,
     titleBarHeight,
     searchPatternList: getSearchPatternList()
   })

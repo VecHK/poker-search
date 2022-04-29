@@ -107,3 +107,26 @@ chrome.omnibox.onInputChanged.addListener((text, suggest) => {
     description: "description",
   }])
 })
+
+chrome.runtime.onInstalled.addListener((details) => {
+  if (details.reason === "install") {
+    chrome.windows.create({
+      type: 'popup',
+      width: cfg.CONTROL_WINDOW_WIDTH,
+      height: cfg.CONTROL_WINDOW_HEIGHT,
+      left: 0,
+      top: 0,
+      url: chrome.runtime.getURL(`/installed.html`)
+    })
+  } else if (details.reason === "update") {
+    //call a function to handle an update
+    chrome.windows.create({
+      type: 'popup',
+      width: cfg.CONTROL_WINDOW_WIDTH,
+      height: cfg.CONTROL_WINDOW_HEIGHT,
+      left: 0,
+      top: 0,
+      url: chrome.runtime.getURL(`/installed.html?update=1`)
+    })
+  }
+})

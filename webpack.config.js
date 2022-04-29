@@ -37,6 +37,7 @@ var options = {
   mode: process.env.NODE_ENV || 'development',
   entry: {
     options: path.join(__dirname, 'src', 'pages', 'Options', 'index.ts'),
+    installed: path.join(__dirname, 'src', 'pages', 'Installed', 'index.ts'),
     popup: path.join(__dirname, 'src', 'pages', 'Popup', 'index.ts'),
     background: path.join(__dirname, 'src', 'Background', 'index.ts'),
     contentScript: path.join(__dirname, 'src', 'Content', 'index.ts'),
@@ -164,6 +165,12 @@ var options = {
       template: path.join(__dirname, 'src', 'pages', 'Options', 'index.html'),
       filename: 'options.html',
       chunks: ['options'],
+      cache: false,
+    }),
+    new HtmlWebpackPlugin({
+      template: path.join(__dirname, 'src', 'pages', 'Installed', 'index.html'),
+      filename: 'installed.html',
+      chunks: ['installed'],
       cache: false,
     }),
     new HtmlWebpackPlugin({
