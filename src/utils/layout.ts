@@ -158,16 +158,18 @@ async function constructSearchWindows(
   return newMatrix
 }
 
-async function renderMatrix(
+export async function renderMatrix(
   base: Base,
   matrix: Array<Array<SearchWindow>>,
+  presetFocused: undefined | boolean = undefined
 ) {
+  const isWin = base.platform.os === 'win'
+
   const promises: Promise<chrome.windows.Window>[] = []
   for (let [lineNumber, line] of matrix.entries()) {
     for (let [idx, u] of line.entries()) {
       const isLastLine = lineNumber === (matrix.length - 1)
-      const isWin = base.platform.os === 'win'
-      const focused = isWin || isLastLine
+      const focused = (presetFocused === undefined) ? (isWin || isLastLine) : presetFocused
 
       const [l, t] = calcPos(base.info, lineNumber, idx)
 
@@ -208,6 +210,30 @@ export const closeAllWindow = (ids: number[]) => {
   })
 }
 
+export async function focusLine(
+  base: Base,
+  focusLine: number,
+  focusIndex: number,
+  matrix: Array<Array<SearchWindow>>
+) {
+  const done = matrix[focusLine].map(u => {
+    return chrome.windows.update(u.windowId, {
+      focused: true,
+    })
+  })
+  await Promise.all(done)
+
+  const [pick, start, end] = pickItem(matrix, focusLine)
+  const newMatrix = [...start, ...end, pick]
+  await renderMatrix(base, newMatrix)
+
+  await chrome.windows.update(matrix[focusLine][focusIndex].windowId, {
+    focused: true
+  })
+
+  return newMatrix
+}
+
 // export type GetControl = Unpromise<ReturnType<typeof CreateLayout>>
 export async function createSearch({
   base,
@@ -246,28 +272,14 @@ export async function createSearch({
     })
     if (findLine === -1) {
       return
-    }
-
-    if (findLine === matrix.length - 1) {
+    } else if (findLine === matrix.length - 1) {
       // 点的就是当前这一行
       return
     }
 
     clearFocusChangedHandler()
     setTimeout(() => {
-      const done = matrix[findLine].map(u => {
-        return chrome.windows.update(u.windowId, {
-          focused: true,
-        })
-      })
-      Promise.all(done).then(async () => {
-        const [pick, start, end] = pickItem(matrix, findLine)
-        const newMatrix = [...start, ...end, pick]
-        await renderMatrix(base, newMatrix)
-
-        await chrome.windows.update(matrix[findLine][findIndex].windowId, {
-          focused: true
-        })
+      focusLine(base, findLine, findIndex, matrix).then(newMatrix => {
         matrix = newMatrix
 
         setFocusChangedHandler()
@@ -298,6 +310,9 @@ export async function createSearch({
       return closeAllWindow(ids)
     },
     getMatrix: () => matrix,
+    setMatrix: (newMatrix: Array<Array<SearchWindow>>) => {
+      matrix = newMatrix
+    },
     clearFocusChangedHandler,
     setFocusChangedHandler,
     clearRemoveHandler,
