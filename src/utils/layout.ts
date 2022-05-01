@@ -17,6 +17,9 @@ export type SearchWindow = Readonly<{
   windowId: number
 }>
 
+type WindowMatrixRow = Array<SearchWindow>
+type WindowMatrix = Array<WindowMatrixRow>
+
 type PlainUnit = null
 type PlainMatrix = Array<Array<PlainUnit>>
 function createPlainMatrix(
@@ -122,11 +125,11 @@ async function constructSearchWindows(
   const newMatrix: Array<Array<SearchWindow>> = []
 
   const startMatrix = createStartMatrix(base, urls)
-  for (const [lineNumber, line] of startMatrix.entries()) {
+  for (const line of startMatrix) {
     const newLine: Array<SearchWindow> = []
     newMatrix.push(newLine)
 
-    for (const [idx, u] of line.entries()) {
+    for (const u of line) {
       if (canContinue()) {
         const [win, p] = createWindow(u.url, {
           type: 'popup',
@@ -156,6 +159,24 @@ async function constructSearchWindows(
   return newMatrix
 }
 
+function renderWindow(
+  base: Base,
+  opts: {
+    windowId: number,
+    focused?: boolean,
+    row: number
+    col: number
+  }
+) {
+  const [l, t] = calcPos(base.info, opts.row, opts.col)
+  
+  return chrome.windows.update(opts.windowId, {
+    focused: opts.focused,
+    left: base.toRealLeft(l),
+    top: base.toRealTop(t),
+  })
+}
+
 export async function renderMatrix(
   base: Base,
   matrix: Array<Array<SearchWindow>>,
@@ -164,17 +185,14 @@ export async function renderMatrix(
   const isWin = base.platform.os === 'win'
 
   const promises: Promise<chrome.windows.Window>[] = []
-  for (let [lineNumber, line] of matrix.entries()) {
-    for (let [idx, u] of line.entries()) {
-      const isLastLine = lineNumber === (matrix.length - 1)
-      const focused = (presetFocused === undefined) ? (isWin || isLastLine) : presetFocused
-
-      const [l, t] = calcPos(base.info, lineNumber, idx)
-
-      const p = chrome.windows.update(u.windowId, {
-        focused,
-        left: base.toRealLeft(l),
-        top: base.toRealTop(t),
+  for (let [row, line] of matrix.entries()) {
+    for (let [col, u] of line.entries()) {
+      const isLastLine = isCurrentRow(matrix, row)
+      const p = renderWindow(base, {
+        windowId: u.windowId,
+        focused: (presetFocused === undefined) ? (isWin || isLastLine) : presetFocused,
+        row,
+        col
       })
       promises.push(p)
     }
@@ -192,18 +210,15 @@ function renderCol(
   const isWin = base.platform.os === 'win'
 
   const promises: Promise<chrome.windows.Window>[] = []
-  for (let [lineNumber, line] of matrix.entries()) {
-    for (let [idx, u] of line.entries()) {
-      if (selectCol === idx) {
-        const isLastLine = lineNumber === (matrix.length - 1)
-        const focused = (presetFocused === undefined) ? (isWin || isLastLine) : presetFocused
-  
-        const [l, t] = calcPos(base.info, lineNumber, idx)
-  
-        const p = chrome.windows.update(u.windowId, {
-          focused,
-          left: base.toRealLeft(l),
-          top: base.toRealTop(t),
+  for (let [row, line] of matrix.entries()) {
+    for (let [col, u] of line.entries()) {
+      if (selectCol === col) {
+        const isLastLine = isCurrentRow(matrix, row)
+        const p = renderWindow(base, {
+          windowId: u.windowId,
+          focused: (presetFocused === undefined) ? (isWin || isLastLine) : presetFocused,
+          row,
+          col
         })
         promises.push(p)
       }
@@ -232,54 +247,52 @@ export const closeAllWindow = (ids: number[]) => {
   })
 }
 
-async function focusRow(
-  base: Base,
-  focusLine: number,
-  focusIndex: number,
-  matrix: Array<Array<SearchWindow>>
-) {
-  const done = matrix[focusLine].map(u => {
-    return chrome.windows.update(u.windowId, {
-      focused: true,
-    })
-  })
-  await Promise.all(done)
-
-  const [pick, start, end] = pickItem(matrix, focusLine)
-  const newMatrix = [...start, ...end, pick]
-  await renderMatrix(base, newMatrix)
-
-  await chrome.windows.update(matrix[focusLine][focusIndex].windowId, {
-    focused: true
-  })
-
-  return newMatrix
-}
-
 function getCol(matrix: Array<Array<SearchWindow>>, selectCol: number) {
   return matrix.map((row) => {
     return row[selectCol]
   })
 }
 
-function focusCol(
-  focusLine: number,
-  focusIndex: number,
-  matrix: Array<Array<SearchWindow>>
+function setCurrentRowInColumn(
+  matrix: Array<Array<SearchWindow>>,
+  selectRow: number,
+  selectCol: number,
 ) {
-  const col = getCol(matrix, focusIndex)
-  const [pick, start, end] = pickItem(col, focusLine)
+  const col = getCol(matrix, selectCol)
+  const [pick, start, end] = pickItem(col, selectRow)
   const newCol = [...start, ...end, pick]
 
   return matrix.map((row, line) => {
     return row.map((u, idx) => {
-      if (idx === focusIndex) {
+      if (idx === selectCol) {
         return newCol[line]
       } else {
         return u
       }
     })
   })
+}
+
+function isCurrentRow(
+  matrix: Array<Array<SearchWindow>>,
+  row: number
+) {
+  return row === (matrix.length - 1)
+}
+
+function findRowColById(
+  matrix: Array<Array<SearchWindow>>,
+  findId: number
+): Readonly<[boolean, number, number]> {
+  for (let [findRow, line] of matrix.entries()) {
+    for (let [findCol, u] of line.entries()) {
+      if (findId === u.windowId) {
+        return [true, findRow, findCol] as const
+      }
+    }
+  }
+
+  return [false, -1, -1] as const
 }
 
 export async function createSearch({
@@ -300,35 +313,20 @@ export async function createSearch({
 
   let matrix = await constructSearchWindows(base, urls, canContinue, stop)
 
-  const onFocusChangedHandler = (id: number) => {
-    if (id === chrome.windows.WINDOW_ID_NONE) {
-      // all Chrome windows have lost focus
-      return
-    }
-
-    let findLine: number = -1
-    let findIndex: number = -1
-    MapMatrix(matrix, (u, l, i) => {
-      if (id === u.windowId) {
-        findLine = l
-        findIndex = i
+  const onFocusChangedHandler = (focusedWindowId: number) => {
+    if (focusedWindowId !== chrome.windows.WINDOW_ID_NONE) {
+      const [find, focusLine, focusCol] = findRowColById(matrix, focusedWindowId)
+      if (find && !isCurrentRow(matrix, focusLine)) {
+        clearFocusChangedHandler()
+        timeout(300).then(() => {
+          const newMatrix = setCurrentRowInColumn(matrix, focusLine, focusCol)
+          renderCol(base, newMatrix, focusCol, true).then(() => {
+            matrix = newMatrix
+            setFocusChangedHandler()
+          })
+        })
       }
-    })
-    if (findLine === -1) {
-      return
-    } else if (findLine === matrix.length - 1) {
-      // 点的就是当前这一行
-      return
     }
-
-    clearFocusChangedHandler()
-    setTimeout(() => {
-      const newMatrix = focusCol(findLine, findIndex, matrix)
-      renderCol(base, newMatrix, findIndex, true).then(() => {
-        matrix = newMatrix
-        setFocusChangedHandler()
-      })
-    }, 300)
   }
   const clearFocusChangedHandler = () => chrome.windows.onFocusChanged.removeListener(onFocusChangedHandler)
   const setFocusChangedHandler = () => chrome.windows.onFocusChanged.addListener(onFocusChangedHandler)
