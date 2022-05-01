@@ -85,12 +85,13 @@ chrome.omnibox.onInputEntered.addListener((text) => {
   console.log('text', text)
   createBase(false).then(base => {
     const [top, left] = base.calcControlWindowPos()
+    console.log(top, left)
     chrome.windows.create({
       type: 'popup',
-      width: cfg.CONTROL_WINDOW_WIDTH,
-      height: cfg.CONTROL_WINDOW_HEIGHT,
-      left,
-      top,
+      width: Math.floor(cfg.CONTROL_WINDOW_WIDTH),
+      height: Math.floor(cfg.CONTROL_WINDOW_HEIGHT),
+      left: Math.floor(left),
+      top: Math.floor(top),
       url: chrome.runtime.getURL(`/control.html?q=${encodeURIComponent(text)}`)
     })
   })

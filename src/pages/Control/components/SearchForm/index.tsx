@@ -36,9 +36,9 @@ const formDataTransform = (e: React.FormEvent<HTMLFormElement>) => {
   const formData = new FormData(e.currentTarget)
   const keyword = formData.get('keyword')
   if (keyword === null) {
-    throw new Error(`formData 'keyword' value not found!`)
+    throw Error(`formData 'keyword' value not found!`)
   } else if (typeof keyword !== 'string') {
-    throw new Error(`formData 'keyword' value is not a string!`)
+    throw Error(`formData 'keyword' value is not a string!`)
   } else {
     return { keyword }
   }

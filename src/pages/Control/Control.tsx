@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import Loading from '../../components/Loading';
 import { Base } from '../../utils/base';
-import { closeAllWindow, createSearch, focusLine, renderMatrix, SearchWindow } from '../../utils/layout';
+import { closeAllWindow, createSearch, renderMatrix, SearchWindow } from '../../utils/layout';
 import { getSearchword } from '../../utils/search';
 import ArrowButtonGroup from './components/ArrowGroup';
 
@@ -126,6 +126,7 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
             setKeyword={setKeyword}
             submitButtonActive={windowIsFocus}
             onSubmit={({ keyword: newSearchKeyword }) => {
+              setLoading(true)
               if (controll !== undefined) {
                 onCloseAllWindow(controll)
                 submit(newSearchKeyword)
@@ -146,7 +147,7 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
             let newMatrix: Array<Array<SearchWindow>>
 
             if (latestRow === undefined) {
-              throw new Error('latestRow is undefined')
+              throw Error('latestRow is undefined')
             } else if (type === 'next') {
               newMatrix = [latestRow, ...remainMatrix]
             } else {
