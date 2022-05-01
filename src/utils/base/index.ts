@@ -74,7 +74,7 @@ function baseControl(limit: Limit, totalHeight: number) {
 
       const top = totalHeight - cfg.CONTROL_WINDOW_HEIGHT + baseY + limit.minY
       const left = ((limit.width - cfg.CONTROL_WINDOW_WIDTH) / 2) + limit.minX
-      return [top, left] as const
+      return [Math.round(top), Math.round(left)] as const
     }
   }
 }

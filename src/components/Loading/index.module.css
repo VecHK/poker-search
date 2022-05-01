@@ -1,0 +1,35 @@
+.Loading {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.LoadingBlock {
+  position: relative;
+
+  /* $size: 1.5em; */
+
+  --loading-size: 20px;
+
+
+  width: var(--loading-size);
+  height: var(--loading-size);
+}
+
+.LoadingBlockLine.Highlight {
+  background-color: grey;
+  transition-delay: 32ms;
+}
+
+.LoadingBlockLine {
+  background-color: #CECECE;
+  transition: background-color 200ms;
+  transition-delay: 250ms;
+
+  position: absolute;
+  top: 0;
+  left: calc(50% - 2px / 2);
+  height: calc(50% - (var(--loading-size) * 0.2));
+  width: 2px;
+  transform-origin: center calc(var(--loading-size) / 2);
+}

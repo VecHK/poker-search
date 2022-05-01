@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
+import Loading from '../../components/Loading';
 import { Base } from '../../utils/base';
-import { closeAllWindow, createSearch } from '../../utils/layout';
+import { closeAllWindow, createSearch, renderMatrix, SearchWindow } from '../../utils/layout';
 import { getSearchword } from '../../utils/search';
 import ArrowButtonGroup from './components/ArrowGroup';
 
@@ -37,6 +38,7 @@ const useWindowFocus = (initFocusValue: boolean) => {
 
 const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
   const windowIsFocus = useWindowFocus(true)
+  const [isLoading, setLoading] = useState(false)
   const [isOpen, setOpen] = useState(false)
   const [keyword, setKeyword] = useState(queryKeyword)
   const [submitedKeyword, submit] = useState<string | false>(false)
@@ -81,52 +83,91 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
     }
   }, [base])
 
+  const refreshWindows = useCallback((keyword: string) => {
+    setLoading(true)
+    createSearch({
+      base,
+      keyword,
+      canContinue,
+      stop,
+    }).then(newControll => {
+      setControll(newControll)
+      newControll.setRemoveHandler()
+      newControll.setFocusChangedHandler()
+    }).catch(err => {
+      // alert(`${err.cancel}`)
+      if (err.cancel) {
+        // 提前取消
+        const ids = err.ids as number[]
+        callCloseAllWindow(ids)
+        window.close()
+        // chrome.runtime.id
+      }
+    }).then(() => {
+      setLoading(false)
+    })
+  }, [base, callCloseAllWindow, canContinue, stop])
+
   useEffect(() => {
     if (submitedKeyword !== false) {
       setOpen(true)
       moveControlWindow().then(() => {
-        createSearch({
-          base,
-          keyword: submitedKeyword,
-          canContinue,
-          stop,
-        }).then(newControll => {
-          setControll(newControll)
-          newControll.setRemoveHandler()
-          newControll.setFocusChangedHandler()
-        }).catch(err => {
-          // alert(`${err.cancel}`)
-          if (err.cancel) {
-            // 提前取消
-            const ids = err.ids as number[]
-            callCloseAllWindow(ids)
-            window.close()
-            // chrome.runtime.id
-          }
-        })
+        refreshWindows(submitedKeyword)
       })
     }
-  }, [base, callCloseAllWindow, canContinue, moveControlWindow, stop, submitedKeyword])
+  }, [moveControlWindow, refreshWindows, submitedKeyword])
 
   return (
     <div className="container">
-      {windowIsFocus}
-      <SearchForm
-        keyword={keyword}
-        setKeyword={setKeyword}
-        submitButtonActive={windowIsFocus}
-        onSubmit={({ keyword: newSearchKeyword }) => {
-          if (controll !== undefined) {
-            onCloseAllWindow(controll)
-            submit(newSearchKeyword)
-            setStep(createStep())
-          } else {
-            submit(newSearchKeyword)
-            setStep(createStep())
-          }
-        }}
-      />
-      <ArrowButtonGroup onClick={(type) => { alert(`点击了 ${type}`) }} />
+      {isLoading ? <Loading /> : (
+        <>
+          <SearchForm
+            keyword={keyword}
+            setKeyword={setKeyword}
+            submitButtonActive={windowIsFocus}
+            onSubmit={({ keyword: newSearchKeyword }) => {
+              setLoading(true)
+              if (controll !== undefined) {
+                onCloseAllWindow(controll)
+                submit(newSearchKeyword)
+                setStep(createStep())
+              } else {
+                submit(newSearchKeyword)
+                setStep(createStep())
+              }
+            }}
+          />
+          <ArrowButtonGroup onClick={(type) => {
+            if (!controll) {
+              return
+            }
+            const remainMatrix = [...controll.getMatrix()]
+            const latestRow = type === 'next' ? remainMatrix.pop() : remainMatrix.shift()
+
+            let newMatrix: Array<Array<SearchWindow>>
+
+            if (latestRow === undefined) {
+              throw Error('latestRow is undefined')
+            } else if (type === 'next') {
+              newMatrix = [latestRow, ...remainMatrix]
+            } else {
+              newMatrix = [...remainMatrix, latestRow]
+            }
+
+            controll.clearFocusChangedHandler()
+            renderMatrix(base, newMatrix, type === 'next' ? true : undefined).then(() => {
+              return chrome.windows.getCurrent()
+            }).then(({id}) => {
+              if (id !== undefined) {
+                return chrome.windows.update(id, { focused: true })
+              }
+            }).then(() => {
+              controll.setMatrix(newMatrix)
+              controll.setFocusChangedHandler()
+            })
+          }} />
+        </>
+      )}
     </div>
   )
 }
