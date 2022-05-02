@@ -1,7 +1,8 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import Loading from '../../components/Loading';
 import { Base } from '../../utils/base';
-import { closeAllWindow, createSearch, renderMatrix, SearchWindow } from '../../utils/layout';
+import { closeAllWindow, createSearch, SearchWindow } from '../../utils/layout';
+import { renderMatrix } from '../../utils/layout/render';
 import { getSearchword } from '../../utils/search';
 import ArrowButtonGroup from './components/ArrowGroup';
 
@@ -102,6 +103,8 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
         callCloseAllWindow(ids)
         window.close()
         // chrome.runtime.id
+      } else {
+        console.error('createSearch error', err)
       }
     }).then(() => {
       setLoading(false)

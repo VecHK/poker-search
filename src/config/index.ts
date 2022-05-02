@@ -1,17 +1,17 @@
-const CONTROL_WINDOW_WIDTH = 380
-const CONTROL_WINDOW_HEIGHT = 150
-const cfg = Object.freeze({
-  CONTROL_WINDOW_WIDTH,
-  CONTROL_WINDOW_HEIGHT,
+export default Object.freeze({
+  DEFAULT_TITLE_BAR_HEIGHT: 30,
+
+  INSTALLED_WINDOW_WIDTH: 640,
+  INSTALLED_WINDOW_HEIGHT: 480,
+
+  CONTROL_WINDOW_WIDTH: 380,
+  CONTROL_WINDOW_HEIGHT: 150,
 
   SEARCH_WINDOW_WIDTH: 380,
   SEARCH_WINDOW_HEIGHT: 1000,
-  get SEARCH_WINDOW_GAP_HORIZONTAL(){
-    return getTitleBarHeight()
-  }
-})
-export default cfg
 
-let TITLE_BAR_HEIGHT = 30
-export const setTitleBarHeight = (h: number) => { TITLE_BAR_HEIGHT = h }
-export const getTitleBarHeight = () => TITLE_BAR_HEIGHT
+  SEARCH_WINDOW_GAP_HORIZONTAL: 30,
+
+  ENVIRMONMENT_STORAGE_KEY: 'poker-env',
+  OPTIONS_STORAGE_KEY: 'poker-options'
+})

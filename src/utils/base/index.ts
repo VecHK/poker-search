@@ -1,8 +1,8 @@
 import cfg from '../../config'
+import { load as loadEnvironment } from '../../environment'
+import { load as loadOptions, Options } from '../../options'
 import { calcWindowsTotalHeight, calcWindowsTotalWidth } from './../pos'
-import { getSearchPatternList, SearchPatternList } from './../search'
 import { getCurrentDisplayLimit, Limit } from './limit'
-import { processTitleBarHeight } from './titlebar'
 
 const getPlatformInfo = () => (new Promise<chrome.runtime.PlatformInfo>(
   res => chrome.runtime.getPlatformInfo(res)
@@ -84,42 +84,55 @@ export type RequireInfo = {
   windowWidth: number
   gapHorizontal: number
   titleBarHeight: number
-  searchPatternList: SearchPatternList
+  options: Options
 }
 
 export type Base = Unpromise<ReturnType<typeof initBase>>
 export async function initBase(info: RequireInfo) {
-  const limit = await getCurrentDisplayLimit()
-  const platform = await getPlatformInfo()
+  const [limit, platform] = await Promise.all([
+    getCurrentDisplayLimit(),
+    getPlatformInfo()
+  ])
 
   const [max_window_per_line, totalWidth] = calcMaxColumns(
     limit.width, info.windowWidth, info.gapHorizontal
   )
 
-  const total_line = Math.ceil(info.searchPatternList.length / max_window_per_line)
+  const searchCount = info.options.site_matrix.flat().length
+  const total_line = Math.ceil(searchCount / max_window_per_line)
 
   const totalHeight = calcTotalHeight(total_line, info)
 
   return Object.freeze({
     limit,
     platform,
-    info,
+    info: {
+      windowHeight: info.windowHeight,
+      windowWidth: info.windowWidth,
+      gapHorizontal: info.gapHorizontal,
+      titleBarHeight: info.titleBarHeight,
+    },
+    options: info.options,
+    
     max_window_per_line,
     total_line,
-    searchPatternList: info.searchPatternList,
 
     ...basePos(limit, totalWidth, totalHeight),
     ...baseControl(limit, totalHeight),
   })
 }
 
-export function createBase(detectTitleBar: boolean) {
-  const titleBarHeight = processTitleBarHeight(detectTitleBar)
+export async function createBase() {
+  const [environment, options] = await Promise.all([
+    loadEnvironment(),
+    loadOptions()
+  ])
+
   return initBase({
     windowWidth: cfg.SEARCH_WINDOW_WIDTH,
     windowHeight: cfg.SEARCH_WINDOW_HEIGHT,
     gapHorizontal: cfg.SEARCH_WINDOW_GAP_HORIZONTAL,
-    titleBarHeight,
-    searchPatternList: getSearchPatternList()
+    titleBarHeight: environment.titleBarHeight,
+    options,
   })
 }

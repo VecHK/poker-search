@@ -5,7 +5,7 @@ import { createBase } from '../../utils/base'
 import Control from './Control'
 import './Control.css'
 
-createBase(true).then(base => {
+createBase().then(base => {
   const controlElement = React.createElement(Control, { base })
   render(controlElement, window.document.querySelector('#app-container'));
 })
