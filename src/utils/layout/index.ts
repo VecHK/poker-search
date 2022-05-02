@@ -1,7 +1,7 @@
 import { Base } from "../base"
 import { createSearchMatrix, SearchMatrix } from "./search-matrix"
 import { calcPos } from "../pos"
-import { toSearchURL } from "../search"
+import { toPlainURL, toSearchURL } from "../search"
 import { isCurrentRow, Unit } from "./matrix"
 import { renderCol } from "./render"
 
@@ -54,7 +54,7 @@ async function constructSearchWindows(
     const newRow: SearchWindowRow = []
     newMatrix.push(newRow)
     for (let [col, search] of cols.entries()) {
-      const url = (search !== null) ? toSearchURL(search.keyword, search.url_pattern) : ''
+      const url = (search !== null) ? toSearchURL(search.keyword, search.url_pattern) : toPlainURL()
 
       const [l, t] = calcPos(base.info, row, col)
 
