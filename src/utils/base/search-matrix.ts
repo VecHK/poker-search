@@ -38,8 +38,8 @@ export function createSearchMatrix(
         plain_window_url_pattern,
         max_window_per_row,
         [
-          cols.slice(max_window_per_row, cols.length),
           cols.slice(0, max_window_per_row),
+          cols.slice(max_window_per_row, cols.length),
           ...remain_matrix
         ],
       )
