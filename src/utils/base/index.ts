@@ -1,3 +1,4 @@
+import { curry } from 'ramda'
 import cfg from '../../config'
 import { load as loadEnvironment } from '../../environment'
 import { load as loadOptions, Options } from '../../options'
@@ -27,7 +28,9 @@ function calcMaxColumns(
   return c(1)
 }
 
-const dimAdd = (offset: number, dimension: number) => Math.round(offset + dimension)
+const dimAdd = curry((offset: number, dimension: number) => {
+  return Math.round(offset + dimension)
+})
 const Create_toRealPos = (
   limit: Limit,
   totalWidth: number,
@@ -39,8 +42,8 @@ const Create_toRealPos = (
   const offsetX = baseX + limit.minX
   const offsetY = baseY + limit.minY
 
-  const toRealLeft = dimAdd.bind(null, offsetX)
-  const toRealTop = dimAdd.bind(null, offsetY)
+  const toRealLeft = dimAdd(offsetX)
+  const toRealTop = dimAdd(offsetY)
 
   return [toRealLeft, toRealTop] as const
 }
