@@ -3,6 +3,7 @@ import { load as loadEnvironment } from '../../environment'
 import { load as loadOptions, Options } from '../../options'
 import { calcWindowsTotalHeight, calcWindowsTotalWidth } from './../pos'
 import { getCurrentDisplayLimit, Limit } from './limit'
+import { createSearchMatrix } from './search-matrix'
 
 const getPlatformInfo = () => (new Promise<chrome.runtime.PlatformInfo>(
   res => chrome.runtime.getPlatformInfo(res)
@@ -98,10 +99,15 @@ export async function initBase(info: RequireInfo) {
     limit.width, info.windowWidth, info.gapHorizontal
   )
 
-  const searchCount = info.options.site_matrix.flat().length
-  const total_line = Math.ceil(searchCount / max_window_per_line)
+  const search_matrix = createSearchMatrix(
+    cfg.PLAIN_WINDOW_URL_PATTERN,
+    max_window_per_line,
+    info.options.site_matrix,
+  )
+  const search_count = search_matrix.flat().length
+  const total_row = Math.ceil(search_count / max_window_per_line)
 
-  const totalHeight = calcTotalHeight(total_line, info)
+  const matrix_height = calcTotalHeight(total_row, info)
 
   return Object.freeze({
     limit,
@@ -113,12 +119,11 @@ export async function initBase(info: RequireInfo) {
       titleBarHeight: info.titleBarHeight,
     },
     options: info.options,
-    
     max_window_per_line,
-    total_line,
+    search_matrix,
 
-    ...basePos(limit, totalWidth, totalHeight),
-    ...baseControl(limit, totalHeight),
+    ...basePos(limit, totalWidth, matrix_height),
+    ...baseControl(limit, matrix_height),
   })
 }
 

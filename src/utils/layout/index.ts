@@ -1,9 +1,8 @@
-import { Base } from "../base"
-import { createSearchMatrix, SearchMatrix } from "./search-matrix"
-import { calcPos } from "../pos"
-import { toPlainURL, toSearchURL } from "../search"
-import { isCurrentRow, Unit } from "./matrix"
-import { renderCol } from "./render"
+import { Base } from '../base'
+import { SearchMatrix } from '../base/search-matrix'
+import { calcPos } from '../pos'
+import { isCurrentRow, Unit } from './matrix'
+import { renderCol } from './render'
 
 export function timeout(timing: number) {
   return new Promise(res => setTimeout(res, timing))
@@ -42,6 +41,7 @@ function createWindow(url: string, CreateData: chrome.windows.CreateData) {
 async function constructSearchWindows(
   base: Base,
   search_matrix: SearchMatrix,
+  keyword: string,
   canContinue: () => boolean,
   stop: () => void
 ) {
@@ -53,8 +53,9 @@ async function constructSearchWindows(
   for (let [row, cols] of search_matrix.entries()) {
     const newRow: SearchWindowRow = []
     newMatrix.push(newRow)
-    for (let [col, search] of cols.entries()) {
-      const url = (search !== null) ? toSearchURL(search.keyword, search.url_pattern) : toPlainURL()
+    for (let [col, getSearchURL] of cols.entries()) {
+
+      const url = getSearchURL(keyword)
 
       const [l, t] = calcPos(base.info, row, col)
 
@@ -158,12 +159,10 @@ export async function createSearch({
   canContinue: () => boolean
   stop: () => void
 }) {
-  const search_matrix = createSearchMatrix(
-    base.options.site_matrix,
-    base.max_window_per_line,
-    keyword,
+  const { search_matrix } = base
+  let matrix = await constructSearchWindows(
+    base, search_matrix, keyword, canContinue, stop
   )
-  let matrix = await constructSearchWindows(base, search_matrix, canContinue, stop)
 
   const onFocusChangedHandler = (focusedWindowId: number) => {
     if (focusedWindowId !== chrome.windows.WINDOW_ID_NONE) {
