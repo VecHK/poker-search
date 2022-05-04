@@ -67,6 +67,12 @@ var options = {
           },
           {
             loader: 'css-loader',
+            options: {
+              modules: {
+                auto: true,
+                localIdentName: "[local]__[hash:base64:5]"
+              }
+            }
           },
           {
             loader: 'sass-loader',
