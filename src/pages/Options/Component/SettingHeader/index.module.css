@@ -1,0 +1,33 @@
+.SettingHeader {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+}
+.Left {
+  font-size: 20px;
+}
+.Logo {
+  display: block;
+  --logo-size: 100px;
+  width: var(--logo-size);
+  height: var(--logo-size);
+  min-width: var(--logo-size);
+  min-height: var(--logo-size);
+
+  margin-right: 20px;
+}
+.Right {
+  flex-grow: 2;
+  font-size: 20px;
+}
+
+.Title {
+  font-size: 28px;
+  line-height: 28px;
+}
+.Version {
+  margin-top: 8px;
+  line-height: 20px;
+  font-size: 20px;
+  color: rgba(0, 0, 0, 0.8)
+}

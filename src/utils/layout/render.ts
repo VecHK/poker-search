@@ -1,4 +1,5 @@
 import { Base } from '../base'
+import { Matrix } from '../common'
 import { calcPos } from '../pos'
 import { isCurrentRow } from './matrix'
 import { SearchWindow } from './window'
@@ -23,7 +24,7 @@ function renderWindow(
 
 export async function renderMatrix(
   base: Base,
-  matrix: Array<Array<SearchWindow>>,
+  matrix: Matrix<SearchWindow>,
   presetFocused: undefined | boolean = undefined
 ) {
   const isWin = base.platform.os === 'win'
@@ -47,7 +48,7 @@ export async function renderMatrix(
 
 export function renderCol(
   base: Base,
-  matrix: Array<Array<SearchWindow>>,
+  matrix: Matrix<SearchWindow>,
   selectCol: number,
   presetFocused: undefined | boolean = undefined
 ) {

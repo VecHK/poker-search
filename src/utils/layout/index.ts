@@ -3,6 +3,7 @@ import { constructSearchWindows } from './window-create'
 import { selectWindow } from './window-update'
 import { closeAllWindow, SearchWindow } from './window'
 import { renderCol } from './render'
+import { Matrix } from '../common'
 
 function timeout(timing: number) {
   return new Promise(res => setTimeout(res, timing))
@@ -67,7 +68,7 @@ export async function createSearch({
       return closeAllWindow(ids)
     },
     getMatrix: () => matrix,
-    setMatrix: (newMatrix: Array<Array<SearchWindow>>) => {
+    setMatrix: (newMatrix: Matrix<SearchWindow>) => {
       matrix = newMatrix
     },
     clearFocusChangedHandler,

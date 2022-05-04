@@ -1,0 +1,43 @@
+.Switch {
+  --switch-height: 18px;
+  --switch-width: 34px;
+  --ball-gap: 3px;
+  --ball-size: 13px;
+  --switch-transition-timing: 182ms;
+
+  cursor: pointer;
+  
+  width: var(--switch-width);
+  height: var(--switch-height);
+  border-radius: var(--switch-height);
+
+  box-shadow: inset 0 1px 3px -1px rgba(0, 0, 0, 0.382);
+
+  position: relative;
+  transition: background-color var(--switch-transition-timing);
+}
+
+.Switch.On {
+  background-color: #0078d4db;
+}
+.Switch.Off {
+  background-color: #d3d3d3db;
+}
+
+.Switch.On .Ball {
+  left: calc(var(--switch-width) - var(--ball-size) - var(--ball-gap));
+}
+.Switch.Off .Ball {
+  left: var(--ball-gap);
+}
+
+.Switch .Ball {
+  width: var(--ball-size);
+  height: var(--ball-size);
+  border-radius: var(--ball-size);
+  background-color: white;
+
+  position: absolute;
+  top: calc((var(--switch-height) - var(--ball-size)) / 2);
+  transition: left var(--switch-transition-timing);
+}

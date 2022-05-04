@@ -1,0 +1,26 @@
+.SettingItemWrapper:first-child {
+  margin-top: 0;
+}
+.SettingItemWrapper:last-child {
+  margin-bottom: 0;
+}
+
+.SettingItemWrapper {
+  margin: 20px 0;
+  color: rgb(61, 61, 72);
+}
+
+.Title {
+  font-size: 28px;
+  line-height: 28px;
+  margin-bottom: 8px;
+}
+
+.SettingItemInner {
+  box-sizing: border-box;
+  padding: 10px 20px;
+  background-color: white;
+
+  border-radius: 2px;
+  box-shadow: 5px 5px 4px -3px rgba(0, 0, 0, 0.15);
+}

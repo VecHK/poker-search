@@ -12,10 +12,12 @@ export function constructMatrix<Unit extends unknown>(
   )
 }
 
+export type Matrix<T> = Array<Array<T>>
+
 export function mapMatrix<NU extends unknown, U extends unknown>(
-  matrix: Array<Array<U>>,
+  matrix: Matrix<U>,
   fn: (unit: U, line: number, index: number) => NU
-): Array<Array<NU>> {
+): Matrix<NU> {
   const newMatrix = []
   for (let l = 0; l < matrix.length; ++l) {
     const line = matrix[l]

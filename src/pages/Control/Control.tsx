@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import Loading from '../../components/Loading';
 import { Base } from '../../utils/base';
+import { Matrix } from '../../utils/common';
 import { createSearch } from '../../utils/layout';
 import { renderMatrix } from '../../utils/layout/render';
 import { closeAllWindow, SearchWindow } from '../../utils/layout/window';
@@ -148,7 +149,7 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
             const remainMatrix = [...controll.getMatrix()]
             const latestRow = type === 'next' ? remainMatrix.pop() : remainMatrix.shift()
 
-            let newMatrix: Array<Array<SearchWindow>>
+            let newMatrix: Matrix<SearchWindow>
 
             if (latestRow === undefined) {
               throw Error('latestRow is undefined')
