@@ -1,7 +1,7 @@
-import { SearchWindow } from './'
 import { Base } from '../base'
 import { calcPos } from '../pos'
 import { isCurrentRow } from './matrix'
+import { SearchWindow } from './window'
 
 function renderWindow(
   base: Base,

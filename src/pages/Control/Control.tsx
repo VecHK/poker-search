@@ -1,8 +1,9 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import Loading from '../../components/Loading';
 import { Base } from '../../utils/base';
-import { closeAllWindow, createSearch, SearchWindow } from '../../utils/layout';
+import { createSearch } from '../../utils/layout';
 import { renderMatrix } from '../../utils/layout/render';
+import { closeAllWindow, SearchWindow } from '../../utils/layout/window';
 import { getSearchword } from '../../utils/search';
 import ArrowButtonGroup from './components/ArrowGroup';
 
