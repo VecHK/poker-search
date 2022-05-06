@@ -1,4 +1,5 @@
-import React, { useCallback, useEffect, useState } from 'react'
+import { all, equals, insert, move, nth, remove, update } from 'ramda'
+import React from 'react'
 import {
   DragDropContext,
   Droppable,
@@ -8,20 +9,19 @@ import {
   NotDraggingStyle,
   DraggableLocation,
   SensorAPI
-} from "react-beautiful-dnd";
-import Cols from './DragCols';
-import { SiteMatrix } from "../../../../options/site-matrix";
-import SettingItem from "../SettingItem";
+} from 'react-beautiful-dnd'
+import Cols from './DragCols'
+import { SiteMatrix } from '../../../../options/site-matrix'
+import SettingItem from '../SettingItem'
 import s from './DragRows.module.css'
-import { all, equals, insert, move, nth, remove, update } from "ramda";
 
 const getRowListStyle = (isDraggingOver: boolean): React.CSSProperties => ({
   // background: isDraggingOver ? "lightblue" : "lightgrey",
   // padding: 8,
   // width: "480px"
-});
+})
 
-const grid = 12;
+const grid = 12
 const getItemStyle = (
   isDragging: boolean,
   draggableStyle: DraggingStyle | NotDraggingStyle | undefined
@@ -33,7 +33,7 @@ const getItemStyle = (
     background: isDragging ? "lightgreen" : "",
 
     ...draggableStyle
-  };
+  }
 }
 
 function reorderCols(
@@ -88,13 +88,19 @@ function reorderRows(
 
 type Pos = Readonly<[number, number]>
 
-// onSubmitEdit
 type DragMatrixProps = {
+  edit: Pos | null,
+  setEdit: React.Dispatch<React.SetStateAction<Pos | null>>
   siteMatrix: SiteMatrix
   onChange: (s: SiteMatrix) => void
 }
-export default function DragMatrix({ siteMatrix, onChange }: DragMatrixProps) {
-  const [edit, setEdit] = useState<Pos | null>([0, 0])
+export default function DragMatrix({
+  edit,
+  setEdit,
+  siteMatrix,
+  onChange
+}: DragMatrixProps) {
+  // const [edit, setEdit] = useState<Pos | null>(null)
 
   const onDragEnd = ({ type, source, destination }: DropResult) => {
     if (!destination) {
@@ -178,5 +184,5 @@ export default function DragMatrix({ siteMatrix, onChange }: DragMatrixProps) {
         )}
       </Droppable>
     </DragDropContext>
-  );
-};
+  )
+}

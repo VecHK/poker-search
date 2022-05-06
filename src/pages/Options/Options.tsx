@@ -1,4 +1,4 @@
-import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import pkg from '../../../package.json'
 import { load, Options, save } from '../../options'
 import './Options.css'
@@ -53,16 +53,16 @@ export default function OptionsPage() {
                 <div className="OptionsCol">
                   <SiteOptionManage
                     siteMatrix={options.site_matrix}
-                    onChange={(new_matrix) => {
-                      console.log('matrix change', new_matrix)
+                    onChange={(newMatrix) => {
+                      console.log('matrix change', newMatrix)
                       setOptions({
                         ...options,
-                        site_matrix: new_matrix
+                        site_matrix: newMatrix
                       })
-                      // save({
-                      //   ...options,
-                      //   site_matrix: new_matrix
-                      // })
+                      save({
+                        ...options,
+                        site_matrix: newMatrix
+                      })
                     }}
                   />
                 </div>

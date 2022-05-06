@@ -1,9 +1,9 @@
-import { equals } from "ramda";
-import React from "react";
-import { Droppable, Draggable, DraggingStyle, NotDraggingStyle } from "react-beautiful-dnd";
-import { SiteOption, SiteRow } from "../../../../options/site-matrix";
+import { equals } from 'ramda'
+import React from 'react'
+import { Droppable, Draggable, DraggingStyle, NotDraggingStyle } from 'react-beautiful-dnd'
+import { SiteOption, SiteRow } from '../../../../options/site-matrix'
 import s from './DragCols.module.css'
-import SiteWindow from "./SiteWindow";
+import SiteWindow from './SiteWindow'
 
 const getItemStyle = (
   isDragging: boolean,
@@ -14,8 +14,8 @@ const getItemStyle = (
     textAlign: "right",
     // background: isDragging ? "lightgreen" : "",
     ...draggableStyle
-  };
-};
+  }
+}
 
 export const getColListStyle = (isDraggingOver: boolean): React.CSSProperties => ({
   display: "flex",
@@ -23,12 +23,7 @@ export const getColListStyle = (isDraggingOver: boolean): React.CSSProperties =>
   // background: isDraggingOver ? "lightblue" : "",
   padding: 4,
   // width: 350
-});
-
-function urlToDomain(url: string): string {
-  const u = new URL(url)
-  return u.hostname
-}
+})
 
 type Pos = null | Readonly<[number, number]>
 
@@ -42,7 +37,7 @@ export default function Cols(props: {
   onClickEdit(colNum: number): void
   onClickRemove(colNum: number): void
 }) {
-  const { row, rowNum } = props;
+  const { row, rowNum } = props
 
   return (
     <Droppable droppableId={`${rowNum}`} type="COLS" direction="horizontal">
@@ -88,11 +83,11 @@ export default function Cols(props: {
                   </div>
                 )}
               </Draggable>
-            );
+            )
           })}
           {provided.placeholder}
         </div>
       )}
     </Droppable>
-  );
-};
+  )
+}

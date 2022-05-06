@@ -11,10 +11,13 @@ export function SiteWindowFrame(props: {
   isBlur?: boolean
   children: ReactNode
 }) {
-  const isEditClass = props.isEdit ? s.IsEdit : ''
-  const blurClass = props.isBlur ? s.IsBlur : ''
+  const classes = [s.SiteWindowFrame]
+
+  if (props.isEdit) { classes.push(s.IsEdit) }
+  if (props.isBlur) { classes.push(s.IsBlur) }
+
   return (
-    <div className={`${s.SiteWindowFrame} ${isEditClass} ${blurClass}`}>
+    <div className={classes.join(' ')}>
       {props.children}
     </div>
   )

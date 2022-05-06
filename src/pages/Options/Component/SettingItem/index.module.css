@@ -1,11 +1,11 @@
-.SettingItemWrapper:first-child {
+.SettingItem:first-child {
   margin-top: 0;
 }
-.SettingItemWrapper:last-child {
+.SettingItem:last-child {
   margin-bottom: 0;
 }
 
-.SettingItemWrapper {
+.SettingItem {
   margin: 20px 0;
   color: rgb(61, 61, 72);
 }

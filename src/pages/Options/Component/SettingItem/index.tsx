@@ -15,7 +15,7 @@ export default function SettingItem(props: {
   }, [props.title])
 
   return (
-    <div className={s.SettingItemWrapper}>
+    <div className={s.SettingItem}>
       {tilteNode}
       <div className={s.SettingItemInner}>
         {props.children}

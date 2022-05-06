@@ -19,6 +19,15 @@ function generateId() {
   return `${randomString(16, 0)}`
 }
 
+export function generateExampleOption(): SiteOption {
+  return {
+    id: generateId(),
+    icon: '_DEFAULT_ICON_',
+    name: '_DEFAULT_NAME_',
+    url_pattern: 'https://example.com?search=[[]]'
+  }
+}
+
 export function getDefaultSiteMatrix(): SiteMatrix {
   const maxWindowPerLine = 8
   const row = Math.ceil(cfg.PRESET_SEARCH_LIST.length / maxWindowPerLine)
