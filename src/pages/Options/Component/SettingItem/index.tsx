@@ -7,10 +7,13 @@ export default function SettingItem(props: {
   children: ReactNode
 }) {
   const tilteNode = useMemo(() => {
-    return (
-      <div className={s.Title}>{props.title}</div>
-    )
+    if (props.title) {
+      return <div className={s.Title}>{props.title}</div>
+    } else {
+      return null
+    }
   }, [props.title])
+
   return (
     <div className={s.SettingItemWrapper}>
       {tilteNode}

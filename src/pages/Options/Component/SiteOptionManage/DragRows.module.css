@@ -1,0 +1,26 @@
+.DragRowInner {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.Handler {
+  width: 14px;
+  height: 12px;
+  /* background-color: grey; */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin-right: 20px;
+}
+.Handler:hover .HandlerLine {
+  background-color: rgba(0, 0, 0, 0.8) !important;
+}
+.HandlerLine {
+  height: 1px;
+  min-height: 1px;
+  width: 14px;
+  background-color: rgba(0, 0, 0, 0.3);
+  margin: 2px 0;
+}

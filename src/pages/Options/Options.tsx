@@ -1,35 +1,76 @@
-import React from 'react'
+import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react'
+import pkg from '../../../package.json'
+import { load, Options, save } from '../../options'
+import './Options.css'
+
 import SettingHeader from './Component/SettingHeader'
 import SettingItem from './Component/SettingItem'
 import SettingLink from './Component/SettingLink'
 import SettingSwitch from './Component/SettingSwitch'
 import SiteOptionManage from './Component/SiteOptionManage'
-import './Options.css'
+import Loading from '../../components/Loading'
+import Failure from './Component/Failure'
 
-import { version } from '../../../package.json'
+export default function OptionsPage() {
+  const [options, setOptions] = useState<Options>()
+  const [failure, setFailure] = useState<Error>()
 
-const OptionsPage: React.FC<{}> = () => {
+  const refresh = useCallback(() => {
+    setFailure(undefined)
+    load()
+      .then(setOptions)
+      .catch(setFailure)
+  }, [])
+
+  useEffect(() => {
+    refresh()
+  }, [refresh])
+
   return (
     <div className="OptionsContainer">
-      <div className="OptionsInner">
-        <SettingHeader version={version} />
+      <div className="OptionsInner">{
+        useMemo(() => {
+          if (failure) {
+            return <Failure error={failure} />
+          } else if (!options) {
+            return <Loading />
+          } else {
+            return (
+              <>
+                <div className="OptionsCol" style={{ minWidth: '590px' }}>
+                  <SettingHeader version={pkg.version} />
 
-        <SettingItem><SettingLink title="关于" /></SettingItem>
-        <SettingItem><SettingLink title="使用方式" /></SettingItem>
+                  <SettingItem><SettingLink title="关于" /></SettingItem>
+                  <SettingItem><SettingLink title="使用方式" /></SettingItem>
 
-        <SettingItem>
-          <SettingSwitch
-            title="使用 Poker 关键字启动搜索"
-            description="在搜索栏中输入「Poker + 空格 + 想要搜索的内容」才使用发牌手"
-          />
-        </SettingItem>
-
-        <SettingItem title="发牌页面管理">
-          <SiteOptionManage />
-        </SettingItem>
-      </div>
+                  <SettingItem>
+                    <SettingSwitch
+                      title="使用 Poker 关键字启动搜索"
+                      description="在搜索栏中输入「Poker + 空格 + 想要搜索的内容」才使用发牌手"
+                    />
+                  </SettingItem>
+                </div>
+                <div className="OptionsCol">
+                  <SiteOptionManage
+                    siteMatrix={options.site_matrix}
+                    onChange={(new_matrix) => {
+                      console.log('matrix change', new_matrix)
+                      setOptions({
+                        ...options,
+                        site_matrix: new_matrix
+                      })
+                      // save({
+                      //   ...options,
+                      //   site_matrix: new_matrix
+                      // })
+                    }}
+                  />
+                </div>
+              </>
+            )
+          }
+        }, [failure, options])
+      }</div>
     </div>
   )
 }
-
-export default OptionsPage
