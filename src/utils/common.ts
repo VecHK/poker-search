@@ -1,4 +1,9 @@
-import { curry, map, range } from 'ramda'
+import { curry, map, nth, range } from 'ramda'
+
+const trueOrFalse = () => Math.round(Math.random())
+const backCode = () => 65 + Math.round(Math.random() * 25)
+const randomChar = (lower = 0) => String.fromCharCode(backCode() + (lower && 32))
+export const randomString = (length: number, lower = 0): string => randomChar(lower && trueOrFalse()) + (--length ? randomString(length, lower) : '')
 
 export function constructMatrix<Unit extends unknown>(
   total_row: number,
@@ -12,7 +17,8 @@ export function constructMatrix<Unit extends unknown>(
   )
 }
 
-export type Matrix<T> = Array<Array<T>>
+export type Row<T> = Array<T>
+export type Matrix<T> = Array<Row<T>>
 
 export function mapMatrix<NU extends unknown, U extends unknown>(
   matrix: Matrix<U>,
@@ -29,4 +35,8 @@ export function mapMatrix<NU extends unknown, U extends unknown>(
     }
   }
   return newMatrix
+}
+
+export function selectCol<U>(matrix: Matrix<U>, col: number): Row<U> {
+  return map( curry(nth)(col), matrix )
 }

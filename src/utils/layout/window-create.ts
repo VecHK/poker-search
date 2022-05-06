@@ -9,7 +9,7 @@ type Unit = PlainUnit | {
   getWindowId: () => number
 }
 
-function createWindow(url: string, CreateData: chrome.windows.CreateData) {
+function CreateWindow(url: string, CreateData: chrome.windows.CreateData) {
   let windowId: number
   const newUnit: Unit = {
     url,
@@ -57,7 +57,7 @@ export async function constructSearchWindows(
       const [l, t] = calcPos(base.info, row, col)
 
       if (canContinue()) {
-        const [win, p] = createWindow(url, {
+        const [win, p] = CreateWindow(url, {
           type: 'popup',
           width: base.info.windowWidth,
           height: base.info.windowHeight,

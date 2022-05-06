@@ -1,7 +1,5 @@
-const trueOrFalse = () => Math.round(Math.random())
-const backCode = () => 65 + Math.round(Math.random() * 25)
-const randomChar = (lower = 0) => String.fromCharCode(backCode() + (lower && 32))
-const randomString = (length: number, lower = 0): string => randomChar(lower && trueOrFalse()) + (--length ? randomString(length, lower) : '');
+import { randomString } from '../utils/common'
+
 const randomUrlPattern = () => `http://localhost:2070/${randomString(16, 1)}[[]]&${chrome_id}`
 
 const { id: chrome_id } = chrome.runtime
@@ -19,6 +17,8 @@ const cfg = Object.freeze({
   SEARCH_WINDOW_HEIGHT: 1000,
 
   SEARCH_WINDOW_GAP_HORIZONTAL: 30,
+
+  SEARCH_FOCUS_INTERVAL: 300,
 
   ENVIRMONMENT_STORAGE_KEY: 'poker-env',
   OPTIONS_STORAGE_KEY: 'poker-options',

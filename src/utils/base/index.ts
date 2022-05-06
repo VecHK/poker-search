@@ -31,7 +31,7 @@ function calcMaxColumns(
 const dimAdd = curry((offset: number, dimension: number) => {
   return Math.round(offset + dimension)
 })
-const Create_toRealPos = (
+const CreateToRealPos = (
   limit: Limit,
   totalWidth: number,
   totalHeight: number
@@ -48,8 +48,8 @@ const Create_toRealPos = (
   return [toRealLeft, toRealTop] as const
 }
 
-function basePos(...args: Parameters<typeof Create_toRealPos>) {
-  const [toRealLeft, toRealTop] = Create_toRealPos(...args)
+function basePos(...args: Parameters<typeof CreateToRealPos>) {
+  const [toRealLeft, toRealTop] = CreateToRealPos(...args)
   return { toRealLeft, toRealTop }
 }
 

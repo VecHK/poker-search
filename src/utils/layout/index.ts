@@ -4,6 +4,7 @@ import { selectWindow } from './window-update'
 import { closeAllWindow, SearchWindow } from './window'
 import { renderCol } from './render'
 import { Matrix } from '../common'
+import cfg from '../../config'
 
 function timeout(timing: number) {
   return new Promise(res => setTimeout(res, timing))
@@ -34,13 +35,13 @@ export async function createSearch({
 
   const onFocusChangedHandler = (focused_window_id: number) => {
     if (focused_window_id !== chrome.windows.WINDOW_ID_NONE) {
-      const [need_update, update_col, new_matrix] = selectWindow(matrix, focused_window_id)
+      const [need_update, update] = selectWindow(matrix, focused_window_id)
       if (need_update) {
         clearFocusChangedHandler()
-        timeout(300).then(function wait() {
-          return renderCol(base, new_matrix, update_col, true)
+        timeout(cfg.SEARCH_FOCUS_INTERVAL).then(function wait() {
+          return renderCol(base, update.new_matrix, update.col, true)
         }).then(function renderDone() {
-          matrix = new_matrix
+          matrix = update.new_matrix
           setFocusChangedHandler()
         })
       }
