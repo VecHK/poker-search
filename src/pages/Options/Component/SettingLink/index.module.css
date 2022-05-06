@@ -1,0 +1,13 @@
+.SettingLink {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+}
+.Left {
+  flex-grow: 2;
+  font-size: 20px;
+}
+.Right {
+  font-size: 20px;
+  color: rgba(0, 0, 0, 0.5)
+}

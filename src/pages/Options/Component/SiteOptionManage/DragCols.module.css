@@ -1,0 +1,6 @@
+/* .ColDnDFrame:first-child { margin-left: 0 }
+.ColDnDFrame:last-child { margin-right: 0 } */
+.ColDnDFrame {
+  margin: 0px 8px;
+  /* padding: 0 8px; */
+}

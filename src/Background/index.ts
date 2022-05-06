@@ -83,7 +83,7 @@ regRules()
 chrome.omnibox.onInputEntered.addListener((text) => {
   // text
   console.log('text', text)
-  createBase(false).then(base => {
+  createBase().then(base => {
     const [top, left] = base.calcControlWindowPos()
     console.log(top, left)
     chrome.windows.create({
@@ -107,4 +107,25 @@ chrome.omnibox.onInputChanged.addListener((text, suggest) => {
     content: 'content',
     description: "description",
   }])
+})
+
+chrome.runtime.onInstalled.addListener((details) => {
+  const common: chrome.windows.CreateData = {
+    type: 'popup',
+    width: cfg.INSTALLED_WINDOW_WIDTH,
+    height: cfg.INSTALLED_WINDOW_HEIGHT,
+    left: 0,
+    top: 0,
+  }
+  if (details.reason === 'install') {
+    chrome.windows.create({
+      ...common,
+      url: chrome.runtime.getURL(`/installed.html`)
+    })
+  } else if (details.reason === 'update') {
+    chrome.windows.create({
+      ...common,
+      url: chrome.runtime.getURL(`/installed.html?update=1`)
+    })
+  }
 })

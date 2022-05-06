@@ -1,0 +1,21 @@
+.SettingSwitch {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.Left {
+  flex-grow: 2;
+}
+
+.Title {
+  font-size: 20px;
+}
+.Description {
+  font-size: 14px;
+  color: rgba(0, 0, 0, 0.6);
+}
+
+.Right {
+  font-size: 20px;
+}

@@ -1,8 +1,10 @@
+import { curry } from 'ramda'
 import cfg from '../../config'
+import { load as loadEnvironment } from '../../environment'
+import { load as loadOptions, Options } from '../../options'
 import { calcWindowsTotalHeight, calcWindowsTotalWidth } from './../pos'
-import { getSearchPatternList, SearchPatternList } from './../search'
 import { getCurrentDisplayLimit, Limit } from './limit'
-import { processTitleBarHeight } from './titlebar'
+import { createSearchMatrix } from './search-matrix'
 
 const getPlatformInfo = () => (new Promise<chrome.runtime.PlatformInfo>(
   res => chrome.runtime.getPlatformInfo(res)
@@ -26,8 +28,10 @@ function calcMaxColumns(
   return c(1)
 }
 
-const dimAdd = (offset: number, dimension: number) => Math.round(offset + dimension)
-const Create_toRealPos = (
+const dimAdd = curry((offset: number, dimension: number) => {
+  return Math.round(offset + dimension)
+})
+const CreateToRealPos = (
   limit: Limit,
   totalWidth: number,
   totalHeight: number
@@ -38,14 +42,14 @@ const Create_toRealPos = (
   const offsetX = baseX + limit.minX
   const offsetY = baseY + limit.minY
 
-  const toRealLeft = dimAdd.bind(null, offsetX)
-  const toRealTop = dimAdd.bind(null, offsetY)
+  const toRealLeft = dimAdd(offsetX)
+  const toRealTop = dimAdd(offsetY)
 
   return [toRealLeft, toRealTop] as const
 }
 
-function basePos(...args: Parameters<typeof Create_toRealPos>) {
-  const [toRealLeft, toRealTop] = Create_toRealPos(...args)
+function basePos(...args: Parameters<typeof CreateToRealPos>) {
+  const [toRealLeft, toRealTop] = CreateToRealPos(...args)
   return { toRealLeft, toRealTop }
 }
 
@@ -84,42 +88,59 @@ export type RequireInfo = {
   windowWidth: number
   gapHorizontal: number
   titleBarHeight: number
-  searchPatternList: SearchPatternList
+  options: Options
 }
 
 export type Base = Unpromise<ReturnType<typeof initBase>>
 export async function initBase(info: RequireInfo) {
-  const limit = await getCurrentDisplayLimit()
-  const platform = await getPlatformInfo()
+  const [limit, platform] = await Promise.all([
+    getCurrentDisplayLimit(),
+    getPlatformInfo()
+  ])
 
   const [max_window_per_line, totalWidth] = calcMaxColumns(
     limit.width, info.windowWidth, info.gapHorizontal
   )
 
-  const total_line = Math.ceil(info.searchPatternList.length / max_window_per_line)
+  const search_matrix = createSearchMatrix(
+    cfg.PLAIN_WINDOW_URL_PATTERN,
+    max_window_per_line,
+    info.options.site_matrix,
+  )
+  const search_count = search_matrix.flat().length
+  const total_row = Math.ceil(search_count / max_window_per_line)
 
-  const totalHeight = calcTotalHeight(total_line, info)
+  const matrix_height = calcTotalHeight(total_row, info)
 
   return Object.freeze({
     limit,
     platform,
-    info,
+    info: {
+      windowHeight: info.windowHeight,
+      windowWidth: info.windowWidth,
+      gapHorizontal: info.gapHorizontal,
+      titleBarHeight: info.titleBarHeight,
+    },
+    options: info.options,
     max_window_per_line,
-    total_line,
-    searchPatternList: info.searchPatternList,
+    search_matrix,
 
-    ...basePos(limit, totalWidth, totalHeight),
-    ...baseControl(limit, totalHeight),
+    ...basePos(limit, totalWidth, matrix_height),
+    ...baseControl(limit, matrix_height),
   })
 }
 
-export function createBase(detectTitleBar: boolean) {
-  const titleBarHeight = processTitleBarHeight(detectTitleBar)
+export async function createBase() {
+  const [environment, options] = await Promise.all([
+    loadEnvironment(),
+    loadOptions()
+  ])
+
   return initBase({
     windowWidth: cfg.SEARCH_WINDOW_WIDTH,
     windowHeight: cfg.SEARCH_WINDOW_HEIGHT,
     gapHorizontal: cfg.SEARCH_WINDOW_GAP_HORIZONTAL,
-    titleBarHeight,
-    searchPatternList: getSearchPatternList()
+    titleBarHeight: environment.titleBarHeight,
+    options,
   })
 }

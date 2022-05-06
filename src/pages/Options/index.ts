@@ -5,7 +5,7 @@ import Options from './Options'
 import './index.css'
 
 render(
-  React.createElement(Options, { title: 'Settings' }),
+  React.createElement(Options),
   window.document.querySelector('#app-container')
 )
 

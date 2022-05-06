@@ -1,0 +1,55 @@
+.SiteWindowFrame.IsEdit {
+  width: 384px;
+}
+
+.SiteWindowFrame.IsBlur {
+  opacity: 0.5;
+}
+
+.SiteWindowFrame {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 128px;
+  height: 156px;
+  box-shadow: 0 0 0 2px grey;
+  background-color: white;
+  position: relative;
+}
+
+.SiteIcon {
+  width: 80px;
+  min-width: 80px;
+  height: 80px;
+  min-height: 80px;
+  background-color: grey;
+  margin: auto;
+}
+
+.UrlPattern {
+  /* text-decoration: underline; */
+  flex-grow: 2;
+  /* border-bottom: solid 1px grey; */
+  line-height: 20px;
+  width: 128px;
+  max-width: 128px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: center;
+}
+
+.SiteWindowFrame:hover .RemoveIcon,
+.SiteWindowFrame:hover .EditIcon {
+  opacity: 1;
+}
+
+.RemoveIcon, .EditIcon {
+  all: unset;
+  cursor: pointer;
+  display: inline-flex;
+  opacity: 0;
+  width: 24px;
+  height: 24px;
+  margin: 0 4px;
+}
