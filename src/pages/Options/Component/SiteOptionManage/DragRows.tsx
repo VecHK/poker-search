@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import {
   DragDropContext,
   Droppable,
@@ -86,7 +86,16 @@ function reorderRows(
   }
 }
 
-export default function DragMatrix({ siteMatrix, onChange }: { siteMatrix: SiteMatrix; onChange: (s: SiteMatrix) => void }) {
+type Pos = Readonly<[number, number]>
+
+// onSubmitEdit
+type DragMatrixProps = {
+  siteMatrix: SiteMatrix
+  onChange: (s: SiteMatrix) => void
+}
+export default function DragMatrix({ siteMatrix, onChange }: DragMatrixProps) {
+  const [edit, setEdit] = useState<Pos | null>([0, 0])
+
   const onDragEnd = ({ type, source, destination }: DropResult) => {
     if (!destination) {
       // no change
@@ -115,7 +124,7 @@ export default function DragMatrix({ siteMatrix, onChange }: { siteMatrix: SiteM
             style={getRowListStyle(snapshot.isDraggingOver)}
           >
             {siteMatrix.map((row, rowNum) => (
-              <Draggable key={rowNum} draggableId={`${rowNum}`} index={rowNum}>
+              <Draggable key={rowNum} draggableId={`${rowNum}`} index={rowNum} isDragDisabled={Boolean(edit)}>
                 {(provided, snapshot) => (
                   <div
                     ref={provided.innerRef}
@@ -137,6 +146,21 @@ export default function DragMatrix({ siteMatrix, onChange }: { siteMatrix: SiteM
                         <Cols
                           rowNum={rowNum}
                           row={row}
+                          edit={edit}
+                          isEditMode={Boolean(edit)}
+                          onSubmitEdit={(colNum, newOption) => {
+                            const newRow = update(colNum, newOption, row)
+                            const newMatrix = update(rowNum, newRow, siteMatrix)
+                            onChange(newMatrix)
+                            setEdit(null)
+                          }}
+                          onClickEdit={(colNum) => {
+                            console.log('onClickEdit')
+                            setEdit([rowNum, colNum])
+                          }}
+                          onCancelEdit={() => {
+                            setEdit(null)
+                          }}
                           onClickRemove={(colNum) => {
                             const newRow = remove(colNum, 1, row)
                             const newMatrix = update(rowNum, newRow, siteMatrix)

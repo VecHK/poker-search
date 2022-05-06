@@ -1,7 +1,9 @@
+import { equals } from "ramda";
 import React from "react";
 import { Droppable, Draggable, DraggingStyle, NotDraggingStyle } from "react-beautiful-dnd";
 import { SiteOption, SiteRow } from "../../../../options/site-matrix";
 import s from './DragCols.module.css'
+import SiteWindow from "./SiteWindow";
 
 const getItemStyle = (
   isDragging: boolean,
@@ -28,46 +30,20 @@ function urlToDomain(url: string): string {
   return u.hostname
 }
 
-function Col(
-  { siteOption, onClickRemove }: { siteOption: SiteOption; onClickRemove(): void }
-) {
-  return (
-    <div className={s.Col}>
-      {/* <div className={s.Handler}>
-        <div className={s.HandlerLine}></div>
-        <div className={s.HandlerLine}></div>
-        <div className={s.HandlerLine}></div>
-      </div> */}
-      {/* <div className={s.Num}>{index + 1}</div> */}
-      <div className={s.Above}>
-        <div className={s.Icon}></div>
-        {/* <div className={s.UrlPattern}>{str}</div> */}
-        <div className={s.UrlPattern}>{urlToDomain(siteOption.url_pattern)}</div>
-      </div>
-      <div className={s.Bottom}>
-        <div className={s.ButtonGroup}>
-          {/* <button className={s.Button}>+</button> */}
-          <button
-            className={s.Button}
-            type="button"
-            onClick={() => {
-              onClickRemove()
-            }}
-          >
-            -
-          </button>
-        </div>
-      </div>
-    </div>
-  )
-}
+type Pos = null | Readonly<[number, number]>
 
 export default function Cols(props: {
   rowNum: number,
   row: SiteRow,
+  edit: Pos
+  isEditMode: boolean
+  onCancelEdit(): void
+  onSubmitEdit(colNum: number, s: SiteOption): void
+  onClickEdit(colNum: number): void
   onClickRemove(colNum: number): void
 }) {
   const { row, rowNum } = props;
+
   return (
     <Droppable droppableId={`${rowNum}`} type="COLS" direction="horizontal">
       {(provided, snapshot) => (
@@ -81,6 +57,7 @@ export default function Cols(props: {
                 key={`${col.id}`}
                 draggableId={`${col.id}`}
                 index={colNum}
+                isDragDisabled={Boolean(props.edit)}
               >
                 {(provided, snapshot) => (
                   <div
@@ -93,8 +70,17 @@ export default function Cols(props: {
                       provided.draggableProps.style
                     )}
                   >
-                    <Col
+                    <SiteWindow
+                      isEdit={equals(props.edit, [props.rowNum, colNum])}
+                      isBlur={props.isEditMode && !equals(props.edit, [props.rowNum, colNum])}
+                      onCancelEdit={props.onCancelEdit}
                       siteOption={col}
+                      onSubmit={(newOption) => {
+                        props.onSubmitEdit(colNum, newOption)
+                      }}
+                      onClickEdit={() => {
+                        props.onClickEdit(colNum)
+                      }}
                       onClickRemove={() => {
                         props.onClickRemove(colNum)
                       }}
