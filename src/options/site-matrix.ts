@@ -12,7 +12,7 @@ export type SiteRow = Array<SiteOption>
 export type SiteMatrix = Array<SiteRow>
 
 export function toSearchURL(urlPattern: URLPattern, keyword: string) {
-  return urlPattern.replace('[[]]', encodeURIComponent(keyword))
+  return urlPattern.replace(cfg.KEYWORD_REPLACEHOLDER, encodeURIComponent(keyword))
 }
 
 function generateId() {
@@ -24,7 +24,7 @@ export function generateExampleOption(): SiteOption {
     id: generateId(),
     icon: '_DEFAULT_ICON_',
     name: '_DEFAULT_NAME_',
-    url_pattern: 'https://example.com?search=[[]]'
+    url_pattern: `https://example.com?search=${cfg.KEYWORD_REPLACEHOLDER}`
   }
 }
 
