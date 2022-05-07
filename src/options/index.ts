@@ -1,24 +1,44 @@
 import cfg from '../config'
 import { storage } from '../utils/storage'
 import getDefaultOptions from './default'
-import { SiteMatrix } from './site-matrix'
 
-type OptionsVersion = 1
-export type Options = Readonly<{
-  version: OptionsVersion
-  site_matrix: SiteMatrix
-}>
+import { OptionsV1 } from './v1'
+import { OptionsV2, updater as v2Updater } from './v2'
+const CURRENT_VERSION = 2
+export type Options = OptionsV2
+export type OptionsList = OptionsV1 | OptionsV2
+
+const checkVersion = (loaded_options: OptionsList) => {
+  return CURRENT_VERSION !== loaded_options.version
+}
+
+function updateVersion(s_opts: OptionsList): Options {
+  if (s_opts.version === 1) {
+    const v2_opts = v2Updater(s_opts)
+    return checkVersion(v2_opts) ? updateVersion(v2_opts) : v2_opts
+  } else {
+    // is latest version
+    return s_opts
+  }
+}
 
 const [
   loadStorage,
   saveStorage,
   isFoundStorage
-] = storage<Options>(cfg.OPTIONS_STORAGE_KEY)
+] = storage<OptionsList>(cfg.OPTIONS_STORAGE_KEY)
 
 export async function load(): Promise<Options> {
   if (await isFoundStorage()) {
     const options = await loadStorage()
-    return Object.freeze(options)
+    if (checkVersion(options)) {
+      const updated_options = updateVersion(options)
+      console.log('new', updated_options)
+      await save(updated_options)
+      return updated_options
+    } else {
+      return Object.freeze(options as Options)
+    }
   } else {
     return init({})
   }

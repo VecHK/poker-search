@@ -26,6 +26,8 @@ const cfg = Object.freeze({
 
   KEYWORD_REPLACEHOLDER: '%poker%',
 
+  MOBILE_PAGE_IDENTIFIER: chrome_id,
+
   get PLAIN_WINDOW_URL_PATTERN() {
     return chrome.runtime.getURL(`/plainWindow.html?q=${cfg.KEYWORD_REPLACEHOLDER}`)
   },

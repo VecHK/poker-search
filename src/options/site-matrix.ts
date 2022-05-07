@@ -1,15 +1,8 @@
 import cfg from '../config'
 import { constructMatrix, randomString } from '../utils/common'
 
-type URLPattern = string
-export type SiteOption = {
-  id: string
-  icon: string
-  name: string
-  url_pattern: URLPattern
-}
-export type SiteRow = Array<SiteOption>
-export type SiteMatrix = Array<SiteRow>
+import { SiteOption, SiteMatrix, URLPattern, SiteRow } from './v2'
+export { SiteOption, SiteMatrix, URLPattern, SiteRow }
 
 export function toSearchURL(urlPattern: URLPattern, keyword: string) {
   return urlPattern.replace(cfg.KEYWORD_REPLACEHOLDER, encodeURIComponent(keyword))
@@ -24,7 +17,8 @@ export function generateExampleOption(): SiteOption {
     id: generateId(),
     icon: '_DEFAULT_ICON_',
     name: '_DEFAULT_NAME_',
-    url_pattern: `https://example.com?search=${cfg.KEYWORD_REPLACEHOLDER}`
+    url_pattern: `https://example.com?search=${cfg.KEYWORD_REPLACEHOLDER}`,
+    enable_mobile: true,
   }
 }
 
@@ -43,6 +37,7 @@ export function getDefaultSiteMatrix(): SiteMatrix {
           id: generateId(),
           icon: '_DEFAULT_ICON_',
           name: '_DEFAULT_NAME_',
+          enable_mobile: true,
           ...search,
         }
       } else {
@@ -50,6 +45,7 @@ export function getDefaultSiteMatrix(): SiteMatrix {
           id: generateId(),
           icon: '_DEFAULT_ICON_',
           name: '_DEFAULT_NAME_',
+          enable_mobile: true,
           url_pattern: cfg.PLAIN_WINDOW_URL_PATTERN
         }
       }
