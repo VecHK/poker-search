@@ -6,7 +6,7 @@ type Environment = {
   titleBarHeight: number
 }
 
-const [ loadStorage, saveStorage ] = storage<Environment>(cfg.ENVIRMONMENT_STORAGE_KEY)
+const [ loadStorage, saveStorage ] = storage<Environment>(cfg.ENVIRONMENT_STORAGE_KEY)
 
 export const load = () => loadStorage()
 

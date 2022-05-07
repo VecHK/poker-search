@@ -21,7 +21,7 @@ const cfg = Object.freeze({
 
   SEARCH_FOCUS_INTERVAL: 300,
 
-  ENVIRMONMENT_STORAGE_KEY: 'poker-env',
+  ENVIRONMENT_STORAGE_KEY: 'poker-env',
   OPTIONS_STORAGE_KEY: 'poker-options',
 
   KEYWORD_REPLACEHOLDER: '%poker%',
