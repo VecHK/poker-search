@@ -1,7 +1,7 @@
 import { map } from 'ramda'
 import { randomString } from '../utils/common'
 
-const randomUrlPattern = () => `http://localhost:2070/${randomString(16, 1)}${cfg.KEYWORD_REPLACEHOLDER}&${chrome_id}`
+const randomUrlPattern = () => `http://localhost:2070/${randomString(16, 1)}${cfg.KEYWORD_REPLACEHOLDER}`
 
 const { id: chrome_id } = chrome.runtime
 
@@ -34,12 +34,12 @@ const cfg = Object.freeze({
 
   get PRESET_SEARCH_LIST() {
     return map(url_pattern => ({ url_pattern }), [
-      `https://mobile.twitter.com/search?q=${cfg.KEYWORD_REPLACEHOLDER}&src=typeahead_click&${chrome_id}`,
-      `https://www.google.com/search?q=${cfg.KEYWORD_REPLACEHOLDER}&${chrome_id}`,
-      `https://pache.blog/tag/${cfg.KEYWORD_REPLACEHOLDER}?${chrome_id}`,
-      `https://www.vgtime.com/search/list.jhtml?keyword=${cfg.KEYWORD_REPLACEHOLDER}#${chrome_id}`,
-      `https://www.zhihu.com/search?type=content&q=${cfg.KEYWORD_REPLACEHOLDER}&${chrome_id}`,
-      `https://www.google.com/maps/search/${cfg.KEYWORD_REPLACEHOLDER}?${chrome_id}`,
+      `https://mobile.twitter.com/search?q=${cfg.KEYWORD_REPLACEHOLDER}&src=typeahead_click`,
+      `https://www.google.com/search?q=${cfg.KEYWORD_REPLACEHOLDER}`,
+      `https://pache.blog/tag/${cfg.KEYWORD_REPLACEHOLDER}`,
+      `https://www.vgtime.com/search/list.jhtml?keyword=${cfg.KEYWORD_REPLACEHOLDER}`,
+      `https://www.zhihu.com/search?type=content&q=${cfg.KEYWORD_REPLACEHOLDER}`,
+      `https://www.google.com/maps/search/${cfg.KEYWORD_REPLACEHOLDER}`,
       randomUrlPattern(),
       randomUrlPattern(),
       randomUrlPattern(),
