@@ -5,6 +5,10 @@
   --ball-size: 13px;
   --switch-transition-timing: 182ms;
 
+  display: inline-block;
+  vertical-align: middle;
+  line-height: var(--switch-height);
+
   cursor: pointer;
   
   width: var(--switch-width);
@@ -15,6 +19,11 @@
 
   position: relative;
   transition: background-color var(--switch-transition-timing);
+}
+
+.Checkbox {
+  visibility: hidden;
+  display: none;
 }
 
 .Switch.On {

@@ -3,21 +3,36 @@ import React, { useMemo } from 'react'
 import s from './index.module.css'
 
 export type SwitchProps = {
+  name?: string
   value: boolean
-  onChange: (newValue: boolean) => void
+  onChange?: (newValue: boolean) => void
 }
 
-export default function Switch({ value, onChange }: SwitchProps) {
+export default function Switch({
+  name,
+  value,
+  onChange
+}: SwitchProps) {
   const switchState = useMemo(() => {
     return value ? s.On : s.Off
   }, [value])
 
   return (
-    <div
+    <label
       className={`${s.Switch} ${switchState}`}
-      onClick={() => onChange(!value)}
     >
       <div className={s.Ball}></div>
-    </div>
+      <input
+        className={s.Checkbox}
+        type="checkbox"
+        name={name}
+        checked={value}
+        onChange={e => {
+          if (onChange) {
+            onChange(!value)
+          }
+        }}
+      />
+    </label>
   )
 }

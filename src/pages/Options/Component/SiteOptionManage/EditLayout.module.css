@@ -31,3 +31,12 @@
   margin-top: 8px;
   color: red;
 }
+
+.EnableMobile :global(span) {
+  margin-right: 5px;
+}
+.EnableMobile {
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+}
