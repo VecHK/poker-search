@@ -37,34 +37,52 @@ export default function OptionsPage() {
           } else {
             return (
               <>
-                <div className="OptionsCol" style={{ minWidth: '590px' }}>
+                <header className="OptionsHeader">
                   <SettingHeader version={pkg.version} />
+                </header>
+                <div className="OptionsCols">
+                  <div className="OptionsCol" style={{ minWidth: '590px' }}>
+                    <SettingItem>
+                      <SettingSwitch
+                        title="使用 Poker 关键字启动搜索"
+                        description="在搜索栏中输入「Poker + 空格 + 想要搜索的内容」才使用发牌手"
+                      />
+                    </SettingItem>
 
-                  <SettingItem><SettingLink title="关于" /></SettingItem>
-                  <SettingItem><SettingLink title="使用方式" /></SettingItem>
+                    <SettingItem title="使用方法介绍">
+                      <p>使用方法介绍</p>
+                      <p>使用方法介绍</p>
+                      <p>使用方法介绍</p>
+                    </SettingItem>
 
-                  <SettingItem>
-                    <SettingSwitch
-                      title="使用 Poker 关键字启动搜索"
-                      description="在搜索栏中输入「Poker + 空格 + 想要搜索的内容」才使用发牌手"
+                    <SettingItem title="关于">
+                      <p>
+                        <a href="https://github.com/vechk/poker/">https://github.com/vechk/poker/</a>
+                      </p>
+                      <p>
+                        <a href="https://github.com/vechk/poker/">https://github.com/vechk/poker/</a>
+                      </p>
+                      <p>
+                        <a href="https://github.com/vechk/poker/">https://github.com/vechk/poker/</a>
+                      </p>
+                    </SettingItem>
+                  </div>
+                  <div className="OptionsCol">
+                    <SiteOptionManage
+                      siteMatrix={options.site_matrix}
+                      onChange={(newMatrix) => {
+                        console.log('matrix change', newMatrix)
+                        setOptions({
+                          ...options,
+                          site_matrix: newMatrix
+                        })
+                        save({
+                          ...options,
+                          site_matrix: newMatrix
+                        })
+                      }}
                     />
-                  </SettingItem>
-                </div>
-                <div className="OptionsCol">
-                  <SiteOptionManage
-                    siteMatrix={options.site_matrix}
-                    onChange={(newMatrix) => {
-                      console.log('matrix change', newMatrix)
-                      setOptions({
-                        ...options,
-                        site_matrix: newMatrix
-                      })
-                      save({
-                        ...options,
-                        site_matrix: newMatrix
-                      })
-                    }}
-                  />
+                  </div>
                 </div>
               </>
             )

@@ -10,16 +10,22 @@ html, body {
 }
 
 .OptionsInner {
-  /* width: 1280px; */
-  /* background-color: red;; */
-  margin: 0 auto;
+  box-sizing: border-box;
   padding-top: 100px;
   padding-bottom: 100px;
-  box-sizing: border-box;
+  margin: 0 auto;
 
-  display: flex;
-  /* align-items: center; */
   min-height: 100vh;
+  width: fit-content;
+}
+
+.OptionsHeader {
+  padding: 0 30px;
+}
+
+.OptionsCols {
+  display: flex;
+  /* padding: 0 30px; */
 }
 
 .OptionsCol {

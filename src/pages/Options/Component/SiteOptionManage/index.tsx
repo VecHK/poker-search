@@ -18,7 +18,7 @@ export default function SiteOptionManage({ siteMatrix, onChange }: {
 
   const newRowNode = useMemo(() => {
     if (edit) {
-      return null  
+      return null
     } else {
       return (
         <SettingItem>
