@@ -8,7 +8,7 @@ import { calcWindowsTotalWidth } from '../../../../utils/pos'
 import s from './WarningLine.module.css'
 
 export default function WarningLine({ siteMatrix }: { siteMatrix: SiteMatrix }) {
-  const [maxWindowPerLine, setMaxWindowPerLine] = useState(-1)
+  const [maxWindowPerLine, setMaxWindowPerLine] = useState<null | number>(null)
 
   useEffect(() => {
     getCurrentDisplayLimit().then(limit => {
@@ -20,36 +20,47 @@ export default function WarningLine({ siteMatrix }: { siteMatrix: SiteMatrix }) 
   }, [])
 
   const hasMaxCol = useMemo(() => {
-    return !siteMatrix.every((cols) => {
-      if (maxWindowPerLine === -1) {
-        return false
-      } else {
-        console.log(cols.length, maxWindowPerLine, cols.length < maxWindowPerLine)
-        return cols.length <= maxWindowPerLine
-      }
-    })
+    if (maxWindowPerLine === null) {
+      return false
+    } else {
+      return !siteMatrix.every((cols) => {
+        if (maxWindowPerLine === -1) {
+          return false
+        } else {
+          console.log(cols.length, maxWindowPerLine, cols.length < maxWindowPerLine)
+          return cols.length <= maxWindowPerLine
+        }
+      })
+    }
   }, [maxWindowPerLine, siteMatrix])
 
   const left = useMemo(() => {
-    const SiteWindowWidth = 128
-    const SiteWindowGap = 16
-    const SiteWindowGapHalf = SiteWindowGap / 2
-    const SettingItemPadding = 20
-    const HandlerWidth = 34
-    const LineWidthHalf = 1 / 2
+    if (maxWindowPerLine === null) {
+      return 0
+    } else {
+      const SiteWindowWidth = 128
+      const SiteWindowGap = 16
+      const SiteWindowGapHalf = SiteWindowGap / 2
+      const SettingItemPadding = 20
+      const HandlerWidth = 34
+      const LineWidthHalf = 1 / 2
+      
+      const width = calcWindowsTotalWidth(
+        maxWindowPerLine, SiteWindowWidth, SiteWindowGap
+      )
     
-    const width = calcWindowsTotalWidth(
-      maxWindowPerLine, SiteWindowWidth, SiteWindowGap
-    )
-  
-    const BaseLeft = SiteWindowGapHalf + SettingItemPadding + HandlerWidth
-    return `${BaseLeft + width + SiteWindowGapHalf - LineWidthHalf}px`
+      const BaseLeft = SiteWindowGapHalf + SettingItemPadding + HandlerWidth
+      return `${BaseLeft + width + SiteWindowGapHalf - LineWidthHalf}px`
+    }
   }, [maxWindowPerLine])
 
   return (
     <div
       className={`${s.WarningLineWrapper} ${hasMaxCol ? s.WarningEnable : ''}`}
-      style={{ left }}
+      style={{
+        display: maxWindowPerLine === null ? 'none' : '',
+        left
+      }}
     >
       <div className={s.WarningLine}></div>
       <div className={s.WarningDescription}>超过屏幕所能并列显示的窗口数</div>

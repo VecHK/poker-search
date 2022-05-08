@@ -22,14 +22,14 @@ const getRowListStyle = (isDraggingOver: boolean): React.CSSProperties => ({
   // width: "480px"
 })
 
-const grid = 12
 const getItemStyle = (
   isDragging: boolean,
   draggableStyle: DraggingStyle | NotDraggingStyle | undefined
 ): React.CSSProperties => {
   return {
     userSelect: "none",
-    margin: `0 0 ${grid}px 0`,
+    // margin: `0 0 ${grid}px 0`,
+    // margin: 0,
 
     background: isDragging ? "lightgreen" : "",
 
@@ -122,70 +122,73 @@ export default function DragRows({
   return (
     <div className={s.DragRows}>
       <DragDropContext onDragEnd={onDragEnd} sensors={[useMyCoolSensor]}>
-        <Droppable droppableId={ROW_DRAP} type="ROWS">
-          {(provided, snapshot) => (
-            <div
-              className={s.DragRow}
-              ref={provided.innerRef}
-              style={getRowListStyle(snapshot.isDraggingOver)}
-            >
-              {siteMatrix.map((row, rowNum) => (
-                <Draggable key={rowNum} draggableId={`${rowNum}`} index={rowNum} isDragDisabled={Boolean(edit)}>
-                  {(provided, snapshot) => (
-                    <div
-                      ref={provided.innerRef}
-                      {...provided.draggableProps}
-                      style={getItemStyle(
-                        snapshot.isDragging,
-                        provided.draggableProps.style
-                      )}
-                    >
-                      <SettingItem>
-                        <div className={s.DragRowInner}>
-                          <div {...provided.dragHandleProps}>
-                            <div className={s.Handler}>
-                              <div className={s.HandlerLine}></div>
-                              <div className={s.HandlerLine}></div>
-                              <div className={s.HandlerLine}></div>
+        <div className={s.DragDropContextInner}>
+          <Droppable droppableId={ROW_DRAP} type="ROWS">
+            {(provided, rowSnapshot) => (
+              <div
+                ref={provided.innerRef}
+                style={getRowListStyle(rowSnapshot.isDraggingOver)}
+              >
+                {siteMatrix.map((row, rowNum) => (
+                  <Draggable key={rowNum} draggableId={`${rowNum}`} index={rowNum} isDragDisabled={Boolean(edit)}>
+                    {(provided, snapshot) => (
+                      <div
+                        ref={provided.innerRef}
+                        {...provided.draggableProps}
+                        className={s.DragRowDnD}
+                        style={getItemStyle(
+                          snapshot.isDragging,
+                          provided.draggableProps.style
+                        )}
+                      >
+                        <SettingItem className={s.RowSettingItem} disableMargin>
+                          <div className={s.DragRowInner}>
+                            <div {...provided.dragHandleProps}>
+                              <div className={s.Handler}>
+                                <div className={s.HandlerLine}></div>
+                                <div className={s.HandlerLine}></div>
+                                <div className={s.HandlerLine}></div>
+                              </div>
                             </div>
+                            <Cols
+                              rowNum={rowNum}
+                              row={row}
+                              edit={edit}
+                              isEditMode={Boolean(edit)}
+                              onSubmitEdit={(colNum, newOption) => {
+                                const newRow = update(colNum, newOption, row)
+                                const newMatrix = update(rowNum, newRow, siteMatrix)
+                                onChange(newMatrix)
+                                setEdit(null)
+                              }}
+                              onClickEdit={(colNum) => {
+                                console.log('onClickEdit')
+                                setEdit([rowNum, colNum])
+                              }}
+                              onCancelEdit={() => {
+                                setEdit(null)
+                              }}
+                              onClickRemove={(colNum) => {
+                                const newRow = remove(colNum, 1, row)
+                                const newMatrix = update(rowNum, newRow, siteMatrix)
+                                onChange(newMatrix)
+                              }}
+                            />
                           </div>
-                          <Cols
-                            rowNum={rowNum}
-                            row={row}
-                            edit={edit}
-                            isEditMode={Boolean(edit)}
-                            onSubmitEdit={(colNum, newOption) => {
-                              const newRow = update(colNum, newOption, row)
-                              const newMatrix = update(rowNum, newRow, siteMatrix)
-                              onChange(newMatrix)
-                              setEdit(null)
-                            }}
-                            onClickEdit={(colNum) => {
-                              console.log('onClickEdit')
-                              setEdit([rowNum, colNum])
-                            }}
-                            onCancelEdit={() => {
-                              setEdit(null)
-                            }}
-                            onClickRemove={(colNum) => {
-                              const newRow = remove(colNum, 1, row)
-                              const newMatrix = update(rowNum, newRow, siteMatrix)
-                              onChange(newMatrix)
-                            }}
-                          />
-                        </div>
-                      </SettingItem>
-                    </div>
-                  )}
-                </Draggable>
-              ))}
-              {provided.placeholder}
-            </div>
-          )}
-        </Droppable>
+                          <div className={`${s.Floor} ${rowSnapshot.isDraggingOver ? s.isDraggingOver : ''}`}>{siteMatrix.length - (rowNum + 1) + 1}F</div>
+                        </SettingItem>
+                      </div>
+                    )}
+                  </Draggable>
+                ))}
+                {provided.placeholder}
+              </div>
+            )}
+          </Droppable>
+          <WarningLine siteMatrix={siteMatrix} />
+        </div>
       </DragDropContext>
-
-      <WarningLine siteMatrix={siteMatrix} />
+      <div className={s._1FTips}>⬆ 使用 Poker 后，最先展示的层</div>
     </div>
   )
 }

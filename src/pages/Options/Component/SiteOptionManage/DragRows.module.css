@@ -1,4 +1,22 @@
 .DragRows {
+}
+
+.DragDropContextInner {
+  position: relative;
+}
+
+.DragRowDnD {
+  /* padding: 10px 0; */
+  margin-bottom: 12px;
+}
+
+._1FTips {
+  color: grey;
+  padding-left: 20px;
+  transform: translateY(-5px);
+}
+
+.RowSettingItem {
   position: relative;
 }
 
@@ -8,7 +26,25 @@
   width: 100%;
   position: relative;
 }
-/* :global */
+
+.Floor.isDraggingOver {
+  height: 0;
+}
+.Floor {
+  opacity: 1;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 62px;
+  text-align: center;
+  font-size: 32px;
+  text-shadow: -1px -1px rgb(0 0 0 / 20%);
+  color: #DDD;
+  line-height: 1em;
+  height: 0.75em;
+  overflow: hidden;
+  transition: height 382ms;
+}
 
 .AddIcon {
   position: absolute;
