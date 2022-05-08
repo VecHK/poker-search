@@ -6,7 +6,7 @@ import { generateExampleOption, SiteMatrix } from '../../../../options/site-matr
 import SettingItem from '../SettingItem'
 import { SiteWindowFrame } from './SiteWindow'
 
-import plusSrc from './plus.svg' 
+import plusSrc from './plus.svg'
 
 type Pos = Readonly<[number, number]>
 

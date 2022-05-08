@@ -13,7 +13,7 @@ const getPlatformInfo = () => (new Promise<chrome.runtime.PlatformInfo>(
 // 计算横向最大能容纳的窗口数
 type totalWidth = number
 type count = number
-function calcMaxColumns(
+export function calcMaxColumns(
   maxWidth: number, windowWidth: number, gapHorizontal: number
 ) {
   function c(multi: number): Readonly<[count, totalWidth]> {

@@ -1,3 +1,7 @@
+.DragRows {
+  position: relative;
+}
+
 .DragRowInner {
   display: flex;
   align-items: center;
