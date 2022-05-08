@@ -1,15 +1,15 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import pkg from '../../../package.json'
 import { load, Options, save } from '../../options'
-import './Options.css'
 
 import SettingHeader from './Component/SettingHeader'
 import SettingItem from './Component/SettingItem'
-import SettingLink from './Component/SettingLink'
 import SettingSwitch from './Component/SettingSwitch'
 import SiteOptionManage from './Component/SiteOptionManage'
 import Loading from '../../components/Loading'
 import Failure from './Component/Failure'
+
+import s from './Options.module.css'
 
 export default function OptionsPage() {
   const [options, setOptions] = useState<Options>()
@@ -27,8 +27,8 @@ export default function OptionsPage() {
   }, [refresh])
 
   return (
-    <div className="OptionsContainer">
-      <div className="OptionsInner">{
+    <div className={s.OptionsContainer}>
+      <div className={s.OptionsInner}>{
         useMemo(() => {
           if (failure) {
             return <Failure error={failure} />
@@ -37,11 +37,11 @@ export default function OptionsPage() {
           } else {
             return (
               <>
-                <header className="OptionsHeader">
+                <header className={s.OptionsHeader}>
                   <SettingHeader version={pkg.version} />
                 </header>
-                <div className="OptionsCols">
-                  <div className="OptionsCol" style={{ minWidth: '590px' }}>
+                <div className={s.OptionsCols}>
+                  <div className={s.OptionsCol} style={{ minWidth: '590px' }}>
                     <SettingItem>
                       <SettingSwitch
                         title="使用 Poker 关键字启动搜索"
@@ -67,7 +67,7 @@ export default function OptionsPage() {
                       </p>
                     </SettingItem>
                   </div>
-                  <div className="OptionsCol">
+                  <div className={s.OptionsCol}>
                     <SiteOptionManage
                       siteMatrix={options.site_matrix}
                       onChange={(newMatrix) => {
