@@ -7,7 +7,7 @@ import { calcWindowsTotalWidth } from '../../../../utils/pos'
 
 import s from './WarningLine.module.css'
 
-export default function WarningLine({ siteMatrix }: { siteMatrix: SiteMatrix }) {
+export default function WarningLine({ disable, siteMatrix }: { disable: boolean; siteMatrix: SiteMatrix }) {
   const [maxWindowPerLine, setMaxWindowPerLine] = useState<null | number>(null)
 
   useEffect(() => {
@@ -56,7 +56,7 @@ export default function WarningLine({ siteMatrix }: { siteMatrix: SiteMatrix }) 
 
   return (
     <div
-      className={`${s.WarningLineWrapper} ${hasMaxCol ? s.WarningEnable : ''}`}
+      className={`${s.WarningLineWrapper} ${(!disable && hasMaxCol) ? s.WarningEnable : ''}`}
       style={{
         display: maxWindowPerLine === null ? 'none' : '',
         left

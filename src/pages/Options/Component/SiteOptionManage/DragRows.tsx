@@ -185,7 +185,7 @@ export default function DragRows({
               </div>
             )}
           </Droppable>
-          <WarningLine siteMatrix={siteMatrix} />
+          <WarningLine disable={Boolean(edit)} siteMatrix={siteMatrix} />
         </div>
       </DragDropContext>
       <div className={s._1FTips}>⬆ 使用 Poker 后，最先展示的层</div>
