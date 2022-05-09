@@ -26,6 +26,8 @@ function useAdjustMarginCenter(siteMatrix: SiteMatrix) {
       const innerWidth = el.offsetWidth
       if (innerWidth < window.innerWidth) {
         el.style['marginLeft'] = `calc((${window.innerWidth}px / 2) - (${innerWidth}px / 2))`
+      } else {
+        el.style['marginLeft'] = `0`
       }
     }
   }
@@ -49,6 +51,18 @@ function useAdjustMarginCenter(siteMatrix: SiteMatrix) {
       return newColumn
     })
   }, [ref, siteMatrix])
+
+  useEffect(() => {
+    let timer: NodeJS.Timeout | undefined = undefined
+    const resizeHandler = () => {
+      timer = setTimeout(() => adjust(ref), 300)
+    }
+    window.addEventListener('resize', resizeHandler)
+    return () => {
+      clearTimeout(timer as unknown as number)
+      window.removeEventListener('resize', resizeHandler)
+    }
+  })
 
   return ref
 }
