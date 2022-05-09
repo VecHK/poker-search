@@ -5,7 +5,7 @@
   position: absolute;
   opacity: 0;
   transition: opacity 382ms;
-  left: 922px;
+  left: 0px;
   top: -10px;
   height: calc(100% + 20px);
 }

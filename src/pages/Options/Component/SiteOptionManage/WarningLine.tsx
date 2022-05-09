@@ -63,10 +63,10 @@ export default function WarningLine({ disable, siteMatrix }: { disable: boolean;
   const ComponentWidth = DescriptionWidth + DescriptionLeft
 
   const transitionStyles: Record<string, React.CSSProperties> = {
-    entering: { left },
-    entered:  { left },
-    exiting:  { left },
-    exited:  { left: `calc(100% - ${ComponentWidth}px)`, transition: 'left 382ms' },
+    entering: { opacity: 1, left },
+    entered:  { opacity: 1, left },
+    exiting:  { opacity: 0, left },
+    exited:  { opacity: 0, left: `calc(100% - ${ComponentWidth}px)`, transition: 'left 382ms' },
   }
 
   return (
@@ -76,6 +76,7 @@ export default function WarningLine({ disable, siteMatrix }: { disable: boolean;
           className={`${s.WarningLineWrapper} ${(!disable && hasMaxCol) ? s.WarningEnable : ''}`}
           style={{
             display: maxWindowPerLine === null ? 'none' : '',
+            transition: 'opacity 382ms',
             ...transitionStyles[state],
           }}
         >
