@@ -1,4 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react'
+import { Transition } from 'react-transition-group'
+
 import cfg from '../../../../config'
 import { SiteMatrix } from '../../../../options/v2'
 import { calcMaxColumns } from '../../../../utils/base'
@@ -6,6 +8,8 @@ import { getCurrentDisplayLimit } from '../../../../utils/base/limit'
 import { calcWindowsTotalWidth } from '../../../../utils/pos'
 
 import s from './WarningLine.module.css'
+
+const DURATION = 382
 
 export default function WarningLine({ disable, siteMatrix }: { disable: boolean; siteMatrix: SiteMatrix }) {
   const [maxWindowPerLine, setMaxWindowPerLine] = useState<null | number>(null)
@@ -54,16 +58,31 @@ export default function WarningLine({ disable, siteMatrix }: { disable: boolean;
     }
   }, [maxWindowPerLine])
 
+  const DescriptionWidth = 200
+  const DescriptionLeft = -6.5
+  const ComponentWidth = DescriptionWidth + DescriptionLeft
+
+  const transitionStyles: Record<string, React.CSSProperties> = {
+    entering: { left },
+    entered:  { left },
+    exiting:  { left },
+    exited:  { left: `calc(100% - ${ComponentWidth}px)`, transition: 'left 382ms' },
+  }
+
   return (
-    <div
-      className={`${s.WarningLineWrapper} ${(!disable && hasMaxCol) ? s.WarningEnable : ''}`}
-      style={{
-        display: maxWindowPerLine === null ? 'none' : '',
-        left
-      }}
-    >
-      <div className={s.WarningLine}></div>
-      <div className={s.WarningDescription}>超过屏幕所能并列显示的窗口数</div>
-    </div>
+    <Transition in={hasMaxCol} timeout={DURATION}>
+      {state => (
+        <div
+          className={`${s.WarningLineWrapper} ${(!disable && hasMaxCol) ? s.WarningEnable : ''}`}
+          style={{
+            display: maxWindowPerLine === null ? 'none' : '',
+            ...transitionStyles[state],
+          }}
+        >
+          <div className={s.WarningLine}></div>
+          <div className={s.WarningDescription}>超过屏幕所能并列显示的窗口数</div>
+        </div>
+      )}
+    </Transition>
   )
 }

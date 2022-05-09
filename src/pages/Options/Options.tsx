@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import pkg from '../../../package.json'
 import { load, Options, save } from '../../options'
 
@@ -10,6 +10,48 @@ import Loading from '../../components/Loading'
 import Failure from './Component/Failure'
 
 import s from './Options.module.css'
+import { SiteMatrix } from '../../options/v1'
+
+function calcMaxColumn(siteMatrix: SiteMatrix) {
+  return siteMatrix.reduce((p, c) => Math.max(p, c.length), 0)
+}
+
+function useAdjustMarginCenter(siteMatrix: SiteMatrix) {
+  const ref = useRef<HTMLDivElement>(null)
+  const [, setMaxColumn] = useState(calcMaxColumn(siteMatrix))
+
+  function adjust(ref: React.RefObject<HTMLDivElement>) {
+    const el = ref.current
+    if (el) {
+      const innerWidth = el.offsetWidth
+      if (innerWidth < window.innerWidth) {
+        el.style['marginLeft'] = `calc((${window.innerWidth}px / 2) - (${innerWidth}px / 2))`
+      }
+    }
+  }
+
+  useEffect(() => {
+    const el = ref.current
+
+    if (el) {
+      el.style['transition'] = 'margin-left 382ms'
+    }
+
+    setMaxColumn(latestColumn => {
+      const newColumn = calcMaxColumn(siteMatrix)
+
+      if (newColumn > latestColumn) {
+        adjust(ref)
+      } else {
+        setTimeout(() => adjust(ref), 382)
+      }
+
+      return newColumn
+    })
+  }, [ref, siteMatrix])
+
+  return ref
+}
 
 export default function OptionsPage() {
   const [options, setOptions] = useState<Options>()
@@ -26,9 +68,11 @@ export default function OptionsPage() {
     refresh()
   }, [refresh])
 
+  const innerEl = useAdjustMarginCenter(options ? options.site_matrix : [])
+
   return (
     <div className={s.OptionsContainer}>
-      <div className={s.OptionsInner}>{
+      <div ref={innerEl} className={s.OptionsInner}>{
         useMemo(() => {
           if (failure) {
             return <Failure error={failure} />
