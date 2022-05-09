@@ -21,7 +21,7 @@ export const getColListStyle = (isDraggingOver: boolean): React.CSSProperties =>
   display: "flex",
   flexGrow: 2,
   // background: isDraggingOver ? "lightblue" : "",
-  padding: 4,
+  // padding: 4,
   // width: 350
 })
 

@@ -5,7 +5,7 @@ console.log('TypeScriptBackground')
 
 const { ResourceType, RuleActionType } = chrome.declarativeNetRequest
 
-const { id: chrome_id } = chrome.runtime
+// const { id: chrome_id } = chrome.runtime
 // const search_entry_url = chrome.runtime.getURL('/search-entry.html')
 
 // chrome.declarativeNetRequest.updateDynamicRules({
@@ -45,7 +45,7 @@ async function regRules() {
       id: 1,
       priority: 1,
       condition: {
-        urlFilter: `${chrome_id}`,
+        urlFilter: `${cfg.MOBILE_PAGE_IDENTIFIER}`,
         resourceTypes: [
           ResourceType['OTHER'],
           // ResourceType['WEBBUNDLE'],

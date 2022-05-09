@@ -1,5 +1,5 @@
-import { map, curry, range, nth } from 'ramda'
-import { SiteMatrix, SiteRow, toSearchURL } from '../../options/site-matrix'
+import { map, curry, range, nth, compose } from 'ramda'
+import { SiteMatrix, SiteRow, toSearchURL, addMobileIdentifier } from '../../options/site-matrix'
 
 type GetSearchURL = (keyword: string) => string
 type SearchRow = Array<GetSearchURL>
@@ -16,7 +16,12 @@ function fillSearchRow(
       if (site_opt === undefined) {
         return curry(toSearchURL)(plain_window_url_pattern)
       } else {
-        return curry(toSearchURL)(site_opt.url_pattern)
+        const toUrl = curry(toSearchURL)(site_opt.url_pattern)
+        if (site_opt.enable_mobile) {
+          return compose(addMobileIdentifier, toUrl)
+        } else {
+          return toUrl
+        }
       }
     },
     range(0, max_window_per_line)

@@ -1,6 +1,7 @@
+import { map } from 'ramda'
 import { randomString } from '../utils/common'
 
-const randomUrlPattern = () => `http://localhost:2070/${randomString(16, 1)}[[]]&${chrome_id}`
+const randomUrlPattern = () => `http://localhost:2070/${randomString(16, 1)}${cfg.KEYWORD_REPLACEHOLDER}`
 
 const { id: chrome_id } = chrome.runtime
 
@@ -20,27 +21,36 @@ const cfg = Object.freeze({
 
   SEARCH_FOCUS_INTERVAL: 300,
 
-  ENVIRMONMENT_STORAGE_KEY: 'poker-env',
+  ENVIRONMENT_STORAGE_KEY: 'poker-env',
   OPTIONS_STORAGE_KEY: 'poker-options',
 
-  PLAIN_WINDOW_URL_PATTERN: chrome.runtime.getURL('/plainWindow.html?q=[[]]'),
+  KEYWORD_REPLACEHOLDER: '%poker%',
 
-  PRESET_SEARCH_LIST: Object.freeze([
-    { url_pattern: `https://mobile.twitter.com/search?q=[[]]&src=typeahead_click&${chrome_id}` },
-    { url_pattern: `https://www.google.com/search?q=[[]]&${chrome_id}` },
-    { url_pattern: `https://pache.blog/tag/[[]]?${chrome_id}` },
-    { url_pattern: `https://www.vgtime.com/search/list.jhtml?keyword=[[]]#${chrome_id}` },
-    { url_pattern: `https://www.zhihu.com/search?type=content&q=[[]]&${chrome_id}` },
-    { url_pattern: randomUrlPattern() },
-    { url_pattern: randomUrlPattern() },
-    { url_pattern: randomUrlPattern() },
-    { url_pattern: randomUrlPattern() },
-    { url_pattern: randomUrlPattern() },
-    { url_pattern: randomUrlPattern() },
-    { url_pattern: randomUrlPattern() },
-    { url_pattern: randomUrlPattern() },
-    { url_pattern: randomUrlPattern() },
-    { url_pattern: randomUrlPattern() },
-  ])
+  MOBILE_PAGE_IDENTIFIER: chrome_id,
+
+  get PLAIN_WINDOW_URL_PATTERN() {
+    return chrome.runtime.getURL(`/plainWindow.html?q=${cfg.KEYWORD_REPLACEHOLDER}`)
+  },
+
+  get PRESET_SEARCH_LIST() {
+    return map(url_pattern => ({ url_pattern }), [
+      `https://mobile.twitter.com/search?q=${cfg.KEYWORD_REPLACEHOLDER}&src=typeahead_click`,
+      `https://www.google.com/search?q=${cfg.KEYWORD_REPLACEHOLDER}`,
+      `https://pache.blog/tag/${cfg.KEYWORD_REPLACEHOLDER}`,
+      `https://www.vgtime.com/search/list.jhtml?keyword=${cfg.KEYWORD_REPLACEHOLDER}`,
+      `https://www.zhihu.com/search?type=content&q=${cfg.KEYWORD_REPLACEHOLDER}`,
+      `https://www.google.com/maps/search/${cfg.KEYWORD_REPLACEHOLDER}`,
+      randomUrlPattern(),
+      randomUrlPattern(),
+      randomUrlPattern(),
+      randomUrlPattern(),
+      randomUrlPattern(),
+      randomUrlPattern(),
+      randomUrlPattern(),
+      randomUrlPattern(),
+      randomUrlPattern(),
+      randomUrlPattern(),
+    ])
+  }
 })
 export default cfg

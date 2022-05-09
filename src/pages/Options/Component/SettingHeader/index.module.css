@@ -1,23 +1,24 @@
 .SettingHeader {
   display: flex;
-  justify-content: flex-start;
+  justify-content: space-between;
   align-items: center;
+  padding: 30px 0;
 }
+
 .Left {
   font-size: 20px;
 }
+
 .Logo {
   display: block;
-  --logo-size: 100px;
+  --logo-size: 76px;
   width: var(--logo-size);
   height: var(--logo-size);
   min-width: var(--logo-size);
   min-height: var(--logo-size);
-
-  margin-right: 20px;
 }
+
 .Right {
-  flex-grow: 2;
   font-size: 20px;
 }
 
@@ -25,6 +26,7 @@
   font-size: 28px;
   line-height: 28px;
 }
+
 .Version {
   margin-top: 8px;
   line-height: 20px;

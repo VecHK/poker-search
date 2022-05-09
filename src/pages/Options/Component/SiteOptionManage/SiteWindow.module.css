@@ -13,7 +13,9 @@
   justify-content: center;
   width: 128px;
   height: 156px;
-  box-shadow: 0 0 0 2px grey;
+  box-sizing: border-box;
+  border: solid 2px grey;
+
   background-color: white;
   position: relative;
 }
@@ -23,14 +25,11 @@
   min-width: 80px;
   height: 80px;
   min-height: 80px;
-  background-color: grey;
   margin: auto;
 }
 
 .UrlPattern {
-  /* text-decoration: underline; */
   flex-grow: 2;
-  /* border-bottom: solid 1px grey; */
   line-height: 20px;
   width: 128px;
   max-width: 128px;

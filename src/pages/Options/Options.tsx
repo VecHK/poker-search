@@ -1,15 +1,71 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import pkg from '../../../package.json'
 import { load, Options, save } from '../../options'
-import './Options.css'
 
 import SettingHeader from './Component/SettingHeader'
 import SettingItem from './Component/SettingItem'
-import SettingLink from './Component/SettingLink'
 import SettingSwitch from './Component/SettingSwitch'
 import SiteOptionManage from './Component/SiteOptionManage'
 import Loading from '../../components/Loading'
 import Failure from './Component/Failure'
+
+import s from './Options.module.css'
+import { SiteMatrix } from '../../options/v1'
+
+function calcMaxColumn(siteMatrix: SiteMatrix) {
+  return siteMatrix.reduce((p, c) => Math.max(p, c.length), 0)
+}
+
+function useAdjustMarginCenter(siteMatrix: SiteMatrix) {
+  const ref = useRef<HTMLDivElement>(null)
+  const [, setMaxColumn] = useState(calcMaxColumn(siteMatrix))
+
+  function adjust(ref: React.RefObject<HTMLDivElement>) {
+    const el = ref.current
+    if (el) {
+      const innerWidth = el.offsetWidth
+      if (innerWidth < window.innerWidth) {
+        el.style['marginLeft'] = `calc((${window.innerWidth}px / 2) - (${innerWidth}px / 2))`
+      } else {
+        el.style['marginLeft'] = `0`
+      }
+    }
+  }
+
+  useEffect(() => {
+    const el = ref.current
+
+    if (el) {
+      el.style['transition'] = 'margin-left 382ms'
+    }
+
+    setMaxColumn(latestColumn => {
+      const newColumn = calcMaxColumn(siteMatrix)
+
+      if (newColumn > latestColumn) {
+        adjust(ref)
+      } else {
+        setTimeout(() => adjust(ref), 382)
+      }
+
+      return newColumn
+    })
+  }, [ref, siteMatrix])
+
+  useEffect(() => {
+    let timer: NodeJS.Timeout | undefined = undefined
+    const resizeHandler = () => {
+      timer = setTimeout(() => adjust(ref), 300)
+    }
+    window.addEventListener('resize', resizeHandler)
+    return () => {
+      clearTimeout(timer as unknown as number)
+      window.removeEventListener('resize', resizeHandler)
+    }
+  })
+
+  return ref
+}
 
 export default function OptionsPage() {
   const [options, setOptions] = useState<Options>()
@@ -26,9 +82,11 @@ export default function OptionsPage() {
     refresh()
   }, [refresh])
 
+  const innerEl = useAdjustMarginCenter(options ? options.site_matrix : [])
+
   return (
-    <div className="OptionsContainer">
-      <div className="OptionsInner">{
+    <div className={s.OptionsContainer}>
+      <div ref={innerEl} className={s.OptionsInner}>{
         useMemo(() => {
           if (failure) {
             return <Failure error={failure} />
@@ -37,34 +95,52 @@ export default function OptionsPage() {
           } else {
             return (
               <>
-                <div className="OptionsCol" style={{ minWidth: '590px' }}>
+                <header className={s.OptionsHeader}>
                   <SettingHeader version={pkg.version} />
+                </header>
+                <div className={s.OptionsCols}>
+                  <div className={s.OptionsCol} style={{ minWidth: '590px' }}>
+                    <SettingItem>
+                      <SettingSwitch
+                        title="使用 Poker 关键字启动搜索"
+                        description="在搜索栏中输入「Poker + 空格 + 想要搜索的内容」才使用发牌手"
+                      />
+                    </SettingItem>
 
-                  <SettingItem><SettingLink title="关于" /></SettingItem>
-                  <SettingItem><SettingLink title="使用方式" /></SettingItem>
+                    <SettingItem title="使用方法介绍">
+                      <p>使用方法介绍</p>
+                      <p>使用方法介绍</p>
+                      <p>使用方法介绍</p>
+                    </SettingItem>
 
-                  <SettingItem>
-                    <SettingSwitch
-                      title="使用 Poker 关键字启动搜索"
-                      description="在搜索栏中输入「Poker + 空格 + 想要搜索的内容」才使用发牌手"
+                    <SettingItem title="关于">
+                      <p>
+                        <a href="https://github.com/vechk/poker/">https://github.com/vechk/poker/</a>
+                      </p>
+                      <p>
+                        <a href="https://github.com/vechk/poker/">https://github.com/vechk/poker/</a>
+                      </p>
+                      <p>
+                        <a href="https://github.com/vechk/poker/">https://github.com/vechk/poker/</a>
+                      </p>
+                    </SettingItem>
+                  </div>
+                  <div className={s.OptionsCol}>
+                    <SiteOptionManage
+                      siteMatrix={options.site_matrix}
+                      onChange={(newMatrix) => {
+                        console.log('matrix change', newMatrix)
+                        setOptions({
+                          ...options,
+                          site_matrix: newMatrix
+                        })
+                        save({
+                          ...options,
+                          site_matrix: newMatrix
+                        })
+                      }}
                     />
-                  </SettingItem>
-                </div>
-                <div className="OptionsCol">
-                  <SiteOptionManage
-                    siteMatrix={options.site_matrix}
-                    onChange={(newMatrix) => {
-                      console.log('matrix change', newMatrix)
-                      setOptions({
-                        ...options,
-                        site_matrix: newMatrix
-                      })
-                      save({
-                        ...options,
-                        site_matrix: newMatrix
-                      })
-                    }}
-                  />
+                  </div>
                 </div>
               </>
             )

@@ -6,7 +6,7 @@ import { generateExampleOption, SiteMatrix } from '../../../../options/site-matr
 import SettingItem from '../SettingItem'
 import { SiteWindowFrame } from './SiteWindow'
 
-import plusSrc from './plus.svg' 
+import plusSrc from './plus.svg'
 
 type Pos = Readonly<[number, number]>
 
@@ -18,7 +18,7 @@ export default function SiteOptionManage({ siteMatrix, onChange }: {
 
   const newRowNode = useMemo(() => {
     if (edit) {
-      return null  
+      return null
     } else {
       return (
         <SettingItem>
@@ -29,7 +29,7 @@ export default function SiteOptionManage({ siteMatrix, onChange }: {
                 src={plusSrc}
                 alt="add site option"
                 onClick={() => {
-                  const newMatrix = [...siteMatrix, [generateExampleOption()]]
+                  const newMatrix = [[generateExampleOption()], ...siteMatrix]
                   onChange(newMatrix)
                   setEdit([newMatrix.length - 1, 0])
                 }}
@@ -44,10 +44,11 @@ export default function SiteOptionManage({ siteMatrix, onChange }: {
   return (
     <div className={s.SiteOptionManage}>
       <DragRows
-        siteMatrix={siteMatrix}
         edit={edit}
         setEdit={setEdit}
+        siteMatrix={[...siteMatrix].reverse()}
         onChange={(newMatrix) => {
+          newMatrix = [...newMatrix].reverse()
           const hasEmptyRow = !newMatrix.every(row => row.length)
           if (hasEmptyRow) {
             onChange( newMatrix.filter(row => row.length) )

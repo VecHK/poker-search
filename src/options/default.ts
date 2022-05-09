@@ -5,7 +5,7 @@ export default function getDefaultOptions(
   append: Partial<Options> = {}
 ): Options {
   return {
-    version: 1,
+    version: 2,
     site_matrix: getDefaultSiteMatrix(),
     ...append,
   }

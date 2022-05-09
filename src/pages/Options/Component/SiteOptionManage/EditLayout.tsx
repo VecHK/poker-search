@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react'
 import { SiteOption } from '../../../../options/site-matrix'
+import Switch from '../Switch'
 import s from './EditLayout.module.css'
 
 function getFormItem(formData: FormData, name: string) {
@@ -13,13 +14,24 @@ function getFormItem(formData: FormData, name: string) {
   }
 }
 
+function getFormCheckItem(formData: FormData, name: string): boolean {
+  const value = formData.get(name)
+  if ((value === null) || (typeof value === 'string')) {
+    return value === 'on'
+  } else {
+    throw Error(`formData '${name}' value is not a string or null!`)
+  }
+}
+
 function formDataTransform(sourceOption: SiteOption, e: React.FormEvent<HTMLFormElement>): SiteOption {
   e.preventDefault()
 
   const formData = new FormData(e.currentTarget)
+
   return {
     ...sourceOption,
-    url_pattern: getFormItem(formData, 'url_pattern')
+    url_pattern: getFormItem(formData, 'url_pattern'),
+    enable_mobile: getFormCheckItem(formData, 'enable_mobile'),
   }
 }
 
@@ -31,13 +43,9 @@ function validUrlPattern(urlPattern: string): void | never {
   }
 }
 
-function valid(siteOption: SiteOption): true | Error {
-  try {
-    validUrlPattern(siteOption.url_pattern)
-    return true
-  } catch (err) {
-    return err as Error
-  }
+function valid(siteOption: SiteOption): true {
+  validUrlPattern(siteOption.url_pattern)
+  return true
 }
 
 type EditLayoutProps = {
@@ -48,6 +56,7 @@ type EditLayoutProps = {
 export default function EditLayout({ siteOption, onSubmit, onCancel }: EditLayoutProps) {
   const [failure, setFailure] = useState<Error | null>(null)
   const [urlPattern, setUrlPattern] = useState(siteOption.url_pattern)
+  const [enableMobile, setEnableMobile] = useState(siteOption.enable_mobile)
   
   const failureNode = useMemo(() => {
     if (failure) {
@@ -62,13 +71,13 @@ export default function EditLayout({ siteOption, onSubmit, onCancel }: EditLayou
       className={s.EditLayout}
       onSubmit={(e) => {
         e.preventDefault()
-        const newOption = formDataTransform(siteOption, e)
-
-        const res = valid(newOption)
-        if (res === true) {
+        try {
+          const newOption = formDataTransform(siteOption, e)
+          valid(newOption)
           onSubmit(newOption)
-        } else {
-          setFailure(res)
+        } catch (err) {
+          console.error('submit error', err)
+          setFailure(err as Error)
         }
       }}
     >
@@ -80,6 +89,16 @@ export default function EditLayout({ siteOption, onSubmit, onCancel }: EditLayou
             value={ urlPattern }
             onChange={(e) => setUrlPattern(e.target.value)}
             name="url_pattern"
+          />
+        </label>
+        <label className={s.EnableMobile}>
+          <span>启用移动端访问</span>
+          <Switch
+            name="enable_mobile"
+            value={enableMobile}
+            onChange={() => {
+              setEnableMobile(!enableMobile)
+            }}
           />
         </label>
       </div>

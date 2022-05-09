@@ -1,0 +1,43 @@
+.WarningLineWrapper.WarningEnable {
+  opacity: 1;
+}
+.WarningLineWrapper {
+  position: absolute;
+  opacity: 0;
+  transition: opacity 382ms;
+  left: 0px;
+  top: -10px;
+  height: calc(100% + 20px);
+}
+
+.WarningLineWrapper.WarningEnable .WarningLine {
+  transform: translateY(0px);
+}
+
+.WarningLine {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 1px;
+
+  transform: translateY(-38%);
+  
+  background-color: rgba(255, 0, 0, 0.4);
+  transition: transform 382ms;
+}
+
+.WarningLineWrapper.WarningEnable .WarningDescription {
+  left: -6.5px;
+}
+.WarningDescription {
+  position: absolute;
+  top: -18px;
+  left: 6.5px;
+  font-size: 13px;
+  word-break: keep-all;
+  width: 200px;
+
+  color: rgba(255, 0, 0, 0.8);
+  transition: left 382ms;
+}
