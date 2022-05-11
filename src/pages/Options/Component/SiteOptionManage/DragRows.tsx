@@ -42,44 +42,46 @@ function reorderCols(
   source: DraggableLocation,
   destination: DraggableLocation,
 ): SiteMatrix {
-  const sRowNum = Number(source.droppableId)
-  const dRowNum = Number(destination.droppableId)
-  const sRow = nth(sRowNum, siteMatrix)
-  const dRow = nth(dRowNum, siteMatrix)
-  const sColNum = source.index
-  const dColNum = destination.index
+  const s_row = Number(source.droppableId)
+  const d_row = Number(destination.droppableId)
+  const row_src = nth(s_row, siteMatrix)
+  const row_des = nth(d_row, siteMatrix)
 
-  if (!sRow || !dRow) {
-    throw Error('sRow || dRow not found!')
-  } else if (sRowNum === dRowNum) {
-    const newRow = move(sColNum, dColNum, sRow)
-    return update(sRowNum, newRow, siteMatrix)
-  } else {
-    const sCol = nth(sColNum, sRow)
-    if (!sCol) {
-      throw Error('sCol not found!')
+  const s_col = source.index
+  const d_col = destination.index
+
+  if (!row_src || !row_des) {
+    throw Error('row_src/row_des not found!')
+  }
+  else if (s_row === d_row) {
+    const newRow = move(s_col, d_col, row_src)
+    return update(s_row, newRow, siteMatrix)
+  }
+  else {
+    const col_src = nth(s_col, row_src)
+
+    if (!col_src) {
+      throw Error('col_src not found!')
     } else {
-      const dRowNew = insert(dColNum, sCol, dRow)
-      const sRowNew = remove(sColNum, 1, sRow)
-  
-      const newMatrix = update(dRowNum, dRowNew, siteMatrix)
-      return update(sRowNum, sRowNew, newMatrix)
+      const new_row_des = insert(d_col, col_src, row_des)
+      const new_row_src = remove(s_col, 1, row_src)
+
+      const tmp = update(d_row, new_row_des, siteMatrix)
+      return update(s_row, new_row_src, tmp)
     }
   }
 }
 
-const ROW_DRAP = 'ROW_DRAP'
-function isRowDrap(...ids: string[]): boolean {
-  return all(equals(ROW_DRAP))(ids)
-}
+const ROW_DROP = 'ROW_DROP'
+const isRowDrop = all(equals(ROW_DROP))
 
 function reorderRows(
   siteMatrix: SiteMatrix,
   source: DraggableLocation,
   destination: DraggableLocation,
 ): SiteMatrix {
-  if (!isRowDrap(source.droppableId, destination.droppableId)) {
-    throw new Error('current drap is not ROW_DRAP')
+  if (!isRowDrop([source.droppableId, destination.droppableId])) {
+    throw new Error('current drop is not ROW_DROP')
   } else {
     const sRowNum = Number(source.index)
     const dRowNum = Number(destination.index)
@@ -119,11 +121,15 @@ export default function DragRows({
     Object.assign(window, { api })
   }
 
+  function handleDragUpdate(...args: any[]) {
+    console.log(...args)
+  }
+
   return (
     <div className={s.DragRows}>
-      <DragDropContext onDragEnd={onDragEnd} sensors={[useMyCoolSensor]}>
+      <DragDropContext onDragEnd={onDragEnd} sensors={[useMyCoolSensor]} onDragUpdate={handleDragUpdate}>
         <div className={s.DragDropContextInner}>
-          <Droppable droppableId={ROW_DRAP} type="ROWS">
+          <Droppable droppableId={ROW_DROP} type="ROWS">
             {(provided, rowSnapshot) => (
               <div
                 ref={provided.innerRef}
