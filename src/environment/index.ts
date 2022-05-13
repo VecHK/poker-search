@@ -1,12 +1,12 @@
 import cfg from '../config'
-import { storage } from '../utils/storage'
+import InitStorage from '../utils/storage'
 import { calcTitleBarHeight } from './title-bar'
 
 type Environment = {
   titleBarHeight: number
 }
 
-const [ loadStorage, saveStorage ] = storage<Environment>(cfg.ENVIRONMENT_STORAGE_KEY)
+const [ loadStorage, saveStorage ] = InitStorage<Environment>(cfg.ENVIRONMENT_STORAGE_KEY)
 
 export const load = () => loadStorage()
 
