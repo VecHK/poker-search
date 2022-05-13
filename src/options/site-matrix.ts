@@ -1,7 +1,9 @@
+import { nth } from 'ramda'
 import cfg from '../config'
 import { constructMatrix, randomString } from '../utils/common'
+import getIcon from '../utils/get-icon'
 
-import { SiteOption, SiteMatrix, URLPattern, SiteRow } from './v2'
+import { SiteOption, SiteMatrix, URLPattern, SiteRow } from './v2-type'
 export { SiteOption, SiteMatrix, URLPattern, SiteRow }
 
 export function toSearchURL(urlPattern: URLPattern, keyword: string) {
@@ -27,38 +29,66 @@ function generateId() {
 export function generateExampleOption(): SiteOption {
   return {
     id: generateId(),
-    icon: '_DEFAULT_ICON_',
+    icon: cfg.DEFAULT_SITE_ICON,
     name: '_DEFAULT_NAME_',
     url_pattern: `https://example.com?search=${cfg.KEYWORD_REPLACEHOLDER}`,
-    enable_mobile: true,
+    enable_mobile: cfg.DEFAULT_ENABLE_MOBILE,
   }
 }
 
+// async function loadIcon(url_pattern: string): Promise<string> {
+//   try {
+//     const icon = await getIcon(url_pattern)
+//     if (icon) {
+//       return icon
+//     } else {
+//       return cfg.DEFAULT_SITE_ICON
+//     }
+//   } catch (err) {
+//     console.error('_getIcon Error', err)
+//     return cfg.DEFAULT_SITE_ICON
+//   }
+// }
+
+// export async function createOption({
+//   url_pattern, enable_mobile
+// }: Pick<SiteOption, 'url_pattern' | 'enable_mobile'>): Promise<SiteOption> {
+//   const icon = await loadIcon(url_pattern)
+  
+//   return {
+//     id: generateId(),
+//     icon,
+//     name: '_DEFAULT_NAME_',
+//     url_pattern,
+//     enable_mobile,
+//   }
+// }
+
 export function getDefaultSiteMatrix(): SiteMatrix {
-  const maxWindowPerLine = 8
-  const row = Math.ceil(cfg.PRESET_SEARCH_LIST.length / maxWindowPerLine)
+  const maxWindowPerLine = cfg.DEFAULT_MAX_WINDOW_PER_LINE
+  const row = Math.ceil(cfg.DEFAULT_SEARCH_LIST.length / maxWindowPerLine)
 
   return constructMatrix(
     row,
     maxWindowPerLine,
     (row, col) => {
       const idx = (row * maxWindowPerLine) + col
-      const search = cfg.PRESET_SEARCH_LIST[idx]
-      if (search) {
+      const url_pattern = nth(idx, cfg.DEFAULT_SEARCH_LIST)
+      if (url_pattern) {
         return {
           id: generateId(),
-          icon: '_DEFAULT_ICON_',
+          icon: null,
           name: '_DEFAULT_NAME_',
-          enable_mobile: true,
-          ...search,
+          enable_mobile: cfg.DEFAULT_ENABLE_MOBILE,
+          url_pattern,
         }
       } else {
         return {
           id: generateId(),
-          icon: '_DEFAULT_ICON_',
+          icon: null,
           name: '_DEFAULT_NAME_',
-          enable_mobile: true,
-          url_pattern: cfg.PLAIN_WINDOW_URL_PATTERN
+          enable_mobile: cfg.DEFAULT_ENABLE_MOBILE,
+          url_pattern: cfg.PLAIN_SEARCH_WINDOW_URL_PATTERN
         }
       }
     }

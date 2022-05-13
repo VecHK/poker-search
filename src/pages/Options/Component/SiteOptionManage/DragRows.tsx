@@ -11,7 +11,7 @@ import {
   SensorAPI
 } from 'react-beautiful-dnd'
 import Cols from './DragCols'
-import { SiteMatrix } from '../../../../options/site-matrix'
+import { SiteMatrix, SiteOption } from '../../../../options/site-matrix'
 import SettingItem from '../SettingItem'
 import s from './DragRows.module.css'
 import WarningLine from './WarningLine'
@@ -95,12 +95,14 @@ type DragMatrixProps = {
   edit: Pos | null,
   setEdit: React.Dispatch<React.SetStateAction<Pos | null>>
   siteMatrix: SiteMatrix
+  onUpdate: (id: SiteOption['id'], newOption: SiteOption) => void
   onChange: (s: SiteMatrix) => void
 }
 export default function DragRows({
   edit,
   setEdit,
   siteMatrix,
+  onUpdate,
   onChange
 }: DragMatrixProps) {
   const onDragEnd = ({ type, source, destination }: DropResult) => {
@@ -161,6 +163,11 @@ export default function DragRows({
                               row={row}
                               edit={edit}
                               isEditMode={Boolean(edit)}
+                              onChange={(id, newOption) => {
+                                // const newRow = update(colNum, newOption, row)
+                                // const newMatrix = update(rowNum, newRow, siteMatrix)
+                                onUpdate(id, newOption)
+                              }}
                               onSubmitEdit={(colNum, newOption) => {
                                 const newRow = update(colNum, newOption, row)
                                 const newMatrix = update(rowNum, newRow, siteMatrix)

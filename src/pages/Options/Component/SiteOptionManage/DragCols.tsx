@@ -33,6 +33,7 @@ export default function Cols(props: {
   edit: Pos
   isEditMode: boolean
   onCancelEdit(): void
+  onChange(id: SiteOption['id'], s: SiteOption): void
   onSubmitEdit(colNum: number, s: SiteOption): void
   onClickEdit(colNum: number): void
   onClickRemove(colNum: number): void
@@ -70,6 +71,7 @@ export default function Cols(props: {
                       isBlur={props.isEditMode && !equals(props.edit, [props.rowNum, colNum])}
                       onCancelEdit={props.onCancelEdit}
                       siteOption={col}
+                      onChange={props.onChange}
                       onSubmit={(newOption) => {
                         props.onSubmitEdit(colNum, newOption)
                       }}

@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react'
 import s from './index.module.css'
 
 import DragRows from './DragRows'
-import { generateExampleOption, SiteMatrix } from '../../../../options/site-matrix'
+import { generateExampleOption, SiteMatrix, SiteOption } from '../../../../options/site-matrix'
 import SettingItem from '../SettingItem'
 import { SiteWindowFrame } from './SiteWindow'
 
@@ -10,8 +10,9 @@ import plusSrc from './plus.svg'
 
 type Pos = Readonly<[number, number]>
 
-export default function SiteOptionManage({ siteMatrix, onChange }: {
+export default function SiteOptionManage({ siteMatrix, onUpdate, onChange }: {
   siteMatrix: SiteMatrix
+  onUpdate: (id: SiteOption['id'], option: SiteOption) => void
   onChange: (newMatrix: SiteMatrix) => void
 }) {
   const [edit, setEdit] = useState<Pos | null>(null)
@@ -47,6 +48,7 @@ export default function SiteOptionManage({ siteMatrix, onChange }: {
         edit={edit}
         setEdit={setEdit}
         siteMatrix={[...siteMatrix].reverse()}
+        onUpdate={onUpdate}
         onChange={(newMatrix) => {
           newMatrix = [...newMatrix].reverse()
           const hasEmptyRow = !newMatrix.every(row => row.length)

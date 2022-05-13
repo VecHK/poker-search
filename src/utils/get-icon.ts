@@ -1,4 +1,5 @@
 import { last } from 'ramda'
+import contentTypeParser from 'whatwg-mimetype'
 
 export function appendPath(path: string, relative_path: string): string {
   if (last(path) === '/') {
@@ -41,11 +42,11 @@ const SEARCH_RULES: Rule[] = [
   { selector: 'link[rel="icon"]', iconSrcAttr: 'href' },
   { selector: 'link[rel="shortcut icon"]', iconSrcAttr: 'href' },
 ]
-function getIconFromHTML(html: string, url: string): string | null {
-  const el = document.createElement('html')
-  el.innerHTML = html
+function parseIconFromHTML(html: string, url: string): string | null {
+  const dp = new DOMParser()
+  const doc = dp.parseFromString(html, 'text/html')
 
-  const $ = (s: string) => el.querySelector(s)
+  const $ = (s: string) => doc.querySelector(s)
 
   for (const rule of SEARCH_RULES) {
     const el = $(rule.selector)
@@ -59,34 +60,45 @@ function getIconFromHTML(html: string, url: string): string | null {
   return null
 }
 
+async function getIconFromHTML(url: string): Promise<string | null> {
+  const res = await fetch(url)
+  if (res.status === 404) {
+    return null
+  } else {
+    const blob = await res.blob()
+    const html = await blob.text()
+    return parseIconFromHTML(html, url)
+  }
+}
+
+function contentTypeIsImage(res: Response): boolean {
+  const raw_content_type = res.headers.get('content-type')
+  if (raw_content_type === null) {
+    throw Error('failure content type')
+  } else {
+    const ct = contentTypeParser.parse(raw_content_type)
+    if (ct === null) {
+      throw Error('content type parse failure')
+    } else {
+      return ct.type === 'image'
+    } 
+  }
+}
+
 async function getIconFromOrigin(origin: string): Promise<string | null> {
   const favicon_url = `${origin}/favicon.ico`
-  try {
-    const res = await fetch(favicon_url)
-    if (res.status !== 404) {
-      return favicon_url
-    } else {
-      return null
-    }
-  } catch {
+  const res = await fetch(favicon_url)
+  if ((res.status !== 404) && contentTypeIsImage(res)) {
+    return favicon_url
+  } else {
     return null
   }
 }
 
-function getIconByGoogle(url: string, size: number) {
-  url = encodeURIComponent(url)
-  return `https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&size=${size}&url=${url}`
-}
-
-const SITE_ICON_SIZE = 96
 export default async function getIcon(url: string): Promise<string | null> {
-  const res = await fetch(url)
-  const blob = await res.blob()
-  const html = await blob.text()
-
   const { origin } = new URL(url)
 
-  return getIconFromHTML(html, url) ||
+  return (await getIconFromHTML(url)) ||
     (await getIconFromOrigin(origin)) ||
-    getIconByGoogle(url, SITE_ICON_SIZE)
+    null
 }

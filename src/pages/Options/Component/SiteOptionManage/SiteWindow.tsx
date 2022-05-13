@@ -1,11 +1,11 @@
 import React, { ReactNode, useEffect, useMemo, useState } from 'react'
-import { SiteOption, toSearchURL } from '../../../../options/site-matrix'
+import { SiteOption } from '../../../../options/site-matrix'
 import s from './SiteWindow.module.css'
 
 import RemoveIconSrc from './remove.svg'
 import EditIconSrc from './edit.svg'
 import EditLayout from './EditLayout'
-import loadIcon from '../../../../utils/get-icon'
+import SiteIcon from './SiteIcon'
 
 export function SiteWindowFrame(props: {
   isEdit?: boolean
@@ -24,31 +24,6 @@ export function SiteWindowFrame(props: {
   )
 }
 
-const iconSrcStorage = Object.create(null)
-
-function SiteIcon({ urlPattern }: { urlPattern: string }) {
-  const [iconSrc, setIconSrc] = useState<null | string>(null)
-  
-  useEffect(() => {
-    Object.assign(window, { loadIcon, toSearchURL })
-    if (!iconSrcStorage[urlPattern]) {
-      loadIcon(toSearchURL(urlPattern, 'hello')).then(iconSrc => {
-        iconSrcStorage[urlPattern] = iconSrc
-        setIconSrc(() => iconSrcStorage[urlPattern])
-      })
-    }
-  }, [urlPattern])
-
-  let src = iconSrcStorage[urlPattern]
-  if (!src) {
-    src = iconSrc
-  }
-
-  return useMemo(() => (
-    <img style={{ width: '100%' }} src={src} alt="SiteIcon" />
-  ), [src])
-}
-
 function urlToDomain(url: string): string {
   const u = new URL(url)
   return u.hostname
@@ -58,6 +33,7 @@ type SiteWindowProps = {
   isEdit: boolean
   isBlur: boolean
   siteOption: SiteOption
+  onChange(id: SiteOption['id'], s: SiteOption): void
   onSubmit(s: SiteOption): void
   onCancelEdit(): void
   onClickRemove(): void
@@ -69,6 +45,7 @@ export default function SiteWindow({
   isBlur,
   siteOption,
   onClickRemove,
+  onChange,
   onSubmit,
   onClickEdit,
   onCancelEdit
@@ -104,9 +81,18 @@ export default function SiteWindow({
   return (
     <SiteWindowFrame isEdit={isEdit} isBlur={isBlur}>
       <div className={s.Above}>
-        <div className={s.SiteIcon}>
-          <SiteIcon urlPattern={siteOption.url_pattern} />
-        </div>
+        <SiteIcon
+          src={siteOption.icon}
+          urlPattern={siteOption.url_pattern}
+          onNewIconSrc={newSrc => {
+            console.log('onNewIconSrc', newSrc)
+            onChange(siteOption.id, {
+              ...siteOption,
+              icon: newSrc,
+            })
+          }}
+        />
+          
         <div className={s.UrlPattern}>
           {urlToDomain(siteOption.url_pattern)}
         </div>

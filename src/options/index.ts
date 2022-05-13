@@ -2,9 +2,11 @@ import cfg from '../config'
 import { storage } from '../utils/storage'
 import getDefaultOptions from './default'
 
-import { OptionsV1 } from './v1'
-import { OptionsV2, updater as v2Updater } from './v2'
+import { OptionsV1 } from './v1-type'
+import { OptionsV2 } from './v2-type'
+import { updater as v2Updater } from './v2'
 const CURRENT_VERSION = 2
+export * from './v2-type'
 export type Options = OptionsV2
 export type OptionsList = OptionsV1 | OptionsV2
 
@@ -47,7 +49,7 @@ export async function load(): Promise<Options> {
 export const save = saveStorage
 
 export async function init(append: Partial<Options>) {
-  const default_options = getDefaultOptions(append)
+  const default_options = await getDefaultOptions(append)
   await save(default_options)
   return load()
 }
