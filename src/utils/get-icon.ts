@@ -53,8 +53,6 @@ function getIconFromHTML(html: string, url: string): string | null {
       const icon_src = el.getAttribute(rule.iconSrcAttr)
       if (icon_src) {
         return toURL(icon_src, url)
-      } else {
-        return null
       }
     }
   }
