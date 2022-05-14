@@ -4,3 +4,32 @@
   margin: 0px 8px;
   /* padding: 0 8px; */
 }
+
+.SiteOptionList {
+  display: flex;
+}
+
+.SiteOption {
+  display: block;
+  opacity: 1;
+  transition: opacity 200ms, width 382ms;
+}
+
+.SiteOptionEnter {}
+.SiteOptionEnterActive {}
+.SiteOptionEnterDone {}
+.SiteOptionExit {
+  opacity: 0;
+  --normal-width: 128px;
+  --horizontal-gap: 8px;
+  width: calc(var(--normal-width) + var(--horizontal-gap) * 2);
+}
+.SiteOptionExitActive {
+  opacity: 0;
+  width: 0px;
+}
+.SiteOptionExitDone {
+  opacity: 0;
+  width: 0px;
+  display: none;
+}
