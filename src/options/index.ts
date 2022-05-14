@@ -49,7 +49,7 @@ export async function load(): Promise<Options> {
 export const save = saveStorage
 
 export async function init(append: Partial<Options>) {
-  const default_options = await getDefaultOptions(append)
+  const default_options = getDefaultOptions(append)
   await save(default_options)
   return load()
 }

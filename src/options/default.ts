@@ -1,12 +1,12 @@
 import { Options } from './'
 import { getDefaultSiteMatrix } from './site-matrix'
 
-export default async function getDefaultOptions(
+export default function getDefaultOptions(
   append: Partial<Options> = {}
-): Promise<Options> {
+): Options {
   return {
     version: 2,
-    site_matrix: await getDefaultSiteMatrix(),
+    site_matrix: getDefaultSiteMatrix(),
     ...append,
   }
 }
