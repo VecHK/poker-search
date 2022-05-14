@@ -7,6 +7,7 @@ import SettingItem from '../SettingItem'
 import { SiteWindowFrame } from './SiteWindow'
 
 import plusSrc from './plus.svg'
+import { nth, update } from 'ramda'
 
 type Pos = Readonly<[number, number]>
 
@@ -49,13 +50,23 @@ export default function SiteOptionManage({ siteMatrix, onUpdate, onChange }: {
         setEdit={setEdit}
         siteMatrix={[...siteMatrix].reverse()}
         onUpdate={onUpdate}
-        onChange={(newMatrix) => {
-          newMatrix = [...newMatrix].reverse()
+        onChange={(manageMatrix) => {
+          let newMatrix = [...manageMatrix].reverse()
           const hasEmptyRow = !newMatrix.every(row => row.length)
           if (hasEmptyRow) {
             onChange( newMatrix.filter(row => row.length) )
           } else {
             onChange(newMatrix)
+          }
+        }}
+        onClickAdd={(rowFloor) => {
+          const manageMatrix = [...siteMatrix].reverse()
+          const row = nth(rowFloor, manageMatrix)
+          if (row !== undefined) {
+            const newRow = [...row, generateExampleOption()]
+            const newMatrix = update(rowFloor, newRow, manageMatrix)
+            onChange([...newMatrix].reverse())
+            setEdit([rowFloor, newRow.length - 1])
           }
         }}
       />
