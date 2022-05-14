@@ -164,8 +164,6 @@ export default function DragRows({
                               edit={edit}
                               isEditMode={Boolean(edit)}
                               onChange={(id, newOption) => {
-                                // const newRow = update(colNum, newOption, row)
-                                // const newMatrix = update(rowNum, newRow, siteMatrix)
                                 onUpdate(id, newOption)
                               }}
                               onSubmitEdit={(colNum, newOption) => {

@@ -36,34 +36,6 @@ export function generateExampleOption(): SiteOption {
   }
 }
 
-// async function loadIcon(url_pattern: string): Promise<string> {
-//   try {
-//     const icon = await getIcon(url_pattern)
-//     if (icon) {
-//       return icon
-//     } else {
-//       return cfg.DEFAULT_SITE_ICON
-//     }
-//   } catch (err) {
-//     console.error('_getIcon Error', err)
-//     return cfg.DEFAULT_SITE_ICON
-//   }
-// }
-
-// export async function createOption({
-//   url_pattern, enable_mobile
-// }: Pick<SiteOption, 'url_pattern' | 'enable_mobile'>): Promise<SiteOption> {
-//   const icon = await loadIcon(url_pattern)
-  
-//   return {
-//     id: generateId(),
-//     icon,
-//     name: '_DEFAULT_NAME_',
-//     url_pattern,
-//     enable_mobile,
-//   }
-// }
-
 export function getDefaultSiteMatrix(): SiteMatrix {
   const maxWindowPerLine = cfg.DEFAULT_MAX_WINDOW_PER_LINE
   const row = Math.ceil(cfg.DEFAULT_SEARCH_LIST.length / maxWindowPerLine)

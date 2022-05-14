@@ -31,7 +31,6 @@ const cfg = Object.freeze({
     return chrome.runtime.getURL(`/plainWindow.html?q=${cfg.KEYWORD_REPLACEHOLDER}`)
   },
 
-  // DEFAULT_SITE_ICON: 'https://pache.blog/test_pics/7.jpg',
   get DEFAULT_SITE_ICON() {
     return chrome.runtime.getURL(`/default-siteicon.png`)
   },

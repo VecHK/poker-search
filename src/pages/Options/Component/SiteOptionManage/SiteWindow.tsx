@@ -85,7 +85,6 @@ export default function SiteWindow({
           src={siteOption.icon}
           urlPattern={siteOption.url_pattern}
           onNewIconSrc={newSrc => {
-            console.log('onNewIconSrc', newSrc)
             onChange(siteOption.id, {
               ...siteOption,
               icon: newSrc,
