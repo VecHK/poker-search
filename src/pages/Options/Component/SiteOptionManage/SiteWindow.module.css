@@ -1,23 +1,32 @@
-.SiteWindowFrame.IsEdit {
-  width: 384px;
-}
-
 .SiteWindowFrame.IsBlur {
   opacity: 0.5;
 }
 
 .SiteWindowFrame {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  width: 128px;
-  height: 156px;
+  --normal-width: 128px;
+  --edit-width: 384px;
+  --normal-height: 156px;
+
+  height: var(--normal-height);
   box-sizing: border-box;
   border: solid 2px grey;
 
   background-color: white;
   position: relative;
+  overflow: hidden;
+}
+
+.NormalChildren {
+  width: var(--normal-width);
+  min-width: var(--normal-width);
+  max-width: var(--normal-width);
+
+  height: var(--normal-height);
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
 .UrlPattern {
@@ -43,4 +52,47 @@
   width: 24px;
   height: 24px;
   margin: 0 4px;
+}
+
+.EditChildrenInner {
+  width: var(--edit-width);
+  min-width: var(--edit-width);
+  max-width: var(--edit-width);
+
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+}
+
+.EditChildren {
+  transition: opacity 382ms, width 382ms;
+  display: none;
+  width: var(--normal-width);
+}
+.EditChildrenEnter {
+  display: block;
+  opacity: 0;
+}
+.EditChildrenEnterActive {
+  opacity: 1;
+  width: var(--edit-width);
+}
+.EditChildrenEnterDone {
+  opacity: 1;
+  display: block;
+  width: var(--edit-width);
+}
+.EditChildrenExit {
+  display: block;
+  opacity: 0;
+  width: var(--normal-width);
+}
+.EditChildrenExitActive {
+  display: block;
+  opacity: 0;
+  width: var(--normal-width);
+}
+.EditChildrenExitDone {
+  opacity: 0;
 }
