@@ -72,9 +72,11 @@ export default function EditLayout({ siteOption, onSubmit, onCancel }: EditLayou
       onSubmit={(e) => {
         e.preventDefault()
         try {
-          const newOption = formDataTransform(siteOption, e)
-          valid(newOption)
-          onSubmit(newOption)
+          if (siteOption !== null) {
+            const newOption = formDataTransform(siteOption, e)
+            valid(newOption)
+            onSubmit(newOption)
+          }
         } catch (err) {
           console.error('submit error', err)
           setFailure(err as Error)

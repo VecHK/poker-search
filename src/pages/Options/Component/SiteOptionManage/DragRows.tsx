@@ -97,13 +97,15 @@ type DragMatrixProps = {
   siteMatrix: SiteMatrix
   onUpdate: (id: SiteOption['id'], newOption: SiteOption) => void
   onChange: (s: SiteMatrix) => void
+  onClickAdd: (rowNum: number) => void
 }
 export default function DragRows({
   edit,
   setEdit,
   siteMatrix,
   onUpdate,
-  onChange
+  onChange,
+  onClickAdd,
 }: DragMatrixProps) {
   const onDragEnd = ({ type, source, destination }: DropResult) => {
     if (!destination) {
@@ -184,6 +186,7 @@ export default function DragRows({
                                 const newMatrix = update(rowNum, newRow, siteMatrix)
                                 onChange(newMatrix)
                               }}
+                              onClickAdd={() => onClickAdd(rowNum)}
                             />
                           </div>
                           <div className={`${s.Floor} ${rowSnapshot.isDraggingOver ? s.isDraggingOver : ''}`}>{siteMatrix.length - (rowNum + 1) + 1}F</div>

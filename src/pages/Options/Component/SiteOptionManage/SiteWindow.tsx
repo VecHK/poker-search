@@ -6,20 +6,49 @@ import RemoveIconSrc from './remove.svg'
 import EditIconSrc from './edit.svg'
 import EditLayout from './EditLayout'
 import SiteIcon from './SiteIcon'
+import { CSSTransition } from 'react-transition-group'
 
 export function SiteWindowFrame(props: {
   isEdit?: boolean
   isBlur?: boolean
+  editChildren?: ReactNode
   children: ReactNode
 }) {
   const classes = [s.SiteWindowFrame]
 
-  if (props.isEdit) { classes.push(s.IsEdit) }
   if (props.isBlur) { classes.push(s.IsBlur) }
+
+  const editNode = useMemo(() => {
+    if (props.isEdit === undefined) {
+      return null
+    } else {
+      return (
+        <CSSTransition
+          in={props.isEdit}
+          timeout={382}
+          classNames={{
+            enter: s.EditChildrenEnter,
+            enterActive: s.EditChildrenEnterActive,
+            enterDone: s.EditChildrenEnterDone,
+            exit: s.EditChildrenExit,
+            exitActive: s.EditChildrenExitActive,
+            exitDone: s.EditChildrenExitDone,
+          }}
+        >
+          <div className={s.EditChildren}>
+            <div className={s.EditChildrenInner}>
+              {props.editChildren ? props.editChildren : null}
+            </div>
+          </div>
+        </CSSTransition>
+      )
+    }
+  }, [props.editChildren, props.isEdit])
 
   return (
     <div className={classes.join(' ')}>
-      {props.children}
+      <div className={s.NormalChildren}>{props.children}</div>
+      {editNode}
     </div>
   )
 }
@@ -51,21 +80,17 @@ export default function SiteWindow({
   onCancelEdit
 }: SiteWindowProps) {
   const [editSiteOption, setEditSiteOption] = useState<SiteOption | null>(null)
+  const [enableEdit, setEnableEdit] = useState<boolean>(false)
 
   useEffect(() => {
     if (isEdit) {
       setEditSiteOption(siteOption)
-    } else {
-      setEditSiteOption(null)
     }
-
-    return () => {
-      setEditSiteOption(null)
-    }
+    setEnableEdit(isEdit)
   }, [isEdit, siteOption])
 
   const editNode = useMemo(() => {
-    if (isEdit && editSiteOption) {
+    if (editSiteOption) {
       return (
         <EditLayout
           siteOption={editSiteOption}
@@ -76,10 +101,14 @@ export default function SiteWindow({
     } else {
       return null
     }
-  }, [editSiteOption, isEdit, onCancelEdit, onSubmit])
+  }, [editSiteOption, onCancelEdit, onSubmit])
 
   return (
-    <SiteWindowFrame isEdit={isEdit} isBlur={isBlur}>
+    <SiteWindowFrame
+      isEdit={enableEdit}
+      isBlur={isBlur}
+      editChildren={editNode}
+    >
       <div className={s.Above}>
         <SiteIcon
           src={siteOption.icon}
@@ -115,7 +144,6 @@ export default function SiteWindow({
           />
         </div>
       </div>
-      {editNode}
     </SiteWindowFrame>
   )
 }

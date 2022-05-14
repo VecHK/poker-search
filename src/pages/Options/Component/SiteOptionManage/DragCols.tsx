@@ -3,7 +3,8 @@ import React from 'react'
 import { Droppable, Draggable, DraggingStyle, NotDraggingStyle } from 'react-beautiful-dnd'
 import { SiteOption, SiteRow } from '../../../../options/site-matrix'
 import s from './DragCols.module.css'
-import SiteWindow from './SiteWindow'
+import SiteWindow, { SiteWindowFrame } from './SiteWindow'
+import plusSrc from './plus.svg'
 
 const getItemStyle = (
   isDragging: boolean,
@@ -34,6 +35,7 @@ export default function Cols(props: {
   isEditMode: boolean
   onCancelEdit(): void
   onChange(id: SiteOption['id'], s: SiteOption): void
+  onClickAdd(): void
   onSubmitEdit(colNum: number, s: SiteOption): void
   onClickEdit(colNum: number): void
   onClickRemove(colNum: number): void
@@ -87,6 +89,15 @@ export default function Cols(props: {
               </Draggable>
             )
           })}
+          <SiteWindowFrame>
+            <img
+              className={s.AddSite}
+              src={plusSrc}
+              style={{ cursor: 'pointer', width: '48px', height: '48px' }}
+              alt="add site option"
+              onClick={props.onClickAdd}
+            />
+          </SiteWindowFrame>
           {provided.placeholder}
         </div>
       )}
