@@ -1,0 +1,11 @@
+.SiteIcon {
+  width: 80px;
+  min-width: 80px;
+  height: 80px;
+  min-height: 80px;
+  margin: auto;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}

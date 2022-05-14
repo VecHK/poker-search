@@ -103,7 +103,7 @@ export async function initBase(info: RequireInfo) {
   )
 
   const search_matrix = createSearchMatrix(
-    cfg.PLAIN_WINDOW_URL_PATTERN,
+    cfg.PLAIN_SEARCH_WINDOW_URL_PATTERN,
     max_window_per_line,
     info.options.site_matrix,
   )

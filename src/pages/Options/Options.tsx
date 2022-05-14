@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import pkg from '../../../package.json'
 import { load, Options, save } from '../../options'
+import { SiteMatrix } from '../../options/'
 
 import SettingHeader from './Component/SettingHeader'
 import SettingItem from './Component/SettingItem'
@@ -10,7 +11,7 @@ import Loading from '../../components/Loading'
 import Failure from './Component/Failure'
 
 import s from './Options.module.css'
-import { SiteMatrix } from '../../options/v1'
+import { findIndex, map, propEq, update } from 'ramda'
 
 function calcMaxColumn(siteMatrix: SiteMatrix) {
   return siteMatrix.reduce((p, c) => Math.max(p, c.length), 0)
@@ -82,6 +83,12 @@ export default function OptionsPage() {
     refresh()
   }, [refresh])
 
+  useEffect(() => {
+    if (options !== undefined) {
+      save(options)
+    }
+  }, [options])
+
   const innerEl = useAdjustMarginCenter(options ? options.site_matrix : [])
 
   return (
@@ -128,16 +135,35 @@ export default function OptionsPage() {
                   <div className={s.OptionsCol}>
                     <SiteOptionManage
                       siteMatrix={options.site_matrix}
+                      onUpdate={(updateId, newSiteOption) => {
+                        setOptions(latestOptions => {
+                          if (!latestOptions) {
+                            return undefined
+                          } else {
+                            return {
+                              ...latestOptions,
+                              site_matrix: map(row => {
+                                const find_idx = findIndex(propEq('id', updateId), row)
+                                if (find_idx !== -1) {
+                                  return update(find_idx, newSiteOption, row)
+                                } else {
+                                  return row
+                                }
+                              }, latestOptions.site_matrix)
+                            }
+                          }
+                        })
+                      }}
                       onChange={(newMatrix) => {
                         console.log('matrix change', newMatrix)
                         setOptions({
                           ...options,
                           site_matrix: newMatrix
                         })
-                        save({
-                          ...options,
-                          site_matrix: newMatrix
-                        })
+                        // save({
+                        //   ...options,
+                        //   site_matrix: newMatrix
+                        // })
                       }}
                     />
                   </div>

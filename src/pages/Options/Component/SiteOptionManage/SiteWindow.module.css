@@ -20,14 +20,6 @@
   position: relative;
 }
 
-.SiteIcon {
-  width: 80px;
-  min-width: 80px;
-  height: 80px;
-  min-height: 80px;
-  margin: auto;
-}
-
 .UrlPattern {
   flex-grow: 2;
   line-height: 20px;

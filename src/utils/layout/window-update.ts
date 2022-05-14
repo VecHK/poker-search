@@ -59,11 +59,11 @@ export function selectWindow(
 ): SelectWindowResult {
   const [find, row, col] = findSearchWindowById(matrix, window_id)
   if (find) {
-    if (isCurrentRow(matrix, row)) {
-      return [ false ]
-    } else {
+    if (!isCurrentRow(matrix, row)) {
       const new_matrix = changeCurrentRowInColumn(matrix, row, col)
       return [ true, { new_matrix, row, col } ]
+    } else {
+      return [ false ]
     }
   } else {
     return [ false ]

@@ -1,10 +1,12 @@
 import cfg from '../config'
-import { storage } from '../utils/storage'
+import InitStorage from '../utils/storage'
 import getDefaultOptions from './default'
 
-import { OptionsV1 } from './v1'
-import { OptionsV2, updater as v2Updater } from './v2'
+import { OptionsV1 } from './v1-type'
+import { OptionsV2 } from './v2-type'
+import { updater as v2Updater } from './v2'
 const CURRENT_VERSION = 2
+export * from './v2-type'
 export type Options = OptionsV2
 export type OptionsList = OptionsV1 | OptionsV2
 
@@ -26,7 +28,7 @@ const [
   loadStorage,
   saveStorage,
   isFoundStorage
-] = storage<OptionsList>(cfg.OPTIONS_STORAGE_KEY)
+] = InitStorage<OptionsList>(cfg.OPTIONS_STORAGE_KEY)
 
 export async function load(): Promise<Options> {
   if (await isFoundStorage()) {

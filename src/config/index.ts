@@ -1,4 +1,3 @@
-import { map } from 'ramda'
 import { randomString } from '../utils/common'
 
 const randomUrlPattern = () => `http://localhost:2070/${randomString(16, 1)}${cfg.KEYWORD_REPLACEHOLDER}`
@@ -28,12 +27,17 @@ const cfg = Object.freeze({
 
   MOBILE_PAGE_IDENTIFIER: chrome_id,
 
-  get PLAIN_WINDOW_URL_PATTERN() {
+  get PLAIN_SEARCH_WINDOW_URL_PATTERN() {
     return chrome.runtime.getURL(`/plainWindow.html?q=${cfg.KEYWORD_REPLACEHOLDER}`)
   },
 
-  get PRESET_SEARCH_LIST() {
-    return map(url_pattern => ({ url_pattern }), [
+  get DEFAULT_SITE_ICON() {
+    return chrome.runtime.getURL(`/default-siteicon.png`)
+  },
+  DEFAULT_ENABLE_MOBILE: true,
+  DEFAULT_MAX_WINDOW_PER_LINE: 8,
+  get DEFAULT_SEARCH_LIST() {
+    return [
       `https://mobile.twitter.com/search?q=${cfg.KEYWORD_REPLACEHOLDER}&src=typeahead_click`,
       `https://www.google.com/search?q=${cfg.KEYWORD_REPLACEHOLDER}`,
       `https://pache.blog/tag/${cfg.KEYWORD_REPLACEHOLDER}`,
@@ -50,7 +54,7 @@ const cfg = Object.freeze({
       randomUrlPattern(),
       randomUrlPattern(),
       randomUrlPattern(),
-    ])
+    ]
   }
 })
 export default cfg
