@@ -1,4 +1,5 @@
 import { map, curry, range, nth, compose } from 'ramda'
+import cfg from '../../config'
 import { SiteMatrix, SiteRow, toSearchURL, addMobileIdentifier } from '../../options/site-matrix'
 
 type GetSearchURL = (keyword: string) => string
@@ -28,7 +29,7 @@ function fillSearchRow(
   )
 }
 
-export function createSearchMatrix(
+function createSearchMatrix(
   plain_window_url_pattern: string,
   max_window_per_row: number,
   matrix: SiteMatrix,
@@ -55,4 +56,19 @@ export function createSearchMatrix(
       ]
     }
   }
+}
+
+export function initSearchMatrix(
+  max_window_per_line: number,
+  site_matrix: SiteMatrix
+) {
+  const search_matrix = createSearchMatrix(
+    cfg.PLAIN_SEARCH_WINDOW_URL_PATTERN,
+    max_window_per_line,
+    site_matrix,
+  )
+  const search_count = search_matrix.flat().length
+  const total_row = Math.ceil(search_count / max_window_per_line)
+
+  return [ total_row, search_matrix ] as const
 }

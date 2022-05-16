@@ -3,7 +3,7 @@ import { Transition } from 'react-transition-group'
 
 import cfg from '../../../../config'
 import { SiteMatrix } from '../../../../options/'
-import { autoAdjustWidth } from '../../../../utils/base'
+import { autoAdjustWidth } from '../../../../utils/base/auto-adjust'
 import { getCurrentDisplayLimit } from '../../../../utils/base/limit'
 import { calcWindowsTotalWidth } from '../../../../utils/pos'
 

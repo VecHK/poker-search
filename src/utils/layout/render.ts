@@ -1,6 +1,6 @@
 import { Base } from '../base'
 import { Matrix } from '../common'
-import { calcPos } from '../pos'
+import { calcLayoutPos } from '../pos'
 import { isCurrentRow } from './matrix'
 import { SearchWindow } from './window'
 
@@ -13,7 +13,8 @@ function renderWindow(
     col: number
   }
 ) {
-  const [l, t] = calcPos(base.info, opts.row, opts.col)
+  const [l, t] = calcLayoutPos(base.info, opts.row, opts.col)
+  // const realPos = base.appendOffsetPos(layoutPos)
   
   return chrome.windows.update(opts.windowId, {
     focused: opts.focused,
