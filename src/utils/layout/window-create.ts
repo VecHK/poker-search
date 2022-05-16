@@ -59,8 +59,8 @@ export async function constructSearchWindows(
       if (canContinue()) {
         const [win, p] = CreateWindow(url, {
           type: 'popup',
-          width: base.info.windowWidth,
-          height: base.info.windowHeight,
+          width: base.info.window_width,
+          height: base.info.window_height,
           left: base.toRealLeft(l),
           top: base.toRealTop(t),
         })

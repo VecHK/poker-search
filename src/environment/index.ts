@@ -1,22 +1,22 @@
 import cfg from '../config'
 import InitStorage from '../utils/storage'
-import { calcTitleBarHeight } from './title-bar'
+import { calcTitleBarHeight } from './titlebar'
 
-type Environment = {
-  titleBarHeight: number
+export type Environment = {
+  titlebar_height: number
 }
 
 const [ loadStorage, saveStorage ] = InitStorage<Environment>(cfg.ENVIRONMENT_STORAGE_KEY)
 
 export const load = () => loadStorage()
 
-export async function init({ windowHeight, innerHeight }: {
-  windowHeight: number,
-  innerHeight: number
+export async function init({ window_height, inner_height }: {
+  window_height: number,
+  inner_height: number
 }): Promise<void> {
-  const titleBarHeight = calcTitleBarHeight(windowHeight, innerHeight)
+  const titlebar_height = calcTitleBarHeight(window_height, inner_height)
   const env = {
-    titleBarHeight
+    titlebar_height
   }
 
   await saveStorage(env)

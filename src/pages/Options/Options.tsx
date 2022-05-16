@@ -156,14 +156,14 @@ export default function OptionsPage() {
                       }}
                       onChange={(newMatrix) => {
                         console.log('matrix change', newMatrix)
-                        setOptions({
-                          ...options,
-                          site_matrix: newMatrix
-                        })
-                        // save({
-                        //   ...options,
-                        //   site_matrix: newMatrix
-                        // })
+                        if (newMatrix.length === 0) {
+                          alert('站点配置项无法留空')
+                        } else {
+                          setOptions({
+                            ...options,
+                            site_matrix: newMatrix
+                          })
+                        }
                       }}
                     />
                   </div>

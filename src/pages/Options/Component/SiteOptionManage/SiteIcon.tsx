@@ -9,12 +9,12 @@ import s from './SiteIcon.module.css'
 export type SiteIconProp = {
   src: SiteOption['icon']
   urlPattern: string
-  onNewIconSrc(src: string): void
+  onIconUpdate(src: string): void
 }
 export default function SiteIcon({
   src,
   urlPattern,
-  onNewIconSrc
+  onIconUpdate
 }: SiteIconProp) {
   const [isStartLoading, setStartLoading] = useState<boolean>(src !== null)
   const [loading, setLoading] = useState<boolean>(false)
@@ -31,7 +31,7 @@ export default function SiteIcon({
               setLoading(false)
             } else {
               setLoading(false)
-              onNewIconSrc(newSrc)
+              onIconUpdate(newSrc)
             }
           })
           .catch(() => {
@@ -39,7 +39,7 @@ export default function SiteIcon({
           })
       }
     }
-  }, [isStartLoading, loading, onNewIconSrc, src, urlPattern])
+  }, [isStartLoading, onIconUpdate, src, urlPattern])
 
   const innerNode = useMemo(() => {
     if (loading) {
