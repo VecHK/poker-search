@@ -15,9 +15,6 @@ import { SiteMatrix, SiteOption } from '../../../../options/site-matrix'
 import SettingItem from '../SettingItem'
 import s from './DragRows.module.css'
 import WarningLine from './WarningLine'
-import { SiteWindowFrame } from './SiteWindow'
-
-import plusSrc from './plus.svg'
 
 const getRowListStyle = (isDraggingOver: boolean): React.CSSProperties => ({
   // background: isDraggingOver ? "lightblue" : "lightgrey",

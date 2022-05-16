@@ -71,6 +71,7 @@ function SiteOptionDragItem(props: {
                 props.onSubmitEdit(colNum, newOption)
               }}
               onClickEdit={() => {
+                console.log('inner onClickEdit')
                 props.onClickEdit(colNum)
               }}
               onClickRemove={() => {
@@ -125,7 +126,7 @@ function SiteOptionList(props: {
               onCancelEdit={props.onCancelEdit}
               onChange={props.onChange}
               onSubmitEdit={props.onSubmitEdit}
-              onClickEdit={props.onCancelEdit}
+              onClickEdit={props.onClickEdit}
               onClickRemove={props.onClickRemove}
             />
           </CSSTransition>
@@ -145,7 +146,7 @@ function SiteOptionList(props: {
           onCancelEdit={props.onCancelEdit}
           onChange={props.onChange}
           onSubmitEdit={props.onSubmitEdit}
-          onClickEdit={props.onCancelEdit}
+          onClickEdit={props.onClickEdit}
           onClickRemove={props.onClickRemove}
         />
       ))}
