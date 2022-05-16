@@ -17,8 +17,8 @@ export function calcMaxColumns(
   max_width: number, window_width: number, gap_horizontal: number
 ) {
   function c(multi: number): Readonly<[count, totalWidth]> {
-    const totalWidth = calcWindowsTotalWidth(multi + 1, window_width, gap_horizontal)
-    if (totalWidth > max_width) {
+    const total_width = calcWindowsTotalWidth(multi + 1, window_width, gap_horizontal)
+    if (total_width > max_width) {
       return [multi, calcWindowsTotalWidth(multi, window_width, gap_horizontal)]
     } else {
       return c(multi + 1)
@@ -56,14 +56,14 @@ function basePos(...args: Parameters<typeof ToRealPos>) {
 const calcTotalHeight = partial(function calcTotalHeight(
   control_window_gap: number,
   control_window_height: number,
-  rowCount: number,
+  row_count: number,
   o: {
     window_height: number
     title_bar_height: number
   }
 ) {
   const windows_height = calcWindowsTotalHeight(
-    rowCount, o.window_height, o.title_bar_height
+    row_count, o.window_height, o.title_bar_height
   )
 
   return windows_height + control_window_gap + control_window_height
@@ -72,7 +72,7 @@ const calcTotalHeight = partial(function calcTotalHeight(
 const autoAdjustHeight = partial(function autoAdjustHeight(
   height_list: number[],
   total_row: number,
-  title_bar_height: number,
+  titlebar_height: number,
   limit_height: number,
 ): { window_height: number; total_height: number } {
   if (height_list.length === 0) {
@@ -82,14 +82,14 @@ const autoAdjustHeight = partial(function autoAdjustHeight(
 
     const total_height = calcTotalHeight(total_row, {
       window_height,
-      title_bar_height: title_bar_height,
+      title_bar_height: titlebar_height,
     })
 
     if (total_height < limit_height) {
       return { window_height, total_height }
     } else {
       return autoAdjustHeight(
-        remain_height_list, total_row, title_bar_height, limit_height
+        remain_height_list, total_row, titlebar_height, limit_height
       )
     }
   }
@@ -116,10 +116,10 @@ const baseControl = partial(function baseControl(
 }, [cfg.CONTROL_WINDOW_HEIGHT, cfg.CONTROL_WINDOW_WIDTH])
 
 type BaseInfo = {
-  windowHeight: number
-  windowWidth: number
-  gapHorizontal: number
-  titleBarHeight: number
+  window_height: number
+  window_width: number
+  gap_horizontal: number
+  titlebar_height: number
 }
 export type Base = {
   limit: Limit,
@@ -132,7 +132,7 @@ export type Base = {
 
 export async function initBase(
   options: Options,
-  info: Omit<BaseInfo, 'windowHeight'>
+  info: Omit<BaseInfo, 'window_height'>
 ): Promise<Base> {
   const [limit, platform] = await Promise.all([
     getCurrentDisplayLimit(),
@@ -140,7 +140,7 @@ export async function initBase(
   ])
 
   const [max_window_per_line, total_width] = calcMaxColumns(
-    limit.width, info.windowWidth, info.gapHorizontal
+    limit.width, info.window_width, info.gap_horizontal
   )
 
   const search_matrix = createSearchMatrix(
@@ -153,7 +153,7 @@ export async function initBase(
 
   const { window_height, total_height } = autoAdjustHeight(
     total_row,
-    info.titleBarHeight,
+    info.titlebar_height,
     limit.height
   )
 
@@ -161,7 +161,7 @@ export async function initBase(
     limit,
     platform,
     info: {
-      windowHeight: window_height,
+      window_height,
       ...info,
     },
     options,
@@ -180,8 +180,8 @@ export async function createBase() {
   ])
 
   return initBase(options, {
-    windowWidth: cfg.SEARCH_WINDOW_WIDTH,
-    gapHorizontal: cfg.SEARCH_WINDOW_GAP_HORIZONTAL,
-    titleBarHeight: environment.titleBarHeight,
+    window_width: cfg.SEARCH_WINDOW_WIDTH,
+    gap_horizontal: cfg.SEARCH_WINDOW_GAP_HORIZONTAL,
+    titlebar_height: environment.titlebar_height,
   })
 }

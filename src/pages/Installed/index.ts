@@ -4,8 +4,8 @@ import { init } from '../../environment'
 (async () => {
   try {
     await init({
-      windowHeight: cfg.INSTALLED_WINDOW_HEIGHT,
-      innerHeight: window.innerHeight,
+      window_height: cfg.INSTALLED_WINDOW_HEIGHT,
+      inner_height: window.innerHeight,
     })
     window.close()
   } catch (err: any) {
