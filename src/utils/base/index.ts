@@ -1,6 +1,6 @@
 import { curry, partial } from 'ramda'
 import cfg from '../../config'
-import { load as loadEnvironment } from '../../environment'
+import { load as loadEnvironment, Environment } from '../../environment'
 import { load as loadOptions, Options } from '../../options'
 import { calcWindowsTotalHeight, calcWindowsTotalWidth } from './../pos'
 import { getCurrentDisplayLimit, Limit } from './limit'
@@ -13,19 +13,43 @@ const getPlatformInfo = () => (new Promise<chrome.runtime.PlatformInfo>(
 // 计算横向最大能容纳的窗口数
 type totalWidth = number
 type count = number
-export function calcMaxColumns(
-  max_width: number, window_width: number, gap_horizontal: number
+function calcMaxColumns(
+  limit_width: number, window_width: number, gap_horizontal: number
 ) {
-  function c(multi: number): Readonly<[count, totalWidth]> {
-    const total_width = calcWindowsTotalWidth(multi + 1, window_width, gap_horizontal)
-    if (total_width > max_width) {
-      return [multi, calcWindowsTotalWidth(multi, window_width, gap_horizontal)]
+  function c(count: number): Readonly<[count, totalWidth]> {
+    const total_width = calcWindowsTotalWidth(count + 1, window_width, gap_horizontal)
+    if (total_width > limit_width) {
+      return [count, calcWindowsTotalWidth(count, window_width, gap_horizontal)]
     } else {
-      return c(multi + 1)
+      return c(count + 1)
     }
   } 
 
   return c(1)
+}
+
+export function autoAdjustWidth(
+  gap_horizontal: number,
+  limit_width: number,
+): {
+  max_window_per_line: number
+  total_width: number
+  window_width: number
+} {
+  const window_width = cfg.SEARCH_WINDOW_WIDTH_NORMAL
+  const [max_window_per_line, total_width] = calcMaxColumns(
+    limit_width, window_width, gap_horizontal
+  )
+
+  if (max_window_per_line > 4) {
+    return { max_window_per_line, total_width, window_width }
+  } else {
+    const window_width = cfg.SEARCH_WINDOW_WIDTH_SMALL
+    const [max_window_per_line, total_width] = calcMaxColumns(
+      limit_width, window_width, gap_horizontal
+    )
+    return { max_window_per_line, total_width, window_width }
+  }
 }
 
 const dimAdd = curry((offset: number, dimension: number) => {
@@ -56,14 +80,14 @@ function basePos(...args: Parameters<typeof ToRealPos>) {
 const calcTotalHeight = partial(function calcTotalHeight(
   control_window_gap: number,
   control_window_height: number,
-  row_count: number,
   o: {
-    window_height: number
-    title_bar_height: number
+    row: number,
+    window_height: number,
+    titlebar_height: number,
   }
 ) {
   const windows_height = calcWindowsTotalHeight(
-    row_count, o.window_height, o.title_bar_height
+    o.row, o.window_height, o.titlebar_height
   )
 
   return windows_height + control_window_gap + control_window_height
@@ -80,9 +104,10 @@ const autoAdjustHeight = partial(function autoAdjustHeight(
   } else {
     const [window_height, ...remain_height_list] = height_list
 
-    const total_height = calcTotalHeight(total_row, {
+    const total_height = calcTotalHeight({
+      row: total_row,
       window_height,
-      title_bar_height: titlebar_height,
+      titlebar_height,
     })
 
     if (total_height < limit_height) {
@@ -130,18 +155,20 @@ export type Base = {
   search_matrix: SearchMatrix
 } & ReturnType<typeof basePos> & ReturnType<typeof baseControl>
 
-export async function initBase(
+async function initBase(
+  environment: Environment,
   options: Options,
-  info: Omit<BaseInfo, 'window_height'>
 ): Promise<Base> {
   const [limit, platform] = await Promise.all([
     getCurrentDisplayLimit(),
     getPlatformInfo()
   ])
 
-  const [max_window_per_line, total_width] = calcMaxColumns(
-    limit.width, info.window_width, info.gap_horizontal
-  )
+  const gap_horizontal = cfg.SEARCH_WINDOW_GAP_HORIZONTAL
+
+  const {
+    max_window_per_line, total_width, window_width
+  } = autoAdjustWidth(gap_horizontal, limit.width)
 
   const search_matrix = createSearchMatrix(
     cfg.PLAIN_SEARCH_WINDOW_URL_PATTERN,
@@ -153,7 +180,7 @@ export async function initBase(
 
   const { window_height, total_height } = autoAdjustHeight(
     total_row,
-    info.titlebar_height,
+    environment.titlebar_height,
     limit.height
   )
 
@@ -162,7 +189,9 @@ export async function initBase(
     platform,
     info: {
       window_height,
-      ...info,
+      window_width,
+      gap_horizontal,
+      titlebar_height: environment.titlebar_height,
     },
     options,
     max_window_per_line,
@@ -179,9 +208,5 @@ export async function createBase() {
     loadOptions()
   ])
 
-  return initBase(options, {
-    window_width: cfg.SEARCH_WINDOW_WIDTH,
-    gap_horizontal: cfg.SEARCH_WINDOW_GAP_HORIZONTAL,
-    titlebar_height: environment.titlebar_height,
-  })
+  return initBase(environment, options)
 }

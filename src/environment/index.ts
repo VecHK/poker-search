@@ -2,7 +2,7 @@ import cfg from '../config'
 import InitStorage from '../utils/storage'
 import { calcTitleBarHeight } from './titlebar'
 
-type Environment = {
+export type Environment = {
   titlebar_height: number
 }
 

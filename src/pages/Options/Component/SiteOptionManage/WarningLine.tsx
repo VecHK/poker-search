@@ -3,7 +3,7 @@ import { Transition } from 'react-transition-group'
 
 import cfg from '../../../../config'
 import { SiteMatrix } from '../../../../options/'
-import { calcMaxColumns } from '../../../../utils/base'
+import { autoAdjustWidth } from '../../../../utils/base'
 import { getCurrentDisplayLimit } from '../../../../utils/base/limit'
 import { calcWindowsTotalWidth } from '../../../../utils/pos'
 
@@ -16,8 +16,8 @@ export default function WarningLine({ disable, siteMatrix }: { disable: boolean;
 
   useEffect(() => {
     getCurrentDisplayLimit().then(limit => {
-      const [max_window_per_line] = calcMaxColumns(
-        limit.width, cfg.SEARCH_WINDOW_WIDTH, cfg.SEARCH_WINDOW_GAP_HORIZONTAL
+      const { max_window_per_line } = autoAdjustWidth(
+        cfg.SEARCH_WINDOW_GAP_HORIZONTAL, limit.width,
       )
       setMaxWindowPerLine(max_window_per_line)
     })
@@ -31,7 +31,6 @@ export default function WarningLine({ disable, siteMatrix }: { disable: boolean;
         if (maxWindowPerLine === -1) {
           return false
         } else {
-          console.log(cols.length, maxWindowPerLine, cols.length < maxWindowPerLine)
           return cols.length <= maxWindowPerLine
         }
       })

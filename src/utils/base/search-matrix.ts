@@ -33,7 +33,7 @@ export function createSearchMatrix(
   max_window_per_row: number,
   matrix: SiteMatrix,
 ): SearchMatrix {
-  if (!matrix.length) {
+  if (matrix.length === 0) {
     return []
   } else {
     const [cols, ...remain_matrix] = matrix
