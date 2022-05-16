@@ -132,10 +132,10 @@ export default function OptionsPage() {
 
                     <SettingItem title="关于">
                       <p>
-                        <span>遇到了麻烦/故障？请上 <a href="https://github.com/vechk/poker/issues" target="_blank" rel="noreferrer">GitHub issues</a> 反馈</span>
+                        遇到了麻烦/故障？请上 <a href="https://github.com/vechk/poker/issues" target="_blank" rel="noreferrer">GitHub issues</a> 反馈
                       </p>
                       <p>
-                        Inspiried by Smartisian TNT Poker Dealer<br />
+                        Inspiried by <a href="https://www.smartisan.com/tnt/os" target="_blank" rel="noreferrer">Smartisian TNT</a> Poker Dealer<br />
                         Made by <a href="http://vec.moe" target="_blank" rel="noreferrer">Vec</a><br />
                         Designed by <a href="https://t.me/nt_cubic" target="_blank" rel="noreferrer">NT³</a>
                       </p>

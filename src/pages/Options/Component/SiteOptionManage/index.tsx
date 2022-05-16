@@ -31,9 +31,9 @@ export default function SiteOptionManage({ siteMatrix, onUpdate, onChange }: {
                 src={plusSrc}
                 alt="add site option"
                 onClick={() => {
-                  const newMatrix = [[generateExampleOption()], ...siteMatrix]
+                  const newMatrix = [[generateExampleOption()], ...siteMatrix].reverse()
                   onChange(newMatrix)
-                  setEdit([newMatrix.length - 1, 0])
+                  setEdit([0, 0])
                 }}
               />
             </SiteWindowFrame>
@@ -45,6 +45,7 @@ export default function SiteOptionManage({ siteMatrix, onUpdate, onChange }: {
 
   return (
     <div className={s.SiteOptionManage}>
+      {newRowNode}
       <DragRows
         edit={edit}
         setEdit={setEdit}
@@ -70,7 +71,6 @@ export default function SiteOptionManage({ siteMatrix, onUpdate, onChange }: {
           }
         }}
       />
-      {newRowNode}
     </div>
   )
 }
