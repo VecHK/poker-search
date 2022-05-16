@@ -41,7 +41,7 @@ export function autoAdjustWidth(
     limit_width, window_width, gap_horizontal
   )
 
-  if (max_window_per_line > 4) {
+  if (max_window_per_line >= cfg.NORMAL_WINDOW_WINDOW_COUNT) {
     return { max_window_per_line, total_width, window_width }
   } else {
     const window_width = cfg.SEARCH_WINDOW_WIDTH_SMALL
