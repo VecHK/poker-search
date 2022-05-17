@@ -1,6 +1,17 @@
 import { partial } from 'ramda'
 import cfg from '../../config'
-import { calcWindowsTotalHeight, calcWindowsTotalWidth } from '../pos'
+
+export const calcWindowsTotalWidth = (multi: number, width: number, gap: number) => {
+  return (width * multi) + (gap * (multi - 1))
+}
+
+export const calcWindowsTotalHeight = (multi: number, window_height: number, titlebar_height: number) => {
+  if (multi === 1) {
+    return window_height
+  } else {
+    return (multi * titlebar_height) + (window_height - titlebar_height)
+  }
+}
 
 // 计算横向最大能容纳的窗口数
 type totalWidth = number

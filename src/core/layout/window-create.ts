@@ -1,7 +1,7 @@
 import { SearchWindowMatrix, SearchWindowRow } from './window'
 import { Base } from '../base'
 import { SearchMatrix } from '../base/search-matrix'
-import { calcLayoutPos } from '../pos'
+import { calcRealPos } from './pos'
 
 type PlainUnit = null
 type Unit = PlainUnit | {
@@ -54,15 +54,15 @@ export async function constructSearchWindows(
 
       const url = getSearchURL(keyword)
 
-      const [l, t] = calcLayoutPos(base.info, row, col)
+      const [left, top] = calcRealPos(base, row, col)
 
       if (canContinue()) {
         const [win, p] = CreateWindow(url, {
           type: 'popup',
           width: base.info.window_width,
           height: base.info.window_height,
-          left: base.toRealLeft(l),
-          top: base.toRealTop(t),
+          left,
+          top,
         })
         await p
         const windowId = win.getWindowId()

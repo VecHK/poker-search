@@ -1,6 +1,7 @@
 import { nth } from 'ramda'
 import cfg from '../config'
-import { constructMatrix, randomString } from '../utils/common'
+import randomString from '../utils/random-string'
+import { constructMatrix } from '../core/common'
 import getIcon from '../utils/get-icon'
 
 import { SiteOption, SiteMatrix, URLPattern, SiteRow } from './v2-type'

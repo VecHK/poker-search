@@ -1,11 +1,11 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import Loading from '../../components/Loading'
-import { Base } from '../../utils/base'
-import { Matrix } from '../../utils/common'
-import { calcControlWindowPos } from '../../utils/control-window'
-import { createSearch } from '../../utils/layout'
-import { renderMatrix } from '../../utils/layout/render'
-import { closeAllWindow, SearchWindow } from '../../utils/layout/window'
+import { Base } from '../../core/base'
+import { Matrix } from '../../core/common'
+import { calcControlWindowPos } from '../../core/layout/control-window'
+import { createSearch } from '../../core/layout'
+import { renderMatrix } from '../../core/layout/render'
+import { closeAllWindow, SearchWindow } from '../../core/layout/window'
 import { getSearchword } from '../../utils/search'
 import ArrowButtonGroup from './components/ArrowGroup'
 
@@ -82,7 +82,7 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
   const moveControlWindow = useCallback(async () => {
     const { id } = await chrome.windows.getCurrent()
     if (id !== undefined) {
-      const [ top, left ] = calcControlWindowPos(base.total_height, base.limit)
+      const [ top, left ] = calcControlWindowPos(base.layout_height, base.limit)
       await chrome.windows.update(id, { top, left })
     }
   }, [base])

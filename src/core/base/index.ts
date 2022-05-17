@@ -4,16 +4,10 @@ import { load as loadOptions, Options } from '../../options'
 import { getCurrentDisplayLimit, Limit } from './limit'
 import { autoAdjustHeight, autoAdjustWidth } from './auto-adjust'
 import { initSearchMatrix, SearchMatrix } from './search-matrix'
-import { ToRealPos } from './pos'
 
 const getPlatformInfo = () => (new Promise<chrome.runtime.PlatformInfo>(
   res => chrome.runtime.getPlatformInfo(res)
 ))
-
-function basePos(...args: Parameters<typeof ToRealPos>) {
-  const [ toRealLeft, toRealTop ] = ToRealPos(...args)
-  return { toRealLeft, toRealTop }
-}
 
 type BaseInfo = {
   window_height: number
@@ -27,8 +21,9 @@ export type Base = {
   info: BaseInfo,
   options: Options,
   search_matrix: SearchMatrix
-  total_height: number
-} & ReturnType<typeof basePos>
+  layout_width: number
+  layout_height: number
+}
 
 async function initBase(
   environment: Environment,
@@ -61,16 +56,16 @@ async function initBase(
     platform,
     options,
     search_matrix,
-    total_height,
+
+    layout_width: total_width,
+    layout_height: total_height,
 
     info: {
       window_height,
       window_width,
       gap_horizontal,
       titlebar_height: environment.titlebar_height,
-    },
-
-    ...basePos(limit, total_width, total_height)
+    }
   })
 }
 

@@ -1,7 +1,7 @@
 import { partial } from 'ramda'
-import { Limit } from './base/limit'
-import cfg from '../config'
-import { calcBaseY } from './base/pos'
+import { Limit } from '../base/limit'
+import cfg from '../../config'
+import { calcBaseY } from './pos'
 
 export const calcControlWindowPos = partial((
   control_window_height: number,
