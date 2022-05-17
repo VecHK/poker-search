@@ -1,13 +1,12 @@
 import React, { useMemo, useState } from 'react'
-import s from './index.module.css'
+import { nth, update } from 'ramda'
 
 import DragRows from './DragRows'
 import { generateExampleOption, SiteMatrix, SiteOption } from '../../../../options/site-matrix'
-import SettingItem from '../SettingItem'
-import { SiteWindowFrame } from './SiteWindow'
+import AddNewRow from './AddNewRow'
 
-import plusSrc from './plus.svg'
-import { nth, update } from 'ramda'
+import s from './index.module.css'
+
 
 type Pos = Readonly<[number, number]>
 
@@ -19,28 +18,16 @@ export default function SiteOptionManage({ siteMatrix, onUpdate, onChange }: {
   const [edit, setEdit] = useState<Pos | null>(null)
 
   const newRowNode = useMemo(() => {
-    if (edit) {
-      return null
-    } else {
-      return (
-        <SettingItem>
-          <div className={s.NewRowInner}>
-            <SiteWindowFrame>
-              <img
-                className={s.AddSite}
-                src={plusSrc}
-                alt="add site option"
-                onClick={() => {
-                  const newMatrix = [[generateExampleOption()], ...siteMatrix].reverse()
-                  onChange(newMatrix)
-                  setEdit([0, 0])
-                }}
-              />
-            </SiteWindowFrame>
-          </div>
-        </SettingItem>
-      )
-    }
+    return (
+      <AddNewRow
+        isEdit={Boolean(edit)}
+        onClickAdd={() => {
+          const newMatrix = [[generateExampleOption()], ...siteMatrix].reverse()
+          onChange(newMatrix)
+          setEdit([0, 0])
+        }}
+      />
+    )
   }, [edit, onChange, siteMatrix])
 
   return (
