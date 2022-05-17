@@ -1,4 +1,4 @@
-import { randomString } from '../utils/common'
+import randomString from "../utils/random-string"
 
 const randomUrlPattern = () => `http://localhost:2070/${randomString(16, 1)}${cfg.KEYWORD_REPLACEHOLDER}`
 

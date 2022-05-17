@@ -3,9 +3,8 @@ import { Transition } from 'react-transition-group'
 
 import cfg from '../../../../config'
 import { SiteMatrix } from '../../../../options/'
-import { autoAdjustWidth } from '../../../../utils/base/auto-adjust'
-import { getCurrentDisplayLimit } from '../../../../utils/base/limit'
-import { calcWindowsTotalWidth } from '../../../../utils/pos'
+import { autoAdjustWidth, calcWindowsTotalWidth } from '../../../../core/base/auto-adjust'
+import { getCurrentDisplayLimit } from '../../../../core/base/limit'
 
 import s from './WarningLine.module.css'
 

@@ -174,7 +174,7 @@ export default function Cols(props: {
   const maxWindowPerLine = useMaxWindowPerLine()
   const showWarnline = useMemo(() => {
     if (maxWindowPerLine === null) {
-      return true
+      return false
     } else {
       return row.length > maxWindowPerLine
     }

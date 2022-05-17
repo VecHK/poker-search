@@ -3,7 +3,7 @@ const createMemo = <Data extends unknown>(data: Data) => [
   (newData: Data) => { data = newData }
 ] as const
 
-function CreateAtomic() {
+function Atomic() {
   const [ getProcessing, setProcessing ] = createMemo<Promise<unknown> | null>(null)
 
   return async function atomic<T>(
@@ -20,9 +20,10 @@ function CreateAtomic() {
       const new_processing = task()
       setProcessing(new_processing)
       try {
-        return await new_processing
+        await new_processing
       } finally {
         setProcessing(null)
+        return new_processing
       }
     }
   }
@@ -31,7 +32,7 @@ function CreateAtomic() {
 export class StorageError extends Error {}
 
 export default function Storage<Data extends unknown>(STORAGE_KEY: string) {
-  const atomic = CreateAtomic()
+  const atomic = Atomic()
 
   const load = () => atomic(async () => {
     const storage = await chrome.storage.local.get([STORAGE_KEY])

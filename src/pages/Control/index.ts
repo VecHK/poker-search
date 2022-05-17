@@ -1,6 +1,6 @@
 import React from 'react'
 import { render } from 'react-dom'
-import { createBase } from '../../utils/base'
+import { createBase } from '../../core/base'
 
 import Control from './Control'
 import './Control.css'
