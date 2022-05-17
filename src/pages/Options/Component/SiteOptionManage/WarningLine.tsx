@@ -11,9 +11,8 @@ import s from './WarningLine.module.css'
 
 const DURATION = 382
 
-export default function WarningLine({ disable, siteMatrix }: { disable: boolean; siteMatrix: SiteMatrix }) {
+export function useMaxWindowPerLine() {
   const [maxWindowPerLine, setMaxWindowPerLine] = useState<null | number>(null)
-
   useEffect(() => {
     getCurrentDisplayLimit().then(limit => {
       const { max_window_per_line } = autoAdjustWidth(
@@ -22,6 +21,11 @@ export default function WarningLine({ disable, siteMatrix }: { disable: boolean;
       setMaxWindowPerLine(max_window_per_line)
     })
   }, [])
+  return maxWindowPerLine
+}
+
+export default function WarningLine({ disable, siteMatrix }: { disable: boolean; siteMatrix: SiteMatrix }) {
+  const maxWindowPerLine = useMaxWindowPerLine()
 
   const hasMaxCol = useMemo(() => {
     if (maxWindowPerLine === null) {

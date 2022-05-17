@@ -1,11 +1,13 @@
 import { equals } from 'ramda'
-import React, { useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { Droppable, Draggable, DraggingStyle, NotDraggingStyle } from 'react-beautiful-dnd'
 import { SiteOption, SiteRow } from '../../../../options/site-matrix'
 import s from './DragCols.module.css'
-import SiteWindow, { SiteWindowFrame } from './SiteWindow'
-import plusSrc from './plus.svg'
+import SiteWindow from './SiteWindow'
+
 import { CSSTransition, TransitionGroup } from 'react-transition-group'
+import AddSiteOption from './AddSiteOption'
+import { useMaxWindowPerLine } from './WarningLine'
 
 const getItemStyle = (
   isDragging: boolean,
@@ -169,6 +171,15 @@ export default function Cols(props: {
   const [enableRemoveAnimation, setEnableRemoveAnimation] = useState(false)
   const { row, rowNum } = props
 
+  const maxWindowPerLine = useMaxWindowPerLine()
+  const showWarnline = useMemo(() => {
+    if (maxWindowPerLine === null) {
+      return true
+    } else {
+      return row.length > maxWindowPerLine
+    }
+  }, [maxWindowPerLine, row.length])
+
   return (
     <Droppable droppableId={`${rowNum}`} type="COLS" direction="horizontal">
       {(provided, snapshot) => (
@@ -195,17 +206,10 @@ export default function Cols(props: {
 
           {provided.placeholder}
 
-          <div style={{ margin: '0 8px' }}>
-            <SiteWindowFrame>
-              <img
-                className={s.AddSite}
-                src={plusSrc}
-                style={{ cursor: 'pointer', width: '48px', height: '48px' }}
-                alt="add site option"
-                onClick={props.onClickAdd}
-              />
-            </SiteWindowFrame>
-          </div>
+          <AddSiteOption
+            show={!showWarnline}
+            onClickAdd={props.onClickAdd}
+          />
         </div>
       )}
     </Droppable>
