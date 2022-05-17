@@ -45,7 +45,8 @@ export default function WarningLine({ disable, siteMatrix }: { disable: boolean;
     if (maxWindowPerLine === null) {
       return 0
     } else {
-      const SiteWindowWidth = 128
+      const SiteWindowBorderWidth = 2
+      const SiteWindowWidth = 128 + SiteWindowBorderWidth * 2
       const SiteWindowGap = 16
       const SiteWindowGapHalf = SiteWindowGap / 2
       const SettingItemPadding = 20

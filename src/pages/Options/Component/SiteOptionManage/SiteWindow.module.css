@@ -8,7 +8,6 @@
   --normal-height: 156px;
 
   height: var(--normal-height);
-  box-sizing: border-box;
   border: solid 2px grey;
 
   background-color: white;
