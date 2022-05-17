@@ -22,7 +22,7 @@ export default function SiteOptionManage({ siteMatrix, onUpdate, onChange }: {
       <AddNewRow
         isEdit={Boolean(edit)}
         onClickAdd={() => {
-          const newMatrix = [[generateExampleOption()], ...siteMatrix].reverse()
+          const newMatrix = [...siteMatrix, [generateExampleOption()]]
           onChange(newMatrix)
           setEdit([0, 0])
         }}
