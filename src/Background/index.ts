@@ -1,5 +1,6 @@
 import cfg from '../config'
 import { createBase } from '../utils/base'
+import { calcControlWindowPos } from '../utils/control-window'
 
 console.log('TypeScriptBackground')
 
@@ -81,17 +82,15 @@ async function regRules() {
 regRules()
 
 chrome.omnibox.onInputEntered.addListener((text) => {
-  // text
-  console.log('text', text)
+  console.log('search text', text)
   createBase().then(base => {
-    const [top, left] = base.calcControlWindowPos()
-    console.log(top, left)
+    const [ top, left ] = calcControlWindowPos(base.total_height, base.limit)
     chrome.windows.create({
       type: 'popup',
-      width: Math.floor(cfg.CONTROL_WINDOW_WIDTH),
-      height: Math.floor(cfg.CONTROL_WINDOW_HEIGHT),
-      left: Math.floor(left),
-      top: Math.floor(top),
+      width: Math.round(cfg.CONTROL_WINDOW_WIDTH),
+      height: Math.round(cfg.CONTROL_WINDOW_HEIGHT),
+      left: Math.round(left),
+      top: Math.round(top),
       url: chrome.runtime.getURL(`/control.html?q=${encodeURIComponent(text)}`)
     })
   })

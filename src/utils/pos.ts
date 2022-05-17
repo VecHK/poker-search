@@ -1,8 +1,9 @@
-import { Base } from "./base"
+import { Base } from './base'
 
 export const calcWindowsTotalWidth = (multi: number, width: number, gap: number) => {
   return (width * multi) + (gap * (multi - 1))
 }
+
 export const calcWindowsTotalHeight = (multi: number, window_height: number, titlebar_height: number) => {
   if (multi === 1) {
     return window_height
@@ -12,7 +13,7 @@ export const calcWindowsTotalHeight = (multi: number, window_height: number, tit
 }
 
 type Pos = Readonly<[number, number]>
-export function calcPos(
+export function calcLayoutPos(
   info: Omit<Base['info'], 'window_height'>,
   line: number,
   index: number

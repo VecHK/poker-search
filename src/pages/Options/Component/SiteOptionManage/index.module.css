@@ -1,11 +1,1 @@
 .SiteOptionManage {}
-.AddSite {
-  cursor: pointer;
-  width: 48px;
-  height: 48px;
-}
-
-.NewRowInner {
-  padding-left: 45px;
-  display: flex;
-}

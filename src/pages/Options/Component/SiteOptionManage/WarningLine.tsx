@@ -3,7 +3,7 @@ import { Transition } from 'react-transition-group'
 
 import cfg from '../../../../config'
 import { SiteMatrix } from '../../../../options/'
-import { autoAdjustWidth } from '../../../../utils/base'
+import { autoAdjustWidth } from '../../../../utils/base/auto-adjust'
 import { getCurrentDisplayLimit } from '../../../../utils/base/limit'
 import { calcWindowsTotalWidth } from '../../../../utils/pos'
 
@@ -11,9 +11,8 @@ import s from './WarningLine.module.css'
 
 const DURATION = 382
 
-export default function WarningLine({ disable, siteMatrix }: { disable: boolean; siteMatrix: SiteMatrix }) {
+export function useMaxWindowPerLine() {
   const [maxWindowPerLine, setMaxWindowPerLine] = useState<null | number>(null)
-
   useEffect(() => {
     getCurrentDisplayLimit().then(limit => {
       const { max_window_per_line } = autoAdjustWidth(
@@ -22,6 +21,11 @@ export default function WarningLine({ disable, siteMatrix }: { disable: boolean;
       setMaxWindowPerLine(max_window_per_line)
     })
   }, [])
+  return maxWindowPerLine
+}
+
+export default function WarningLine({ disable, siteMatrix }: { disable: boolean; siteMatrix: SiteMatrix }) {
+  const maxWindowPerLine = useMaxWindowPerLine()
 
   const hasMaxCol = useMemo(() => {
     if (maxWindowPerLine === null) {
@@ -41,7 +45,8 @@ export default function WarningLine({ disable, siteMatrix }: { disable: boolean;
     if (maxWindowPerLine === null) {
       return 0
     } else {
-      const SiteWindowWidth = 128
+      const SiteWindowBorderWidth = 2
+      const SiteWindowWidth = 128 + SiteWindowBorderWidth * 2
       const SiteWindowGap = 16
       const SiteWindowGapHalf = SiteWindowGap / 2
       const SettingItemPadding = 20
