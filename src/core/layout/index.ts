@@ -1,5 +1,5 @@
 import { Base } from '../base'
-import { constructSearchWindows } from './window-create'
+import { constructSearchWindowsFast } from './window-create'
 import { selectWindow } from './window-update'
 import { closeAllWindow, SearchWindow } from './window'
 import { renderCol } from './render'
@@ -29,7 +29,7 @@ export async function createSearch({
   stop: () => void
 }) {
   const { search_matrix } = base
-  let matrix = await constructSearchWindows(
+  let matrix = await constructSearchWindowsFast(
     base, search_matrix, keyword, canContinue, stop
   )
 
@@ -39,7 +39,7 @@ export async function createSearch({
       if (need_update) {
         clearFocusChangedHandler()
         timeout(cfg.SEARCH_FOCUS_INTERVAL).then(function wait() {
-          return renderCol(base, update.new_matrix, update.col, true)
+          return renderCol(base, update.new_matrix, update.col, true, true)
         }).then(function renderDone() {
           matrix = update.new_matrix
           setFocusChangedHandler()
