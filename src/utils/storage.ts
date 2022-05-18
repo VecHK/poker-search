@@ -1,4 +1,4 @@
-import Atomic from "./atomic"
+import { Atomic } from 'vait'
 
 export class StorageError extends Error {}
 
