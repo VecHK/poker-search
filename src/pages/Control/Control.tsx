@@ -11,7 +11,7 @@ import ArrowButtonGroup from './components/ArrowGroup'
 
 import SearchForm from './components/SearchForm'
 
-import './Control.css';
+import './Control.css'
 
 const queryKeyword = getSearchword()
 
@@ -161,11 +161,18 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
             }
 
             controll.clearFocusChangedHandler()
-            renderMatrix(base, newMatrix, type === 'next' ? true : undefined).then(() => {
+            renderMatrix(
+              base,
+              newMatrix,
+              type === 'next' ? true : undefined,
+              true
+            ).then(() => {
               return chrome.windows.getCurrent()
             }).then(({id}) => {
               if (id !== undefined) {
-                return chrome.windows.update(id, { focused: true })
+                return chrome.windows.update(id, {
+                  focused: true,
+                })
               }
             }).then(() => {
               controll.setMatrix(newMatrix)

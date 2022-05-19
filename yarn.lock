@@ -1134,10 +1134,10 @@
   dependencies:
     "@types/node" "*"
 
-"@types/chrome@^0.0.181":
-  version "0.0.181"
-  resolved "https://registry.yarnpkg.com/@types/chrome/-/chrome-0.0.181.tgz#7357ff121f8844062616707d80ccb069f16f15ed"
-  integrity sha512-34Ln9YVVC8a195ruqWeaty3pouFdCLr9L5kPcbRflQcxnbXQnHor9uETof8OhDf8JLDytSRDiuDsRXYQYQ+9FA==
+"@types/chrome@^0.0.186":
+  version "0.0.186"
+  resolved "https://registry.yarnpkg.com/@types/chrome/-/chrome-0.0.186.tgz#e6513ccf2021eab90b3313bb60ef272761f1df78"
+  integrity sha512-Ykpf95dbv0resO/PcRF/9vKETOKma5D2sSUKo8mSL1vz03IgVhyHuCrlzbDYMLrXIl9CcyGnYTMG2Zg0WAk62w==
   dependencies:
     "@types/filesystem" "*"
     "@types/har-format" "*"
@@ -5282,6 +5282,11 @@ v8-compile-cache@^2.0.3:
   version "2.3.0"
   resolved "https://registry.yarnpkg.com/v8-compile-cache/-/v8-compile-cache-2.3.0.tgz#2de19618c66dc247dcfb6f99338035d8245a2cee"
   integrity sha512-l8lCEmLcLYZh4nbunNZvQCJc5pv7+RCwa8q/LdUx8u7lsWvPDKmpodJAJNwkAhJC//dFY48KuIEmjtd4RViDrA==
+
+vait@^2.0.2:
+  version "2.0.2"
+  resolved "https://registry.yarnpkg.com/vait/-/vait-2.0.2.tgz#e56314e7896b7a44ac8e62c41a60025e260213bb"
+  integrity sha512-pqUaiib7k/rP7+JJkAf8l1/QXuz0834SNXYDbwFSTcr5CZlkfRu1LZb0KLq8rWAkn9KB2+OXlQJe7hTBscNt+g==
 
 vary@~1.1.2:
   version "1.1.2"

@@ -1,8 +1,7 @@
 import { Matrix } from '../common'
-import { SearchWindow } from './window'
 
-export function isCurrentRow(
-  matrix: Matrix<SearchWindow>,
+export function isCurrentRow<T>(
+  matrix: Matrix<T>,
   row: number
 ) {
   return row === (matrix.length - 1)

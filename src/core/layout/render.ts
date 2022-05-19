@@ -4,11 +4,12 @@ import { calcRealPos } from './pos'
 import { isCurrentRow } from './matrix'
 import { SearchWindow } from './window'
 
-function renderWindow(
+function refreshWindow(
   base: Base,
   opts: {
     windowId: number,
     focused?: boolean,
+    resetSize?: boolean
     row: number
     col: number
   }
@@ -19,13 +20,16 @@ function renderWindow(
     focused: opts.focused,
     left,
     top,
+    width: opts.resetSize ? base.info.window_width : undefined,
+    height: opts.resetSize ? base.info.window_height : undefined,
   })
 }
 
 export async function renderMatrix(
   base: Base,
   matrix: Matrix<SearchWindow>,
-  presetFocused: undefined | boolean = undefined
+  presetFocused: undefined | boolean = undefined,
+  resetSize: boolean = false
 ) {
   const isWin = base.platform.os === 'win'
 
@@ -33,11 +37,12 @@ export async function renderMatrix(
   for (let [row, line] of matrix.entries()) {
     for (let [col, u] of line.entries()) {
       const isLastLine = isCurrentRow(matrix, row)
-      const p = renderWindow(base, {
+      const p = refreshWindow(base, {
         windowId: u.windowId,
         focused: (presetFocused === undefined) ? (isWin || isLastLine) : presetFocused,
+        resetSize,
         row,
-        col
+        col,
       })
       promises.push(p)
     }
@@ -50,7 +55,8 @@ export function renderCol(
   base: Base,
   matrix: Matrix<SearchWindow>,
   selectCol: number,
-  presetFocused: undefined | boolean = undefined
+  presetFocused: undefined | boolean = undefined,
+  resetSize: boolean = false
 ) {
   const isWin = base.platform.os === 'win'
 
@@ -59,9 +65,10 @@ export function renderCol(
     for (let [col, u] of line.entries()) {
       if (selectCol === col) {
         const isLastLine = isCurrentRow(matrix, row)
-        const p = renderWindow(base, {
+        const p = refreshWindow(base, {
           windowId: u.windowId,
           focused: (presetFocused === undefined) ? (isWin || isLastLine) : presetFocused,
+          resetSize,
           row,
           col
         })

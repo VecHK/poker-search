@@ -13,5 +13,6 @@ export const calcControlWindowPos = partial((
 
   const top = total_height - control_window_height + base_y + limit.minY
   const left = ((limit.width - control_window_width) / 2) + limit.minX
-  return [ top, left ] as const
+
+  return [ Math.round(top), Math.round(left) ] as const
 }, [cfg.CONTROL_WINDOW_HEIGHT, cfg.CONTROL_WINDOW_WIDTH])

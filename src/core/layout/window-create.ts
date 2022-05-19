@@ -2,6 +2,8 @@ import { SearchWindowMatrix, SearchWindowRow } from './window'
 import { Base } from '../base'
 import { SearchMatrix } from '../base/search-matrix'
 import { calcRealPos } from './pos'
+import { isCurrentRow } from './matrix'
+import { renderMatrix } from './render'
 
 type PlainUnit = null
 type Unit = PlainUnit | {
@@ -20,11 +22,7 @@ function CreateWindow(url: string, CreateData: chrome.windows.CreateData) {
     ...CreateData,
     url,
   }).then(newWindow => {
-    if (newWindow.top === undefined) {
-      throw Error('newWindow.top is undefined')
-    } else if (newWindow.left === undefined) {
-      throw Error('newWindow.left is undefined')
-    } else if (newWindow.id === undefined) {
+    if (newWindow.id === undefined) {
       throw Error('newWindow.id is undefined')
     } else {
       windowId = newWindow.id
@@ -78,9 +76,108 @@ export async function constructSearchWindows(
       } else {
         // cancel
         throw Object.assign(Error('Cancel'), { ids, cancel: true })
-      }     
+      }
     }
   }
 
   return newMatrix
 }
+
+type CreateData = {
+  url: string
+  window_data: chrome.windows.CreateData
+}
+
+export async function constructSearchWindowsFast(
+  base: Base,
+  search_matrix: SearchMatrix,
+  keyword: string,
+  canContinue: () => boolean,
+  stop: () => void
+) {
+  search_matrix = [...search_matrix].reverse()
+
+  const create_matrix: CreateData[][] = []
+
+  for (let [row, cols] of search_matrix.entries()) {
+    const create_row: CreateData[] = []
+    create_matrix.push(create_row)
+
+    for (let [col, getSearchURL] of cols.entries()) {
+      const url = getSearchURL(keyword)
+
+      const [left, top] = calcRealPos(base, row, col)
+
+      if (isCurrentRow(search_matrix, row)) {
+        create_row.push({
+          url,
+          window_data: {
+            type: 'popup',
+            focused: true,
+            width: base.info.window_width,
+            height: base.info.window_height,
+            left,
+            top,
+          }
+        })
+      } else {
+        create_row.push({
+          url,
+          window_data: {
+            type: 'popup',
+            focused: false,
+            width: base.info.window_width,
+            height: base.info.titlebar_height,
+            left,
+            top,
+          }
+        })
+      }
+    }
+  }
+
+  const ids: number[] = []
+  let new_matrix: SearchWindowMatrix = []
+
+  for (const [row, create_row] of [...create_matrix].reverse().entries()) {
+    const new_row: SearchWindowRow = []
+    new_matrix.push(new_row)
+
+    for (const create of create_row) {
+      if (canContinue()) {
+        const [win, p] = CreateWindow(create.url, {
+          ...create.window_data
+        })
+
+        await p
+        const windowId = win.getWindowId()
+        ids.push(windowId)
+        new_row.push({ windowId })
+        const h = (closedWindowId: number) => {
+          if (windowId === closedWindowId) {
+            chrome.windows.onRemoved.removeListener(h)
+            stop()
+          }
+        }
+        chrome.windows.onRemoved.addListener(h)
+      } else {
+        // cancel
+        throw Object.assign(Error('Cancel'), { ids, cancel: true })
+      }
+    }
+
+    if (row === 0) {
+      await timeout(1000)
+    } else {
+      await timeout(100)
+    }
+  }
+
+  new_matrix = [...new_matrix].reverse()
+
+  await renderMatrix(base, new_matrix, true, false)
+
+  return new_matrix
+}
+
+const timeout = (ms: number) => new Promise(res => setTimeout(res, ms))

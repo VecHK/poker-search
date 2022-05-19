@@ -172,11 +172,11 @@ export default function Cols(props: {
   const { row, rowNum } = props
 
   const maxWindowPerLine = useMaxWindowPerLine()
-  const showWarnline = useMemo(() => {
+  const showAddButton = useMemo(() => {
     if (maxWindowPerLine === null) {
-      return false
+      return true
     } else {
-      return row.length > maxWindowPerLine
+      return row.length < maxWindowPerLine
     }
   }, [maxWindowPerLine, row.length])
 
@@ -207,7 +207,7 @@ export default function Cols(props: {
           {provided.placeholder}
 
           <AddSiteOption
-            show={!showWarnline}
+            show={showAddButton}
             onClickAdd={props.onClickAdd}
           />
         </div>
