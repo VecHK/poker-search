@@ -47,7 +47,6 @@ function SiteOptionDragItem(props: {
   return (
     <div className={s.SiteOption}>
       <Draggable
-        key={`${props.option.id}`}
         draggableId={`${props.option.id}`}
         index={props.colNum}
         isDragDisabled={Boolean(props.edit)}

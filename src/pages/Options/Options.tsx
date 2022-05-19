@@ -51,7 +51,7 @@ function useAdjustMarginCenter(siteMatrix: SiteMatrix) {
 
       return newColumn
     })
-  }, [ref, siteMatrix])
+  }, [siteMatrix])
 
   useEffect(() => {
     let timer: NodeJS.Timeout | undefined = undefined
