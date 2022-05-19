@@ -17,7 +17,15 @@ export default function SiteIcon({
   onIconUpdate
 }: SiteIconProp) {
   const [isStartLoading, setStartLoading] = useState<boolean>(src !== null)
+  const [nowUrlPattern, setNowUrlPattern] = useState<string>(urlPattern)
   const [loading, setLoading] = useState<boolean>(false)
+
+  useEffect(() => {
+    // urlPattern 修改后再次加载图标
+    if (nowUrlPattern !== urlPattern) {
+      setStartLoading(false)
+    }
+  }, [nowUrlPattern, urlPattern])
 
   useEffect(() => {
     if (isStartLoading === false) {
@@ -25,6 +33,7 @@ export default function SiteIcon({
       setLoading(true)
       if (src === null) {
         setStartLoading(true)
+        setNowUrlPattern(urlPattern)
         getIcon(toSearchURL(urlPattern, 'hello'))
           .then(newSrc => {
             if (newSrc === null) {

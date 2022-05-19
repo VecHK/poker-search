@@ -81,9 +81,11 @@ export default function SiteWindow({
 }: SiteWindowProps) {
   const [editSiteOption, setEditSiteOption] = useState<SiteOption | null>(null)
   const [enableEdit, setEnableEdit] = useState<boolean>(false)
+  const [editLayoutKey, setEditLayoutKey] = useState<string>(`${Date.now()}`)
 
   useEffect(() => {
     if (isEdit) {
+      setEditLayoutKey(`${Date.now()}`)
       setEditSiteOption(siteOption)
     }
     setEnableEdit(isEdit)
@@ -93,6 +95,7 @@ export default function SiteWindow({
     if (editSiteOption) {
       return (
         <EditLayout
+          key={editLayoutKey}
           siteOption={editSiteOption}
           onSubmit={onSubmit}
           onCancel={onCancelEdit}
@@ -101,7 +104,7 @@ export default function SiteWindow({
     } else {
       return null
     }
-  }, [editSiteOption, onCancelEdit, onSubmit])
+  }, [editLayoutKey, editSiteOption, onCancelEdit, onSubmit])
 
   return (
     <SiteWindowFrame

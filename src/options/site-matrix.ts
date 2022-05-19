@@ -23,7 +23,7 @@ export function addMobileIdentifier(url: string) {
   return `${u.origin}${u.pathname}${search}${u.hash}`
 }
 
-function generateId() {
+export function generateId() {
   return `${randomString(16, 0)}`
 }
 

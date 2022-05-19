@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react'
-import { SiteOption } from '../../../../options/site-matrix'
+import { generateExampleOption, generateId, SiteOption } from '../../../../options/site-matrix'
 import Switch from '../Switch'
 import s from './EditLayout.module.css'
 
@@ -75,7 +75,14 @@ export default function EditLayout({ siteOption, onSubmit, onCancel }: EditLayou
           if (siteOption !== null) {
             const newOption = formDataTransform(siteOption, e)
             valid(newOption)
-            onSubmit(newOption)
+            if (newOption.url_pattern === siteOption.url_pattern) {
+              onSubmit(newOption)
+            } else {
+              onSubmit({
+                ...newOption,
+                icon: null,
+              })
+            }
           }
         } catch (err) {
           console.error('submit error', err)
