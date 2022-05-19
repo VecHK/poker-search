@@ -5283,10 +5283,10 @@ v8-compile-cache@^2.0.3:
   resolved "https://registry.yarnpkg.com/v8-compile-cache/-/v8-compile-cache-2.3.0.tgz#2de19618c66dc247dcfb6f99338035d8245a2cee"
   integrity sha512-l8lCEmLcLYZh4nbunNZvQCJc5pv7+RCwa8q/LdUx8u7lsWvPDKmpodJAJNwkAhJC//dFY48KuIEmjtd4RViDrA==
 
-vait@^2.0.1:
-  version "2.0.1"
-  resolved "https://registry.yarnpkg.com/vait/-/vait-2.0.1.tgz#7b14f3a8989ed133cc3435ddfdfb5f13b8561983"
-  integrity sha512-3TnSACrJXEwmNiOV+2BfFA601gotmc5365uIi4tfttVtQ3scbQ4o+N04/BdjADl/mH6yAaMS6ftWGdWuqBNzWg==
+vait@^2.0.2:
+  version "2.0.2"
+  resolved "https://registry.yarnpkg.com/vait/-/vait-2.0.2.tgz#e56314e7896b7a44ac8e62c41a60025e260213bb"
+  integrity sha512-pqUaiib7k/rP7+JJkAf8l1/QXuz0834SNXYDbwFSTcr5CZlkfRu1LZb0KLq8rWAkn9KB2+OXlQJe7hTBscNt+g==
 
 vary@~1.1.2:
   version "1.1.2"
