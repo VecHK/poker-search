@@ -5,10 +5,6 @@ import { getCurrentDisplayLimit, Limit } from './limit'
 import { autoAdjustHeight, autoAdjustWidth } from './auto-adjust'
 import { initSearchMatrix, SearchMatrix } from './search-matrix'
 
-const getPlatformInfo = () => (new Promise<chrome.runtime.PlatformInfo>(
-  res => chrome.runtime.getPlatformInfo(res)
-))
-
 type BaseInfo = {
   window_height: number
   window_width: number
@@ -31,7 +27,7 @@ async function initBase(
 ): Promise<Base> {
   const [limit, platform] = await Promise.all([
     getCurrentDisplayLimit(),
-    getPlatformInfo()
+    chrome.runtime.getPlatformInfo()
   ])
 
   const gap_horizontal = cfg.SEARCH_WINDOW_GAP_HORIZONTAL

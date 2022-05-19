@@ -51,17 +51,13 @@ async function _initTitlebarHeight(
   }
 }
 
-const getPlatformInfo = () => (new Promise<chrome.runtime.PlatformInfo>(
-  res => chrome.runtime.getPlatformInfo(res)
-))
-
 export async function initTitlebarHeight(
   window_height: number,
   inner_height: number,
 ): Promise<number> {
   const [titlebar_height, platform] = await Promise.all([
     _initTitlebarHeight(window_height, inner_height),
-    getPlatformInfo(),
+    chrome.runtime.getPlatformInfo(),
   ])
 
   if (platform.os === 'win') {
