@@ -48,7 +48,6 @@ export async function createSearchLayout({
     if ((is_not_control_window && is_not_matrix_window) || is_not_chrome_window) {
       __need_refresh__ = true
     } else {
-      __need_refresh__ = false
       try {
         clearFocusChangedHandler()
 
@@ -73,6 +72,7 @@ export async function createSearchLayout({
           await chrome.windows.update(focused_window_id, { focused: true })
         }
       } finally {
+        __need_refresh__ = false
         setFocusChangedHandler()
       }
     }
