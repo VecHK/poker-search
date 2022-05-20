@@ -37,7 +37,7 @@
 - <p>https://www.youtube.com/results?search_query=<b>%poker%</b></p>
 - <p>https://github.com/search?q=<b>%poker%</b></p>
 
-但由于此添加方案过于繁琐，且不适于像我的老父母那样的用户进行使用，因此我们也有了相对的解决方案。
+但由于此添加方案过于繁琐，且不适于像我们的老父母那样的用户进行使用，因此我们也有了相对的解决方案。
 敬请期待下一版的更新。
 
 ## 启用
@@ -70,7 +70,7 @@ Poker 搜索启动后，用户能在底部的控制台窗口中再次键入新�
 
 也能直接联系 [Vec](http://vec.moe/) 与 [NT³](https://t.me/nt_cubic) 
 
-## 欢迎改进
+## 欢迎 Pull Request
 
 这也是开源的意义，使得 Poker Search 能更好的使用。
 
