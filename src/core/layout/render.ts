@@ -29,22 +29,28 @@ export async function renderMatrix(
   base: Base,
   matrix: Matrix<SearchWindow>,
   presetFocused: undefined | boolean = undefined,
-  resetSize: boolean = false
+  resetSize: boolean = false,
+  skip_ids: number[] = []
 ) {
   const isWin = base.platform.os === 'win'
 
-  const promises: Promise<chrome.windows.Window>[] = []
+  const promises: Promise<chrome.windows.Window | null>[] = []
   for (let [row, line] of matrix.entries()) {
     for (let [col, u] of line.entries()) {
       const isLastLine = isCurrentRow(matrix, row)
-      const p = refreshWindow(base, {
-        windowId: u.windowId,
-        focused: (presetFocused === undefined) ? (isWin || isLastLine) : presetFocused,
-        resetSize,
-        row,
-        col,
-      })
-      promises.push(p)
+
+      if (skip_ids.indexOf(u.windowId) !== -1) {
+        promises.push(Promise.resolve(null))
+      } else {
+        const p = refreshWindow(base, {
+          windowId: u.windowId,
+          focused: (presetFocused === undefined) ? (isWin || isLastLine) : presetFocused,
+          resetSize,
+          row,
+          col,
+        })
+        promises.push(p)
+      }
     }
   }
 
@@ -78,17 +84,4 @@ export function renderCol(
   }
 
   return Promise.all(promises)
-}
-
-type RenderInfo = {
-  windowId: number
-  left?: number
-  top?: number
-  width?: number
-  height?: number
-  focused?: boolean
-}
-type RenderSeries = Array<RenderInfo>
-async function render(rs: RenderSeries) {
-  // rs.map()
 }

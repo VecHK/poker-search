@@ -3,7 +3,7 @@ import Loading from '../../components/Loading'
 import { Base } from '../../core/base'
 import { Matrix } from '../../core/common'
 import { calcControlWindowPos } from '../../core/layout/control-window'
-import { createSearch } from '../../core/layout'
+import { createSearchLayout } from '../../core/layout'
 import { renderMatrix } from '../../core/layout/render'
 import { closeAllWindow, SearchWindow } from '../../core/layout/window'
 import { getSearchword } from '../../utils/search'
@@ -15,7 +15,7 @@ import './Control.css'
 
 const queryKeyword = getSearchword()
 
-type Control = Unpromise<ReturnType<typeof createSearch>>
+type Control = Unpromise<ReturnType<typeof createSearchLayout>>
 
 function createStep() {
   let _continue = true
@@ -46,10 +46,20 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
   const [isOpen, setOpen] = useState(false)
   const [keyword, setKeyword] = useState(queryKeyword)
   const [submitedKeyword, submit] = useState<string | false>(false)
-  const [nowId, setId] = useState(-1)
+
+  const [controlWindowId, setControlWindowId] = useState<null | number>(null)
+
   const [controll, setControll] = useState<Control | undefined>(undefined)
   const [text, setText] = useState('text')
   const [{ canContinue, stop }, setStep] = useState(createStep())
+
+  useEffect(() => {
+    chrome.windows.getCurrent().then(({ id }) => {
+      if (id !== undefined) {
+        setControlWindowId(id)
+      }
+    })
+  }, [])
 
   const callCloseAllWindow = useCallback((ids: number[]) => {
     setOpen(false)
@@ -79,17 +89,15 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
     }
   }, [controll, onCloseAllWindow, stop])
 
-  const moveControlWindow = useCallback(async () => {
-    const { id } = await chrome.windows.getCurrent()
-    if (id !== undefined) {
-      const [ top, left ] = calcControlWindowPos(base.layout_height, base.limit)
-      await chrome.windows.update(id, { top, left })
-    }
-  }, [base])
+  const moveControlWindow = useCallback(async (id: number) => {
+    const [ top, left ] = calcControlWindowPos(base.layout_height, base.limit)
+    await chrome.windows.update(id, { top, left })
+  }, [base.layout_height, base.limit])
 
-  const refreshWindows = useCallback((keyword: string) => {
+  const refreshWindows = useCallback((control_window_id: number, keyword: string) => {
     setLoading(true)
-    createSearch({
+    createSearchLayout({
+      control_window_id,
       base,
       keyword,
       canContinue,
@@ -99,15 +107,14 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
       newControll.setRemoveHandler()
       newControll.setFocusChangedHandler()
     }).catch(err => {
-      // alert(`${err.cancel}`)
       if (err.cancel) {
         // 提前取消
         const ids = err.ids as number[]
         callCloseAllWindow(ids)
         window.close()
-        // chrome.runtime.id
       } else {
-        console.error('createSearch error', err)
+        console.error('createSearchLayout error', err)
+        throw err
       }
     }).then(() => {
       setLoading(false)
@@ -115,13 +122,16 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
   }, [base, callCloseAllWindow, canContinue, stop])
 
   useEffect(() => {
-    if (submitedKeyword !== false) {
-      setOpen(true)
-      moveControlWindow().then(() => {
-        refreshWindows(submitedKeyword)
-      })
+    if (controlWindowId !== null) {
+      if (submitedKeyword !== false) {
+        setOpen(true)
+  
+        moveControlWindow(controlWindowId).then(() => {
+          refreshWindows(controlWindowId, submitedKeyword)
+        })
+      }
     }
-  }, [moveControlWindow, refreshWindows, submitedKeyword])
+  }, [controlWindowId, moveControlWindow, refreshWindows, submitedKeyword])
 
   return (
     <div className="container">

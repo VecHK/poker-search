@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
-  "name": "Poker",
-  "description": "一种用作搜索用途的 Chrome 插件",
+  "name": "Poker Search",
+  "description": "一款灵感来源于 Smartisan TNT 发牌手的 Chrome 扩展插件。",
   "options_page": "options.html",
   "background": {
     "service_worker": "background.bundle.js"

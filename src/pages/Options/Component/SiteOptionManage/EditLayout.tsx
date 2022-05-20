@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react'
-import { generateExampleOption, generateId, SiteOption } from '../../../../options/site-matrix'
+import { SiteOption } from '../../../../options/site-matrix'
 import Switch from '../Switch'
 import s from './EditLayout.module.css'
 
