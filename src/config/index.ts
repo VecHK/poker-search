@@ -1,7 +1,3 @@
-import randomString from "../utils/random-string"
-
-const randomUrlPattern = () => `http://localhost:2070/${randomString(16, 1)}${cfg.KEYWORD_REPLACEHOLDER}`
-
 const { id: chrome_id } = chrome.runtime
 
 const cfg = Object.freeze({
@@ -42,27 +38,33 @@ const cfg = Object.freeze({
   get DEFAULT_SITE_ICON() {
     return chrome.runtime.getURL(`/default-siteicon.png`)
   },
+
   DEFAULT_ENABLE_MOBILE: true,
-  DEFAULT_MAX_WINDOW_PER_LINE: 8,
-  get DEFAULT_SEARCH_LIST() {
+
+  get DEFAULT_SITES() {
     return [
-      `https://mobile.twitter.com/search?q=${cfg.KEYWORD_REPLACEHOLDER}&src=typeahead_click`,
-      `https://www.google.com/search?q=${cfg.KEYWORD_REPLACEHOLDER}`,
-      `https://pache.blog/tag/${cfg.KEYWORD_REPLACEHOLDER}`,
-      `https://www.vgtime.com/search/list.jhtml?keyword=${cfg.KEYWORD_REPLACEHOLDER}`,
-      `https://www.zhihu.com/search?type=content&q=${cfg.KEYWORD_REPLACEHOLDER}`,
-      `https://www.google.com/maps/search/${cfg.KEYWORD_REPLACEHOLDER}`,
-      randomUrlPattern(),
-      randomUrlPattern(),
-      randomUrlPattern(),
-      randomUrlPattern(),
-      randomUrlPattern(),
-      randomUrlPattern(),
-      randomUrlPattern(),
-      randomUrlPattern(),
-      randomUrlPattern(),
-      randomUrlPattern(),
+      [
+        `https://www.google.com/search?q=${cfg.KEYWORD_REPLACEHOLDER}`,
+        `http://www.baidu.com/s?ie=utf-8&f=8&wd=${cfg.KEYWORD_REPLACEHOLDER}`,
+        `https://www.bing.com/search?q=${cfg.KEYWORD_REPLACEHOLDER}`,
+        `https://duckduckgo.com/?q=${cfg.KEYWORD_REPLACEHOLDER}`,
+        `https://www.reddit.com/search/?q=${cfg.KEYWORD_REPLACEHOLDER}`,
+        `https://mobile.twitter.com/search?q=${cfg.KEYWORD_REPLACEHOLDER}&src=typeahead_click`,
+      ],
+      [
+        `https://www.youtube.com/results?search_query=${cfg.KEYWORD_REPLACEHOLDER}`,
+        `https://search.bilibili.com/all?keyword=${cfg.KEYWORD_REPLACEHOLDER}`,
+        `https://www.zhihu.com/search?type=content&q=${cfg.KEYWORD_REPLACEHOLDER}`,
+        `https://www.douban.com/search?source=suggest&q=${cfg.KEYWORD_REPLACEHOLDER}`,
+        `https://www.google.com/maps/search/${cfg.KEYWORD_REPLACEHOLDER}`,
+        `https://www.deepl.com/ja/translator#en/zh/${cfg.KEYWORD_REPLACEHOLDER}`,
+      ],
+      [
+        `https://github.com/search?q=${cfg.KEYWORD_REPLACEHOLDER}`,
+        `https://stackoverflow.com/search?q=${cfg.KEYWORD_REPLACEHOLDER}`,
+        `https://www.artstation.com/search?sort_by=relevance&query=${cfg.KEYWORD_REPLACEHOLDER}`,
+      ]
     ]
-  }
+  },
 })
 export default cfg
