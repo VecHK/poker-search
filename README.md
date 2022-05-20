@@ -4,6 +4,8 @@
 
 一款灵感来源于 Smartisan TNT 发牌手的 Chrome 扩展插件。
 
+![](readme-images/poker-search-released.png)
+
 它能够让用户**输入一个关键词**后，用全新的交互方式一次性展现出用户所有收录进 Poker 的网站的搜索结果。<br>
 而这个收录的网站，只需要有能进行搜索的 URL 即可。
 
