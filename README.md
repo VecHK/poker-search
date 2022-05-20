@@ -33,18 +33,16 @@
 各位能进行删除与 **点击『+』** 号按钮进行页面的添加，甚至能设置这个页面是否以手机模式进行加载（某些网站并不支持，因此会导致搜索结果出现一串乱码。此时请关闭此网站的手机加载模式）
 
 当你准备添加新网站时，需要在 URL 中把想要搜索的关键字替换为 **%poker%**，例如：
-- https://www.google.com/search?q=**%poker%**
-- https://www.youtube.com/results?search_query=**%poker%**
-- https://github.com/search?q=**%poker%**
+- <p>https://www.google.com/search?q=<b>%poker%</b></p>
+- <p>https://www.youtube.com/results?search_query=<b>%poker%</b></p>
+- <p>https://github.com/search?q=<b>%poker%</b></p>
 
 但由于此添加方案过于繁琐，且不适于像我的老父母那样的用户进行使用，因此我们也有了相对的解决方案。
 敬请期待下一版的更新。
 
 ## 启用
 
-由于 Chrome manifest V3 的限制，开发者以无法将插件设置为默认搜索引擎。<br>
-**因此启动关键词便设置为：<u>『Poker』</u>**<br>
-用户需要在地址栏（搜索栏）中输入**<u>『poker』+『空格』+『想要搜索的内容』</u>**才能启动 Poker 进行搜索。
+用户需要在地址栏（搜索栏）中输入<b><u>『poker』+『空格』+『想要搜索的内容』</u></b>才能启动 Poker 进行搜索。
 
 由于这种开启方式非常繁琐，目前我们已经有两个解决方案：
 
