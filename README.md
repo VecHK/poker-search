@@ -64,13 +64,13 @@ Poker 搜索启动后，用户能在底部的控制台窗口中再次键入新�
 
 ![image-20220520204353165](readme-images/windows2.png)
 
-## 有疑问或建议
+# 有疑问或建议
 
 你能直接在 [Discussions](https://github.com/VecHK/poker-search/discussions)、[Issues](https://github.com/VecHK/poker-search/issues) 页面发帖提出。
 
 也能直接联系 [Vec](http://vec.moe/) 与 [NT³](https://t.me/nt_cubic) 
 
-## 欢迎 Pull Request
+# 欢迎 Pull Request
 
 这也是开源的意义，使得 Poker Search 能更好的使用。
 
