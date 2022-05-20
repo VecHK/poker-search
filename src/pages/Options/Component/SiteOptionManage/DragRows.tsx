@@ -1,4 +1,4 @@
-import { all, equals, insert, move, nth, remove, update } from 'ramda'
+import { all, compose, equals, insert, move, nth, remove, update } from 'ramda'
 import React from 'react'
 import {
   DragDropContext,
@@ -38,36 +38,34 @@ const getItemStyle = (
 }
 
 function reorderCols(
-  siteMatrix: SiteMatrix,
+  site_matrix: SiteMatrix,
   source: DraggableLocation,
   destination: DraggableLocation,
 ): SiteMatrix {
   const s_row = Number(source.droppableId)
   const d_row = Number(destination.droppableId)
-  const row_src = nth(s_row, siteMatrix)
-  const row_des = nth(d_row, siteMatrix)
+  const row_src = nth(s_row, site_matrix)
+  const row_des = nth(d_row, site_matrix)
 
   const s_col = source.index
   const d_col = destination.index
 
-  if (!row_src || !row_des) {
+  if ((row_src === undefined) || (row_des === undefined)) {
     throw Error('row_src/row_des not found!')
   }
   else if (s_row === d_row) {
-    const newRow = move(s_col, d_col, row_src)
-    return update(s_row, newRow, siteMatrix)
+    const new_row = move(s_col, d_col, row_src)
+    return update(s_row, new_row, site_matrix)
   }
   else {
     const col_src = nth(s_col, row_src)
-
-    if (!col_src) {
-      throw Error('col_src not found!')
+    if (col_src === undefined) {
+      throw Error('col_src not found')
     } else {
-      const new_row_des = insert(d_col, col_src, row_des)
-      const new_row_src = remove(s_col, 1, row_src)
-
-      const tmp = update(d_row, new_row_des, siteMatrix)
-      return update(s_row, new_row_src, tmp)
+      return compose(
+        update(s_row, remove(s_col, 1, row_src)),
+        update(d_row, insert(d_col, col_src, row_des)),
+      )(site_matrix)
     }
   }
 }
