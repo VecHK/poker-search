@@ -69,6 +69,7 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
     const ids = con.getMatrix().flat().map(u => u.windowId)
     con.clearFocusChangedHandler()
     con.clearRemoveHandler()
+    con.setBoundsChangedHandler()
     callCloseAllWindow(ids)
   }, [callCloseAllWindow])
 
@@ -121,6 +122,7 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
       setControll(newControll)
       newControll.setRemoveHandler()
       newControll.setFocusChangedHandler()
+      newControll.setBoundsChangedHandler()
     }).catch(err => {
       if (err.cancel) {
         // 提前取消
