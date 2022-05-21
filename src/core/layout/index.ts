@@ -55,7 +55,9 @@ export async function createSearchLayout({
         if (need_update) {
           await timeout(cfg.SEARCH_FOCUS_INTERVAL)
   
-          const col_refresh_waiting = renderCol(base, update.new_matrix, update.col, true, true)
+          const col_refresh_waiting = renderCol(
+            base, update.new_matrix, update.col, true, true
+          )
 
           if (__need_refresh__) {
             const skip_ids = selectCol(matrix, update.col).map(u => u.windowId)
@@ -102,6 +104,7 @@ export async function createSearchLayout({
     setMatrix: (newMatrix: Matrix<SearchWindow>) => {
       matrix = newMatrix
     },
+    handleFocusChanged,
     clearFocusChangedHandler,
     setFocusChangedHandler,
     clearRemoveHandler,

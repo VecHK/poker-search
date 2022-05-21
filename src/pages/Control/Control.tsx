@@ -77,6 +77,21 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
   }, [])
 
   useEffect(() => {
+    if ((controlWindowId !== null) && (controll !== undefined)) {
+      const commandHandler = (command: string) => {
+        if (command === 'focus-layout') {
+          controll.handleFocusChanged(controlWindowId)
+        }
+      }
+      chrome.commands.onCommand.addListener(commandHandler)
+
+      return () => {
+        chrome.commands.onCommand.removeListener(commandHandler)
+      }
+    }
+  }, [controlWindowId, controll])
+
+  useEffect(() => {
     const handler = () => {
       stop()
       if (controll !== undefined) {

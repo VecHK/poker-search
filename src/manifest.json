@@ -31,6 +31,18 @@
   "omnibox": {
     "keyword": "poker"
   },
+  "commands": {
+    "focus-layout": {
+      "global": true,
+      "description": "切换回 Poker 搜索窗阵列",
+      "suggested_key": {
+        "mac": "Command+Shift+0",
+        "windows": "Ctrl+Shift+0",
+        "chromeos": "Ctrl+Shift+0",
+        "linux": "Ctrl+Shift+0"
+      }
+    }
+  },
   "content_scripts": [
     {
       "matches": [
