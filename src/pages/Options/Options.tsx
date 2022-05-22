@@ -5,7 +5,6 @@ import { SiteMatrix } from '../../options/'
 
 import SettingHeader from './Component/SettingHeader'
 import SettingItem from './Component/SettingItem'
-import SettingSwitch from './Component/SettingSwitch'
 import SiteOptionManage from './Component/SiteOptionManage'
 import Loading from '../../components/Loading'
 import Failure from './Component/Failure'

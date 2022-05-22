@@ -1,4 +1,4 @@
-import { Lock, nextTick, timeout } from 'vait'
+import { Lock, timeout } from 'vait'
 import { Base } from '../base'
 import { constructSearchWindowsFast } from './window-create'
 import { selectWindow, updateWindowById } from './window-update'
@@ -6,7 +6,6 @@ import { closeAllWindow, getSearchWindowTabId, getWindowId, SearchWindow } from 
 import { renderCol, renderMatrix } from './render'
 import { Matrix, selectCol } from '../common'
 import cfg from '../../config'
-import { nth } from 'ramda'
 
 export type LayoutInfo = {
   width: number

@@ -43,14 +43,14 @@ const useWindowFocus = (initFocusValue: boolean) => {
 const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
   const windowIsFocus = useWindowFocus(true)
   const [isLoading, setLoading] = useState(false)
-  const [isOpen, setOpen] = useState(false)
+
   const [keyword, setKeyword] = useState(queryKeyword)
   const [submitedKeyword, submit] = useState<string | false>(false)
 
   const [controlWindowId, setControlWindowId] = useState<null | number>(null)
 
   const [controll, setControll] = useState<Control | undefined>(undefined)
-  const [text, setText] = useState('text')
+
   const [{ canContinue, stop }, setStep] = useState(createStep())
 
   useEffect(() => {
@@ -62,7 +62,6 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
   }, [])
 
   const callCloseAllWindow = useCallback((ids: number[]) => {
-    setOpen(false)
     closeAllWindow(ids)
   }, [])
   const onCloseAllWindow = useCallback((con: Control) => {
@@ -141,8 +140,6 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
   useEffect(() => {
     if (controlWindowId !== null) {
       if (submitedKeyword !== false) {
-        setOpen(true)
-  
         moveControlWindow(controlWindowId).then(() => {
           refreshWindows(controlWindowId, submitedKeyword)
         })
