@@ -41,6 +41,8 @@ const cfg = Object.freeze({
 
   DEFAULT_ENABLE_MOBILE: true,
 
+  EXPORT_SITE_OPTIONS_FILE_NAME: 'poker-sites.json',
+
   get DEFAULT_SITES() {
     return [
       [
