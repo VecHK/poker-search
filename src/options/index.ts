@@ -2,36 +2,12 @@ import cfg from '../config'
 import InitStorage from '../utils/storage'
 import getDefaultOptions from './default'
 
-import { OptionsV1 } from './v1-type'
-import { OptionsV2 } from './v2-type'
-import { OptionsV3 } from './v3-type'
+import { AllVersion, checkVersion, LatestVersion } from './versions'
+import { updateOptions } from './versions/update'
 
-import { updater as v2Updater } from './v2'
-import { updater as v3Updater } from './v3'
+export * from './versions/'
 
-export type AllVersion = OptionsV1 | OptionsV2 | OptionsV3
-
-export * from './v3-type'
-const CURRENT_VERSION = 3
-export type LatestVersion = OptionsV3
 export type Options = LatestVersion
-
-export function updateOptions(s_opts: AllVersion): LatestVersion {
-  switch (s_opts.version) {
-    case 1:
-      return updateOptions(v2Updater(s_opts))
-
-    case 2:
-      return updateOptions(v3Updater(s_opts))
-
-    default:
-      return s_opts
-  }
-}
-
-const checkVersion = (loaded_options: AllVersion) => {
-  return CURRENT_VERSION !== loaded_options.version
-}
 
 const [
   loadStorage,

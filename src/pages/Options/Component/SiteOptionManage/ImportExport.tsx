@@ -1,7 +1,8 @@
 import React, { useCallback } from 'react'
 import cfg from '../../../../config'
-import { Options, AllVersion, SiteMatrix, updateOptions } from '../../../../options'
+import { Options, SiteMatrix, AllVersion } from '../../../../options'
 import getDefaultOptions from '../../../../options/default'
+import { updateOptions } from '../../../../options/versions/update'
 
 import s from './ImportExport.module.css'
 
