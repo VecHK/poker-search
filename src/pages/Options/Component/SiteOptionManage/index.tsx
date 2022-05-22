@@ -7,6 +7,7 @@ import { generateExampleOption } from '../../../../options/default'
 import AddNewRow from './AddNewRow'
 
 import s from './index.module.css'
+import ImportExport from './ImportExport'
 
 
 type Pos = Readonly<[number, number]>
@@ -57,6 +58,12 @@ export default function SiteOptionManage({ siteMatrix, onUpdate, onChange }: {
             onChange([...newMatrix].reverse())
             setEdit([rowFloor, newRow.length - 1])
           }
+        }}
+      />
+      <ImportExport
+        siteMatrix={siteMatrix}
+        onImport={(newMatrix) => {
+          onChange(newMatrix)
         }}
       />
     </div>

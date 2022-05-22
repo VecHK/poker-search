@@ -7,7 +7,8 @@ export default function getDefaultOptions(
   append: Partial<Options> = {}
 ): Options {
   return {
-    version: 2,
+    __is_poker__: true,
+    version: 3,
     site_matrix: getDefaultSiteMatrix(),
     ...append,
   }

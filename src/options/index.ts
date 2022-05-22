@@ -4,37 +4,46 @@ import getDefaultOptions from './default'
 
 import { OptionsV1 } from './v1-type'
 import { OptionsV2 } from './v2-type'
-import { updater as v2Updater } from './v2'
-const CURRENT_VERSION = 2
-export * from './v2-type'
-export type Options = OptionsV2
-export type OptionsList = OptionsV1 | OptionsV2
+import { OptionsV3 } from './v3-type'
 
-const checkVersion = (loaded_options: OptionsList) => {
-  return CURRENT_VERSION !== loaded_options.version
+import { updater as v2Updater } from './v2'
+import { updater as v3Updater } from './v3'
+
+export type AllVersion = OptionsV1 | OptionsV2 | OptionsV3
+
+export * from './v3-type'
+const CURRENT_VERSION = 3
+export type LatestVersion = OptionsV3
+export type Options = LatestVersion
+
+export function updateOptions(s_opts: AllVersion): LatestVersion {
+  switch (s_opts.version) {
+    case 1:
+      return updateOptions(v2Updater(s_opts))
+
+    case 2:
+      return updateOptions(v3Updater(s_opts))
+
+    default:
+      return s_opts
+  }
 }
 
-function updateVersion(s_opts: OptionsList): Options {
-  if (s_opts.version === 1) {
-    const v2_opts = v2Updater(s_opts)
-    return checkVersion(v2_opts) ? updateVersion(v2_opts) : v2_opts
-  } else {
-    // is latest version
-    return s_opts
-  }
+const checkVersion = (loaded_options: AllVersion) => {
+  return CURRENT_VERSION !== loaded_options.version
 }
 
 const [
   loadStorage,
   saveStorage,
   isFoundStorage
-] = InitStorage<OptionsList>(cfg.OPTIONS_STORAGE_KEY)
+] = InitStorage<AllVersion>(cfg.OPTIONS_STORAGE_KEY)
 
 export async function load(): Promise<Options> {
   if (await isFoundStorage()) {
     const options = await loadStorage()
     if (checkVersion(options)) {
-      const updated_options = updateVersion(options)
+      const updated_options = updateOptions(options)
       console.log('new', updated_options)
       await save(updated_options)
       return updated_options
