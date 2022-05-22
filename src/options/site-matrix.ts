@@ -1,7 +1,7 @@
 import cfg from '../config'
 import randomString from '../utils/random-string'
 
-import { SiteOption, SiteMatrix, URLPattern, SiteRow } from './v2-type'
+import { SiteOption, SiteMatrix, URLPattern, SiteRow } from './versions/'
 export { SiteOption, SiteMatrix, URLPattern, SiteRow }
 
 export function toSearchURL(urlPattern: URLPattern, keyword: string) {
