@@ -25,6 +25,10 @@ export default function SiteSettingsManager({
     generateSiteSettingsRow([], 'N/A')
   ])
 
+  function clearEmptyRow(real_settings: SiteSettings) {
+    return real_settings.filter(r => r.row.length)
+  }
+
   useEffect(() => {
     const handler = setTimeout(() => {
       const [first_row, ...remain_reverse_settings] = [...innerSettings].reverse()
@@ -32,7 +36,7 @@ export default function SiteSettingsManager({
       const hasEmptyRow = !real_settings.every(r => r.row.length)
       if (hasEmptyRow) {
         setInnerSettings([
-          ...real_settings.filter(r => r.row.length),
+          ...clearEmptyRow(real_settings),
           first_row,
         ])
       } else {
@@ -53,7 +57,7 @@ export default function SiteSettingsManager({
   function handleChange(manageSettings: SiteSettings) {
     const [new_row, ...remain_manage_settings] = manageSettings
     let realSettings = [...remain_manage_settings].reverse()
-    emitChange(realSettings)
+    emitChange(clearEmptyRow(realSettings))
     setInnerSettings([...realSettings, new_row])
   }
 
