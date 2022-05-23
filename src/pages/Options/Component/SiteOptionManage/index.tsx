@@ -34,7 +34,7 @@ export default function SiteOptionManage({ siteMatrix, onUpdate, onChange }: {
 
   return (
     <div className={s.SiteOptionManage}>
-      {newRowNode}
+      {/* {newRowNode} */}
       <DragRows
         edit={edit}
         setEdit={setEdit}

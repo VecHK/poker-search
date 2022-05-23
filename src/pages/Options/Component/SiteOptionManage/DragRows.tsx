@@ -87,6 +87,21 @@ function reorderRows(
   }
 }
 
+function dragNewRowArea(
+  site_matrix: SiteMatrix,
+  source: DraggableLocation,
+): SiteMatrix {
+  const s_row = Number(source.droppableId)
+  return reorderCols(
+    [
+      [],
+      ...site_matrix
+    ],
+    { droppableId: `${s_row + 1}`, index: source.index, },
+    { droppableId: '0', index: 0, },
+  )
+}
+
 type Pos = Readonly<[number, number]>
 
 type DragMatrixProps = {
@@ -112,8 +127,13 @@ export default function DragRows({
       const newMatrix = reorderRows(siteMatrix, source, destination)
       onChange(newMatrix)
     } else if (type === 'COLS') {
-      const newMatrix = reorderCols(siteMatrix, source, destination)
-      onChange(newMatrix)
+      if (destination.droppableId === '-1') {
+        const newMatrix = dragNewRowArea(siteMatrix, source)
+        onChange(newMatrix)
+      } else {
+        const newMatrix = reorderCols(siteMatrix, source, destination)
+        onChange(newMatrix)
+      }
     } else {
       throw Error('unknown result.type')
     }
@@ -137,6 +157,38 @@ export default function DragRows({
                 ref={provided.innerRef}
                 style={getRowListStyle(rowSnapshot.isDraggingOver)}
               >
+                <div
+                  ref={provided.innerRef}
+                  className={s.DragRowDnD}
+                >
+                  <SettingItem className={s.RowSettingItem} disableMargin>
+                    <div className={s.DragRowInner}>
+                      <div style={{ visibility: 'hidden' }}>
+                        <div className={s.Handler}>
+                          <div className={s.HandlerLine}></div>
+                          <div className={s.HandlerLine}></div>
+                          <div className={s.HandlerLine}></div>
+                        </div>
+                      </div>
+                      <Cols
+                        rowNum={-1}
+                        row={[]}
+                        edit={edit}
+                        isEditMode={Boolean(edit)}
+                        onChange={(id, newOption) => {
+                          // onUpdate(id, newOption)
+                        }}
+                        onSubmitEdit={() => {}}
+                        onClickEdit={() => {}}
+                        onCancelEdit={() => {}}
+                        onClickRemove={() => {}}
+                        onClickAdd={() => {
+                          // onClickAdd(rowNum)
+                        }}
+                      />
+                    </div>
+                  </SettingItem>
+                </div>
                 {siteMatrix.map((row, rowNum) => (
                   <Draggable key={rowNum} draggableId={`${rowNum}`} index={rowNum} isDragDisabled={Boolean(edit)}>
                     {(provided, snapshot) => (
