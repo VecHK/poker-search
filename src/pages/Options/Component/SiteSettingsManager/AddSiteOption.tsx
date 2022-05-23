@@ -7,6 +7,7 @@ import s from './AddSiteOption.module.css'
 
 export default function AddSiteOption(props: {
   show: boolean
+  disable: boolean
   onClickAdd(): void
 }) {
   return (
@@ -22,14 +23,22 @@ export default function AddSiteOption(props: {
         exitDone: s.AddSiteOptionExitDone,
       }}
     >
-      <div className={s.AddSiteOption}>
+      <div className={s.AddSiteOption} style={{ opacity: props.disable ? '0.5' : '' }}>
         <SiteWindowFrame>
           <img
             className={s.AddSite}
             src={plusSrc}
-            style={{ cursor: 'pointer', width: '48px', height: '48px' }}
+            style={{
+              width: '48px',
+              height: '48px',
+              cursor: props.disable ? '' : 'pointer',
+            }}
             alt="add site option"
-            onClick={props.onClickAdd}
+            onClick={() => {
+              if (!props.disable) {
+                props.onClickAdd()
+              }
+            }}
           />
         </SiteWindowFrame>
       </div>

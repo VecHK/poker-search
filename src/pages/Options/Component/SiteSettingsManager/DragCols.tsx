@@ -63,8 +63,8 @@ function SiteOptionDragItem(props: {
             style={getItemStyle(
               snapshot.isDragging,
               provided.draggableProps.style
-            )}
-          >
+              )}
+            >
             <SiteWindow
               isEdit={isEdit}
               isBlur={props.isEditMode && !isEdit}
@@ -210,6 +210,7 @@ export default function Cols(props: {
 
           <AddSiteOption
             show={showAddButton}
+            disable={props.isEditMode}
             onClickAdd={props.onClickAdd}
           />
         </div>

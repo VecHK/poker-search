@@ -200,7 +200,7 @@ export default function DragRows({
                                     rowNum={rowNum}
                                     settingsRow={settingsRow}
                                     edit={edit}
-                                    isEditMode={Boolean(edit)}
+                                    isEditMode={edit !== null}
                                     onChange={(id, newOption) => {
                                       onUpdate(id, newOption)
                                     }}
