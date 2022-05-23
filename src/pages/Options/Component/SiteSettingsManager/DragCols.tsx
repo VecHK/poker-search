@@ -1,13 +1,16 @@
 import { equals } from 'ramda'
 import React, { useMemo, useState } from 'react'
+import { CSSTransition, TransitionGroup } from 'react-transition-group'
 import { Droppable, Draggable, DraggingStyle, NotDraggingStyle } from 'react-beautiful-dnd'
+
 import { SiteOption, SiteSettingsRow } from '../../../../preferences/site-settings'
-import s from './DragCols.module.css'
 import SiteWindow from './SiteWindow'
 
-import { CSSTransition, TransitionGroup } from 'react-transition-group'
+import s from './DragCols.module.css'
+
 import AddSiteOption from './AddSiteOption'
 import { useMaxWindowPerLine } from './WarningLine'
+import { Edit } from '.'
 
 const getItemStyle = (
   isDragging: boolean,
@@ -29,12 +32,10 @@ export const getColListStyle = (isDraggingOver: boolean): React.CSSProperties =>
   // width: 350
 })
 
-type Pos = null | Readonly<[number, number]>
-
 function SiteOptionDragItem(props: {
   option: SiteOption
   isEditMode: boolean
-  edit: Pos
+  edit: Edit
   colNum: number
   rowNum: number
   onCancelEdit(): void
@@ -43,7 +44,8 @@ function SiteOptionDragItem(props: {
   onClickEdit(colNum: number): void
   onClickRemove(colNum: number): void
 }) {
-  const { rowNum, colNum } = props
+  const { colNum } = props
+  const isEdit = equals(props.edit, props.option.id)
   return (
     <div className={s.SiteOption}>
       <Draggable
@@ -64,8 +66,8 @@ function SiteOptionDragItem(props: {
             )}
           >
             <SiteWindow
-              isEdit={equals(props.edit, [rowNum, colNum])}
-              isBlur={props.isEditMode && !equals(props.edit, [rowNum, colNum])}
+              isEdit={isEdit}
+              isBlur={props.isEditMode && !isEdit}
               onCancelEdit={props.onCancelEdit}
               siteOption={props.option}
               onChange={props.onChange}
@@ -91,7 +93,7 @@ function SiteOptionList(props: {
   enableRemoveAnimation: boolean
   settingsRow: SiteSettingsRow
   isEditMode: boolean
-  edit: Pos
+  edit: Edit
   rowNum: number,
   onCancelEdit(): void
   onChange(id: SiteOption['id'], s: SiteOption): void
@@ -159,7 +161,7 @@ function SiteOptionList(props: {
 export default function Cols(props: {
   rowNum: number,
   settingsRow: SiteSettingsRow,
-  edit: Pos
+  edit: Edit
   isEditMode: boolean
   onCancelEdit(): void
   onChange(id: SiteOption['id'], s: SiteOption): void

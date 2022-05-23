@@ -10,12 +10,15 @@ import {
   DraggableLocation,
   SensorAPI
 } from 'react-beautiful-dnd'
-import Cols from './DragCols'
+import { CSSTransition, TransitionGroup } from 'react-transition-group'
+
 import { SiteSettings, SiteOption } from '../../../../preferences/site-settings'
 import SettingItem from '../SettingItem'
-import s from './DragRows.module.css'
 import WarningLine from './WarningLine'
-import { CSSTransition, TransitionGroup } from 'react-transition-group'
+import Cols from './DragCols'
+import { Edit } from '.'
+
+import s from './DragRows.module.css'
 
 export const ROW_TRANSITION_DURATION = 382
 
@@ -115,11 +118,9 @@ function reorderRows(
   }
 }
 
-type Pos = Readonly<[number, number]>
-
 type DragRowProps = {
-  edit: Pos | null,
-  setEdit: React.Dispatch<React.SetStateAction<Pos | null>>
+  edit: Edit,
+  setEdit: React.Dispatch<React.SetStateAction<Edit>>
   siteSettings: SiteSettings
   onUpdate: (id: SiteOption['id'], newOption: SiteOption) => void
   onChange: (s: SiteSettings) => void
@@ -211,7 +212,8 @@ export default function DragRows({
                                     }}
                                     onClickEdit={(colNum) => {
                                       console.log('onClickEdit')
-                                      setEdit([rowNum, colNum])
+                                      const willEdit = settingsRow.row[colNum]
+                                      setEdit(willEdit.id)
                                     }}
                                     onCancelEdit={() => {
                                       setEdit(null)

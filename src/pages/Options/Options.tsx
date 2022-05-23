@@ -1,17 +1,18 @@
 import pkg from '../../../package.json'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { findIndex, map, propEq, update } from 'ramda'
+import { curry, findIndex, map, propEq, update } from 'ramda'
 
 import { load, Preferences, save } from '../../preferences'
 import { SiteSettings, toMatrix } from '../../preferences/site-settings'
 
 import SettingHeader from './Component/SettingHeader'
 import SettingItem from './Component/SettingItem'
-import SiteOptionManage from './Component/SiteOptionManage'
+import SiteSettingsManager from './Component/SiteSettingsManager'
 import Loading from '../../components/Loading'
 import Failure from './Component/Failure'
 
 import s from './Options.module.css'
+import ImportExport from './Component/SiteSettingsManager/ImportExport'
 
 function calcMaxColumn(siteSettings: SiteSettings) {
   return toMatrix(siteSettings).reduce((p, c) => Math.max(p, c.length), 0)
@@ -85,9 +86,24 @@ export default function OptionsPage() {
 
   useEffect(() => {
     if (preferences !== undefined) {
-      // save(preferences)
+      save(preferences)
     }
   }, [preferences])
+
+  const handleSiteSettingsChange = useCallback((
+    currentPreferences: Preferences,
+    site_settings: SiteSettings
+  ) => {
+    console.log('site settings change', site_settings)
+    if (site_settings.length === 0) {
+      alert('站点配置项无法留空')
+    } else {
+      setPreferences({
+        ...currentPreferences,
+        site_settings,
+      })
+    }
+  }, [])
 
   const innerEl = useAdjustMarginCenter(preferences ? preferences.site_settings : [])
 
@@ -144,7 +160,7 @@ export default function OptionsPage() {
                     </SettingItem>
                   </div>
                   <div className={s.OptionsCol}>
-                    <SiteOptionManage
+                    <SiteSettingsManager
                       siteSettings={preferences.site_settings}
                       onUpdate={(updateId, newSiteOption) => {
                         setPreferences(latestPreferences => {
@@ -169,24 +185,18 @@ export default function OptionsPage() {
                           }
                         })
                       }}
-                      onChange={(site_settings) => {
-                        console.log('site settings change', site_settings)
-                        if (site_settings.length === 0) {
-                          alert('站点配置项无法留空')
-                        } else {
-                          setPreferences({
-                            ...preferences,
-                            site_settings,
-                          })
-                        }
-                      }}
+                      onChange={curry(handleSiteSettingsChange)(preferences)}
+                    />
+                    <ImportExport
+                      siteSettings={preferences.site_settings}
+                      onImport={curry(handleSiteSettingsChange)(preferences)}
                     />
                   </div>
                 </div>
               </>
             )
           }
-        }, [failure, preferences])
+        }, [failure, handleSiteSettingsChange, preferences])
       }</div>
     </div>
   )

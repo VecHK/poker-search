@@ -6,9 +6,8 @@ import { SiteSettings, SiteOption, generateSiteSettingsRow } from '../../../../p
 import { generateExampleOption } from '../../../../preferences/default'
 
 import s from './index.module.css'
-import ImportExport from './ImportExport'
 
-type Pos = Readonly<[number, number]>
+export type Edit = SiteOption['id'] | null
 
 export default function SiteSettingsManager({
   siteSettings: outterSettings,
@@ -19,7 +18,7 @@ export default function SiteSettingsManager({
   onUpdate: (id: SiteOption['id'], opt: SiteOption) => void
   onChange: (settings: SiteSettings) => void
 }) {
-  const [edit, setEdit] = useState<Pos | null>(null)
+  const [edit, setEdit] = useState<Edit>(null)
 
   const [innerSettings, setInnerSettings] = useState([
     ...outterSettings,
@@ -80,14 +79,12 @@ export default function SiteSettingsManager({
               },
               manageSettings
             )
-            emitChange([...newSettings].reverse())
-            setEdit([rowFloor, newRow.length - 1])
+            handleChange(newSettings)
+
+            const willEdit = newRow[newRow.length - 1]
+            setEdit(willEdit.id)
           }
         }}
-      />
-      <ImportExport
-        siteSettings={outterSettings}
-        onImport={emitChange}
       />
     </div>
   )
