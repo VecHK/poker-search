@@ -2,7 +2,7 @@ import cfg from '../config'
 import { mapMatrix } from '../core/common'
 import generateId from '../utils/generate-id'
 import { SiteSettings, Preferences, SiteOption } from './'
-import { SiteSettingsRow } from './versions'
+import { generateSiteSettingsRow } from './site-settings'
 
 export default function getDefaultPreferences(
   append: Partial<Preferences> = {}
@@ -12,14 +12,6 @@ export default function getDefaultPreferences(
     version: 3,
     site_settings: getDefaultSiteSettings(),
     ...append,
-  }
-}
-
-export function generateSiteSettingsRow(row: SiteOption[], name: string): SiteSettingsRow {
-  return {
-    id: generateId(),
-    name,
-    row,
   }
 }
 
@@ -34,7 +26,7 @@ function getDefaultSiteSettings(): SiteSettings {
       url_pattern,
     })
   ).map(row => {
-    return generateSiteSettingsRow(row, '站点')
+    return generateSiteSettingsRow(row)
   })
 }
 

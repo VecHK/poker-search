@@ -11,11 +11,10 @@ import {
   SensorAPI
 } from 'react-beautiful-dnd'
 import Cols from './DragCols'
-import { SiteSettings, SiteOption } from '../../../../preferences/site-settings'
+import { SiteSettings, SiteOption, generateSiteSettingsRow } from '../../../../preferences/site-settings'
 import SettingItem from '../SettingItem'
 import s from './DragRows.module.css'
 import WarningLine from './WarningLine'
-import { generateSiteSettingsRow } from '../../../../preferences/default'
 
 const getRowListStyle = (isDraggingOver: boolean): React.CSSProperties => ({
   // background: isDraggingOver ? "lightblue" : "lightgrey",
@@ -95,7 +94,7 @@ function dragNewRowArea(
   const s_row = Number(source.droppableId)
   return reorderCols(
     [
-      generateSiteSettingsRow([], '站点'),
+      generateSiteSettingsRow([]),
       ...site_settings
     ],
     { droppableId: `${s_row + 1}`, index: source.index, },
