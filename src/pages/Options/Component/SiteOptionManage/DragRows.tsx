@@ -195,7 +195,12 @@ export default function DragRows({
                   </SettingItem>
                 </div>
                 {siteSettings.map((settingsRow, rowNum) => (
-                  <Draggable key={settingsRow.id} draggableId={`${rowNum}`} index={rowNum} isDragDisabled={Boolean(edit)}>
+                  <Draggable
+                    key={settingsRow.id}
+                    draggableId={settingsRow.id}
+                    index={rowNum}
+                    isDragDisabled={Boolean(edit)}
+                  >
                     {(provided, snapshot) => (
                       <div
                         ref={provided.innerRef}
