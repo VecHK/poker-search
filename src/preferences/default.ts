@@ -1,11 +1,11 @@
 import cfg from '../config'
 import { mapMatrix } from '../core/common'
-import { SiteMatrix, Options, SiteOption } from './'
+import { SiteMatrix, Preferences, SiteOption } from './'
 import { generateId } from './site-matrix'
 
-export default function getDefaultOptions(
-  append: Partial<Options> = {}
-): Options {
+export default function getDefaultPreferences(
+  append: Partial<Preferences> = {}
+): Preferences {
   return {
     __is_poker__: true,
     version: 3,

@@ -1,5 +1,5 @@
 import React, { ReactNode, useEffect, useMemo, useState } from 'react'
-import { SiteOption } from '../../../../options/site-matrix'
+import { SiteOption } from '../../../../preferences/site-matrix'
 import s from './SiteWindow.module.css'
 
 import RemoveIconSrc from './remove.svg'

@@ -1,6 +1,6 @@
 import { map, curry, range, nth, compose } from 'ramda'
 import cfg from '../../config'
-import { SiteMatrix, SiteRow, toSearchURL, addMobileIdentifier } from '../../options/site-matrix'
+import { SiteMatrix, SiteRow, toSearchURL, addMobileIdentifier } from '../../preferences/site-matrix'
 
 type GetSearchURL = (keyword: string) => string
 type SearchRow = Array<GetSearchURL>

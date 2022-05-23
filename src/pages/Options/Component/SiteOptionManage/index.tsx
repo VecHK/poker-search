@@ -2,8 +2,8 @@ import React, { useMemo, useState } from 'react'
 import { nth, update } from 'ramda'
 
 import DragRows from './DragRows'
-import { SiteMatrix, SiteOption } from '../../../../options/site-matrix'
-import { generateExampleOption } from '../../../../options/default'
+import { SiteMatrix, SiteOption } from '../../../../preferences/site-matrix'
+import { generateExampleOption } from '../../../../preferences/default'
 import AddNewRow from './AddNewRow'
 
 import s from './index.module.css'

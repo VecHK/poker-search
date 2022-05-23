@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import pkg from '../../../package.json'
-import { load, Options, save } from '../../options'
-import { SiteMatrix } from '../../options/'
+import { load, Preferences, save, SiteMatrix } from '../../preferences'
 
 import SettingHeader from './Component/SettingHeader'
 import SettingItem from './Component/SettingItem'
@@ -68,13 +67,13 @@ function useAdjustMarginCenter(siteMatrix: SiteMatrix) {
 }
 
 export default function OptionsPage() {
-  const [options, setOptions] = useState<Options>()
+  const [preferences, setPreferences] = useState<Preferences>()
   const [failure, setFailure] = useState<Error>()
 
   const refresh = useCallback(() => {
     setFailure(undefined)
     load()
-      .then(setOptions)
+      .then(setPreferences)
       .catch(setFailure)
   }, [])
 
@@ -83,12 +82,12 @@ export default function OptionsPage() {
   }, [refresh])
 
   useEffect(() => {
-    if (options !== undefined) {
-      // save(options)
+    if (preferences !== undefined) {
+      save(preferences)
     }
-  }, [options])
+  }, [preferences])
 
-  const innerEl = useAdjustMarginCenter(options ? options.site_matrix : [])
+  const innerEl = useAdjustMarginCenter(preferences ? preferences.site_matrix : [])
 
   return (
     <div className={s.OptionsContainer}>
@@ -96,7 +95,7 @@ export default function OptionsPage() {
         useMemo(() => {
           if (failure) {
             return <Failure error={failure} />
-          } else if (!options) {
+          } else if (!preferences) {
             return <Loading />
           } else {
             return (
@@ -144,14 +143,14 @@ export default function OptionsPage() {
                   </div>
                   <div className={s.OptionsCol}>
                     <SiteOptionManage
-                      siteMatrix={options.site_matrix}
+                      siteMatrix={preferences.site_matrix}
                       onUpdate={(updateId, newSiteOption) => {
-                        setOptions(latestOptions => {
-                          if (!latestOptions) {
+                        setPreferences(latestPreferences => {
+                          if (!latestPreferences) {
                             return undefined
                           } else {
                             return {
-                              ...latestOptions,
+                              ...latestPreferences,
                               site_matrix: map(row => {
                                 const find_idx = findIndex(propEq('id', updateId), row)
                                 if (find_idx !== -1) {
@@ -159,7 +158,7 @@ export default function OptionsPage() {
                                 } else {
                                   return row
                                 }
-                              }, latestOptions.site_matrix)
+                              }, latestPreferences.site_matrix)
                             }
                           }
                         })
@@ -169,8 +168,8 @@ export default function OptionsPage() {
                         if (newMatrix.length === 0) {
                           alert('站点配置项无法留空')
                         } else {
-                          setOptions({
-                            ...options,
+                          setPreferences({
+                            ...preferences,
                             site_matrix: newMatrix
                           })
                         }
@@ -181,7 +180,7 @@ export default function OptionsPage() {
               </>
             )
           }
-        }, [failure, options])
+        }, [failure, preferences])
       }</div>
     </div>
   )

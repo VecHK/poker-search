@@ -1,21 +1,21 @@
 import React, { useCallback } from 'react'
 import cfg from '../../../../config'
-import { Options, SiteMatrix, AllVersion } from '../../../../options'
-import getDefaultOptions from '../../../../options/default'
-import { updateOptions } from '../../../../options/versions/update'
+import { Preferences, SiteMatrix, AllVersion } from '../../../../preferences'
+import getDefaultPreferences from '../../../../preferences/default'
+import { updatePreferences } from '../../../../preferences/versions/update'
 
 import s from './ImportExport.module.css'
 
 function toDataHref(siteMatrix: SiteMatrix): string {
-  const exportData: Options = {
-    ...getDefaultOptions(),
+  const exportData: Preferences = {
+    ...getDefaultPreferences(),
     site_matrix: siteMatrix,
   }
   const json = encodeURIComponent(JSON.stringify(exportData, undefined, '  '))
   return `data:text/json;charset=utf-8,${json}`
 }
 
-function isPokerOptions(obj: unknown): boolean {
+function isPokerPreferences(obj: unknown): boolean {
   if ((typeof obj === 'object') && (obj !== null)) {
     const is_poker = Reflect.get(obj, '__is_poker__')
     if (typeof(is_poker) === 'boolean') {
@@ -39,11 +39,11 @@ function parseJson<T>(json: string) {
 function loadData(raw: string): SiteMatrix {
   const opts = parseJson(raw)
 
-  if (!isPokerOptions(opts)) {
+  if (!isPokerPreferences(opts)) {
     throw Error('此文件似乎不是 Poker 的站点配置文件')
   } else {
     try {
-      const { site_matrix } = updateOptions(opts as AllVersion)
+      const { site_matrix } = updatePreferences(opts as AllVersion)
       return site_matrix
     } catch (err) {
       console.error(err)
@@ -81,7 +81,7 @@ export default function ImportExport({ siteMatrix, onImport }: {
         <a
           className={s.Link}
           href={toDataHref(siteMatrix)}
-          download={cfg.EXPORT_SITE_OPTIONS_FILE_NAME}
+          download={cfg.EXPORT_SITE_SETTINGS_FILE_NAME}
         >导出站点配置</a>
       </label>
       <label>

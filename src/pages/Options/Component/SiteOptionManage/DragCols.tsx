@@ -1,7 +1,7 @@
 import { equals } from 'ramda'
 import React, { useMemo, useState } from 'react'
 import { Droppable, Draggable, DraggingStyle, NotDraggingStyle } from 'react-beautiful-dnd'
-import { SiteOption, SiteRow } from '../../../../options/site-matrix'
+import { SiteOption, SiteRow } from '../../../../preferences/site-matrix'
 import s from './DragCols.module.css'
 import SiteWindow from './SiteWindow'
 

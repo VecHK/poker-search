@@ -1,6 +1,6 @@
 import cfg from '../../config'
 import { load as loadEnvironment, Environment } from '../../environment'
-import { load as loadOptions, Options } from '../../options'
+import { load as loadPreferences, Preferences } from '../../preferences'
 import { getCurrentDisplayLimit, Limit } from './limit'
 import { autoAdjustHeight, autoAdjustWidth } from './auto-adjust'
 import { initSearchMatrix, SearchMatrix } from './search-matrix'
@@ -15,7 +15,7 @@ export type Base = {
   limit: Limit,
   platform: chrome.runtime.PlatformInfo,
   info: BaseInfo,
-  options: Options,
+  preferences: Preferences,
   search_matrix: SearchMatrix
   layout_width: number
   layout_height: number
@@ -23,7 +23,7 @@ export type Base = {
 
 async function initBase(
   environment: Environment,
-  options: Options,
+  preferences: Preferences,
 ): Promise<Base> {
   const [limit, platform] = await Promise.all([
     getCurrentDisplayLimit(),
@@ -39,7 +39,7 @@ async function initBase(
   const [
     total_row,
     search_matrix
-  ] = initSearchMatrix(max_window_per_line, options.site_matrix)
+  ] = initSearchMatrix(max_window_per_line, preferences.site_matrix)
 
   const { window_height, total_height } = autoAdjustHeight(
     total_row,
@@ -50,7 +50,7 @@ async function initBase(
   return Object.freeze({
     limit,
     platform,
-    options,
+    preferences,
     search_matrix,
 
     layout_width: total_width,
@@ -66,10 +66,10 @@ async function initBase(
 }
 
 export async function createBase() {
-  const [environment, options] = await Promise.all([
+  const [environment, preferences] = await Promise.all([
     loadEnvironment(),
-    loadOptions()
+    loadPreferences()
   ])
 
-  return initBase(environment, options)
+  return initBase(environment, preferences)
 }

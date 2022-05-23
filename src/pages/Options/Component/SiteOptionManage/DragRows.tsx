@@ -11,7 +11,7 @@ import {
   SensorAPI
 } from 'react-beautiful-dnd'
 import Cols from './DragCols'
-import { SiteMatrix, SiteOption } from '../../../../options/site-matrix'
+import { SiteMatrix, SiteOption } from '../../../../preferences/site-matrix'
 import SettingItem from '../SettingItem'
 import s from './DragRows.module.css'
 import WarningLine from './WarningLine'

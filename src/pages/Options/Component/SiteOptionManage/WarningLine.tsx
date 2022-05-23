@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { Transition } from 'react-transition-group'
 
 import cfg from '../../../../config'
-import { SiteMatrix } from '../../../../options/'
+import { SiteMatrix } from '../../../../preferences/'
 import { autoAdjustWidth, calcWindowsTotalWidth } from '../../../../core/base/auto-adjust'
 import { getCurrentDisplayLimit } from '../../../../core/base/limit'
 

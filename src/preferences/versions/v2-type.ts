@@ -9,8 +9,7 @@ export type SiteOption = {
 export type SiteRow = Array<SiteOption>
 export type SiteMatrix = Array<SiteRow>
 
-export type OptionsV3 = Readonly<{
-  __is_poker__: true,
-  version: 3
+export type PreferencesV2 = Readonly<{
+  version: 2
   site_matrix: SiteMatrix
 }>
