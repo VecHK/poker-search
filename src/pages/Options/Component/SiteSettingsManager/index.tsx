@@ -10,7 +10,7 @@ import ImportExport from './ImportExport'
 
 type Pos = Readonly<[number, number]>
 
-export default function SiteOptionManage({
+export default function SiteSettingsManager({
   siteSettings: outterSettings,
   onUpdate,
   onChange: emitChange
@@ -59,7 +59,7 @@ export default function SiteOptionManage({
   }
 
   return (
-    <div className={s.SiteOptionManage}>
+    <div className={s.SiteSettingsManager}>
       <DragRows
         edit={edit}
         setEdit={setEdit}
