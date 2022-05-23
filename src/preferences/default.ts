@@ -1,7 +1,8 @@
 import cfg from '../config'
 import { mapMatrix } from '../core/common'
-import { SiteMatrix, Preferences, SiteOption } from './'
-import { generateId } from './site-matrix'
+import generateId from '../utils/generate-id'
+import { SiteSettings, Preferences, SiteOption } from './'
+import { SiteSettingsRow } from './versions'
 
 export default function getDefaultPreferences(
   append: Partial<Preferences> = {}
@@ -9,12 +10,20 @@ export default function getDefaultPreferences(
   return {
     __is_poker__: true,
     version: 3,
-    site_matrix: getDefaultSiteMatrix(),
+    site_settings: getDefaultSiteSettings(),
     ...append,
   }
 }
 
-function getDefaultSiteMatrix(): SiteMatrix {
+export function generateSiteSettingsRow(row: SiteOption[], name: string): SiteSettingsRow {
+  return {
+    id: generateId(),
+    name,
+    row,
+  }
+}
+
+function getDefaultSiteSettings(): SiteSettings {
   return mapMatrix(
     cfg.DEFAULT_SITES,
     (url_pattern) => ({
@@ -22,9 +31,11 @@ function getDefaultSiteMatrix(): SiteMatrix {
       icon: null,
       name: '__DEFAULT_NAME__',
       enable_mobile: cfg.DEFAULT_ENABLE_MOBILE,
-      url_pattern
+      url_pattern,
     })
-  )
+  ).map(row => {
+    return generateSiteSettingsRow(row, '站点')
+  })
 }
 
 export function generateExampleOption(): SiteOption {

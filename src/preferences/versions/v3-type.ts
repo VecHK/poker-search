@@ -6,11 +6,15 @@ export type SiteOption = {
   url_pattern: URLPattern
   enable_mobile: boolean
 }
-export type SiteRow = Array<SiteOption>
-export type SiteMatrix = Array<SiteRow>
+export type SiteSettingsRow = {
+  id: string
+  name: string
+  row: Array<SiteOption>
+}
+export type SiteSettings = Array<SiteSettingsRow>
 
 export type PreferencesV3 = Readonly<{
   __is_poker__: true,
   version: 3
-  site_matrix: SiteMatrix
+  site_settings: SiteSettings
 }>

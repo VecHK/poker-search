@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import Loading from '../../../../components/Loading'
 import cfg from '../../../../config'
-import { SiteOption, toSearchURL } from '../../../../preferences/site-matrix'
+import { SiteOption, toSearchURL } from '../../../../preferences/site-settings'
 import getIcon from '../../../../utils/get-icon'
 
 import s from './SiteIcon.module.css'

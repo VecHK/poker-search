@@ -39,7 +39,7 @@ async function initBase(
   const [
     total_row,
     search_matrix
-  ] = initSearchMatrix(max_window_per_line, preferences.site_matrix)
+  ] = initSearchMatrix(max_window_per_line, preferences.site_settings)
 
   const { window_height, total_height } = autoAdjustHeight(
     total_row,

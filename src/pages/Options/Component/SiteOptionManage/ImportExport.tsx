@@ -1,15 +1,15 @@
 import React, { useCallback } from 'react'
 import cfg from '../../../../config'
-import { Preferences, SiteMatrix, AllVersion } from '../../../../preferences'
+import { Preferences, AllVersion, SiteSettings } from '../../../../preferences'
 import getDefaultPreferences from '../../../../preferences/default'
 import { updatePreferences } from '../../../../preferences/versions/update'
 
 import s from './ImportExport.module.css'
 
-function toDataHref(siteMatrix: SiteMatrix): string {
+function toDataHref(site_settings: SiteSettings): string {
   const exportData: Preferences = {
     ...getDefaultPreferences(),
-    site_matrix: siteMatrix,
+    site_settings,
   }
   const json = encodeURIComponent(JSON.stringify(exportData, undefined, '  '))
   return `data:text/json;charset=utf-8,${json}`
@@ -36,15 +36,15 @@ function parseJson<T>(json: string) {
   }
 }
 
-function loadData(raw: string): SiteMatrix {
+function loadData(raw: string): SiteSettings {
   const prefs = parseJson(raw)
 
   if (!isPokerPreferences(prefs)) {
     throw Error('此文件似乎不是 Poker 的站点配置文件')
   } else {
     try {
-      const { site_matrix } = updatePreferences(prefs as AllVersion)
-      return site_matrix
+      const { site_settings } = updatePreferences(prefs as AllVersion)
+      return site_settings
     } catch (err) {
       console.error(err)
       throw Error('站点配置信息读取失败')
@@ -52,9 +52,9 @@ function loadData(raw: string): SiteMatrix {
   }
 }
 
-export default function ImportExport({ siteMatrix, onImport }: {
-  siteMatrix: SiteMatrix
-  onImport(s: SiteMatrix): void
+export default function ImportExport({ siteSettings, onImport }: {
+  siteSettings: SiteSettings
+  onImport(s: SiteSettings): void
 }) {
   const readOnload = useCallback((
     e: React.ChangeEvent<HTMLInputElement>,
@@ -65,11 +65,11 @@ export default function ImportExport({ siteMatrix, onImport }: {
       if (typeof raw !== 'string') {
         throw Error('错误的文件类型')
       } else {
-        const newSiteMatrix = loadData(raw)
+        const newSiteSettings = loadData(raw)
         if (window.confirm(
           '你确定要导入吗？（这将删除当前的所有站点配置）'
         )) {
-          onImport(newSiteMatrix)
+          onImport(newSiteSettings)
         }
       }
     }
@@ -80,7 +80,7 @@ export default function ImportExport({ siteMatrix, onImport }: {
       <label>
         <a
           className={s.Link}
-          href={toDataHref(siteMatrix)}
+          href={toDataHref(siteSettings)}
           download={cfg.EXPORT_SITE_SETTINGS_FILE_NAME}
         >导出站点配置</a>
       </label>

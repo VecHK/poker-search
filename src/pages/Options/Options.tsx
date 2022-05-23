@@ -1,6 +1,9 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import pkg from '../../../package.json'
-import { load, Preferences, save, SiteMatrix } from '../../preferences'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { findIndex, map, propEq, update } from 'ramda'
+
+import { load, Preferences, save } from '../../preferences'
+import { SiteSettings, toMatrix } from '../../preferences/site-settings'
 
 import SettingHeader from './Component/SettingHeader'
 import SettingItem from './Component/SettingItem'
@@ -9,15 +12,14 @@ import Loading from '../../components/Loading'
 import Failure from './Component/Failure'
 
 import s from './Options.module.css'
-import { findIndex, map, propEq, update } from 'ramda'
 
-function calcMaxColumn(siteMatrix: SiteMatrix) {
-  return siteMatrix.reduce((p, c) => Math.max(p, c.length), 0)
+function calcMaxColumn(siteSettings: SiteSettings) {
+  return toMatrix(siteSettings).reduce((p, c) => Math.max(p, c.length), 0)
 }
 
-function useAdjustMarginCenter(siteMatrix: SiteMatrix) {
+function useAdjustMarginCenter(siteSettings: SiteSettings) {
   const ref = useRef<HTMLDivElement>(null)
-  const [, setMaxColumn] = useState(calcMaxColumn(siteMatrix))
+  const [, setMaxColumn] = useState(calcMaxColumn(siteSettings))
 
   function adjust(ref: React.RefObject<HTMLDivElement>) {
     const el = ref.current
@@ -39,7 +41,7 @@ function useAdjustMarginCenter(siteMatrix: SiteMatrix) {
     }
 
     setMaxColumn(latestColumn => {
-      const newColumn = calcMaxColumn(siteMatrix)
+      const newColumn = calcMaxColumn(siteSettings)
 
       if (newColumn > latestColumn) {
         adjust(ref)
@@ -49,7 +51,7 @@ function useAdjustMarginCenter(siteMatrix: SiteMatrix) {
 
       return newColumn
     })
-  }, [siteMatrix])
+  }, [siteSettings])
 
   useEffect(() => {
     let timer: NodeJS.Timeout | undefined = undefined
@@ -87,7 +89,7 @@ export default function OptionsPage() {
     }
   }, [preferences])
 
-  const innerEl = useAdjustMarginCenter(preferences ? preferences.site_matrix : [])
+  const innerEl = useAdjustMarginCenter(preferences ? preferences.site_settings : [])
 
   return (
     <div className={s.OptionsContainer}>
@@ -143,7 +145,7 @@ export default function OptionsPage() {
                   </div>
                   <div className={s.OptionsCol}>
                     <SiteOptionManage
-                      siteMatrix={preferences.site_matrix}
+                      siteSettings={preferences.site_settings}
                       onUpdate={(updateId, newSiteOption) => {
                         setPreferences(latestPreferences => {
                           if (!latestPreferences) {
@@ -151,26 +153,30 @@ export default function OptionsPage() {
                           } else {
                             return {
                               ...latestPreferences,
-                              site_matrix: map(row => {
+                              site_settings: map(settings_row => {
+                                const row = settings_row.row
                                 const find_idx = findIndex(propEq('id', updateId), row)
-                                if (find_idx !== -1) {
-                                  return update(find_idx, newSiteOption, row)
+                                if (find_idx === -1) {
+                                  return settings_row
                                 } else {
-                                  return row
+                                  return {
+                                    ...settings_row,
+                                    row: update(find_idx, newSiteOption, row)
+                                  }
                                 }
-                              }, latestPreferences.site_matrix)
+                              }, latestPreferences.site_settings)
                             }
                           }
                         })
                       }}
-                      onChange={(newMatrix) => {
-                        console.log('matrix change', newMatrix)
-                        if (newMatrix.length === 0) {
+                      onChange={(site_settings) => {
+                        console.log('site settings change', site_settings)
+                        if (site_settings.length === 0) {
                           alert('站点配置项无法留空')
                         } else {
                           setPreferences({
                             ...preferences,
-                            site_matrix: newMatrix
+                            site_settings,
                           })
                         }
                       }}

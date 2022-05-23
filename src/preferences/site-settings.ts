@@ -1,8 +1,12 @@
 import cfg from '../config'
-import randomString from '../utils/random-string'
+import { Matrix } from '../core/common'
 
-import { SiteOption, SiteMatrix, URLPattern, SiteRow } from './versions/'
-export { SiteOption, SiteMatrix, URLPattern, SiteRow }
+import { SiteOption, SiteSettings, URLPattern, SiteSettingsRow } from './versions/'
+export { SiteOption, SiteSettings, URLPattern, SiteSettingsRow }
+
+export function toMatrix(s: SiteSettings): Matrix<SiteOption> {
+  return s.map(u => u.row)
+}
 
 export function toSearchURL(urlPattern: URLPattern, keyword: string) {
   return urlPattern.replace(cfg.KEYWORD_REPLACEHOLDER, encodeURIComponent(keyword))
@@ -18,8 +22,4 @@ export function addMobileIdentifier(url: string) {
   }
 
   return `${u.origin}${u.pathname}${search}${u.hash}`
-}
-
-export function generateId() {
-  return `${randomString(16, 0)}`
 }

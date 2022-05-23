@@ -1,6 +1,14 @@
 import { map, curry, range, nth, compose } from 'ramda'
 import cfg from '../../config'
-import { SiteMatrix, SiteRow, toSearchURL, addMobileIdentifier } from '../../preferences/site-matrix'
+import { Matrix, Row } from '../common'
+
+import {
+  toSearchURL,
+  addMobileIdentifier,
+  SiteOption,
+  SiteSettings,
+  toMatrix
+} from '../../preferences/site-settings'
 
 type GetSearchURL = (keyword: string) => string
 type SearchRow = Array<GetSearchURL>
@@ -9,7 +17,7 @@ export type SearchMatrix = Array<SearchRow>
 function fillSearchRow(
   plain_window_url_pattern: string,
   max_window_per_line: number,
-  site_row: SiteRow,
+  site_row: Row<SiteOption>,
 ): SearchRow {
   return map(
     (col) => {
@@ -32,12 +40,12 @@ function fillSearchRow(
 function createSearchMatrix(
   plain_window_url_pattern: string,
   max_window_per_row: number,
-  matrix: SiteMatrix,
+  site_matrix: Matrix<SiteOption>,
 ): SearchMatrix {
-  if (matrix.length === 0) {
+  if (site_matrix.length === 0) {
     return []
   } else {
-    const [cols, ...remain_matrix] = matrix
+    const [cols, ...remain_matrix] = site_matrix
     
     if (max_window_per_row < cols.length) {
       return createSearchMatrix(
@@ -60,12 +68,12 @@ function createSearchMatrix(
 
 export function initSearchMatrix(
   max_window_per_line: number,
-  site_matrix: SiteMatrix
+  site_settings: SiteSettings
 ) {
   const search_matrix = createSearchMatrix(
     cfg.PLAIN_SEARCH_WINDOW_URL_PATTERN,
     max_window_per_line,
-    site_matrix,
+    toMatrix(site_settings),
   )
   const search_count = search_matrix.flat().length
   const total_row = Math.ceil(search_count / max_window_per_line)

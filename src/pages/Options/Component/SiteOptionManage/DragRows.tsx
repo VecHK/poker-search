@@ -11,10 +11,11 @@ import {
   SensorAPI
 } from 'react-beautiful-dnd'
 import Cols from './DragCols'
-import { SiteMatrix, SiteOption } from '../../../../preferences/site-matrix'
+import { SiteSettings, SiteOption } from '../../../../preferences/site-settings'
 import SettingItem from '../SettingItem'
 import s from './DragRows.module.css'
 import WarningLine from './WarningLine'
+import { generateSiteSettingsRow } from '../../../../preferences/default'
 
 const getRowListStyle = (isDraggingOver: boolean): React.CSSProperties => ({
   // background: isDraggingOver ? "lightblue" : "lightgrey",
@@ -38,14 +39,14 @@ const getItemStyle = (
 }
 
 function reorderCols(
-  site_matrix: SiteMatrix,
+  site_settings: SiteSettings,
   source: DraggableLocation,
   destination: DraggableLocation,
-): SiteMatrix {
+): SiteSettings {
   const s_row = Number(source.droppableId)
   const d_row = Number(destination.droppableId)
-  const row_src = nth(s_row, site_matrix)
-  const row_des = nth(d_row, site_matrix)
+  const row_src = nth(s_row, site_settings)
+  const row_des = nth(d_row, site_settings)
 
   const s_col = source.index
   const d_col = destination.index
@@ -54,18 +55,18 @@ function reorderCols(
     throw Error('row_src/row_des not found!')
   }
   else if (s_row === d_row) {
-    const new_row = move(s_col, d_col, row_src)
-    return update(s_row, new_row, site_matrix)
+    const new_row = move(s_col, d_col, row_src.row)
+    return update(s_row, { ...row_src, row: new_row }, site_settings)
   }
   else {
-    const col_src = nth(s_col, row_src)
+    const col_src = nth(s_col, row_src.row)
     if (col_src === undefined) {
       throw Error('col_src not found')
     } else {
       return compose(
-        update(s_row, remove(s_col, 1, row_src)),
-        update(d_row, insert(d_col, col_src, row_des)),
-      )(site_matrix)
+        update(s_row, { ...row_src, row: remove(s_col, 1, row_src.row) }),
+        update(d_row, { ...row_des, row: insert(d_col, col_src, row_des.row) }),
+      )(site_settings)
     }
   }
 }
@@ -74,28 +75,28 @@ const ROW_DROP = 'ROW_DROP'
 const isRowDrop = all(equals(ROW_DROP))
 
 function reorderRows(
-  siteMatrix: SiteMatrix,
+  site_settings: SiteSettings,
   source: DraggableLocation,
   destination: DraggableLocation,
-): SiteMatrix {
+): SiteSettings {
   if (!isRowDrop([source.droppableId, destination.droppableId])) {
     throw new Error('current drop is not ROW_DROP')
   } else {
     const sRowNum = Number(source.index)
     const dRowNum = Number(destination.index)
-    return move(sRowNum, dRowNum, siteMatrix)
+    return move(sRowNum, dRowNum, site_settings)
   }
 }
 
 function dragNewRowArea(
-  site_matrix: SiteMatrix,
+  site_settings: SiteSettings,
   source: DraggableLocation,
-): SiteMatrix {
+): SiteSettings {
   const s_row = Number(source.droppableId)
   return reorderCols(
     [
-      [],
-      ...site_matrix
+      generateSiteSettingsRow([], '站点'),
+      ...site_settings
     ],
     { droppableId: `${s_row + 1}`, index: source.index, },
     { droppableId: '0', index: 0, },
@@ -104,35 +105,35 @@ function dragNewRowArea(
 
 type Pos = Readonly<[number, number]>
 
-type DragMatrixProps = {
+type DragRowProps = {
   edit: Pos | null,
   setEdit: React.Dispatch<React.SetStateAction<Pos | null>>
-  siteMatrix: SiteMatrix
+  siteSettings: SiteSettings
   onUpdate: (id: SiteOption['id'], newOption: SiteOption) => void
-  onChange: (s: SiteMatrix) => void
+  onChange: (s: SiteSettings) => void
   onClickAdd: (rowNum: number) => void
 }
 export default function DragRows({
   edit,
   setEdit,
-  siteMatrix,
+  siteSettings,
   onUpdate,
   onChange,
   onClickAdd,
-}: DragMatrixProps) {
+}: DragRowProps) {
   const onDragEnd = ({ type, source, destination }: DropResult) => {
     if (!destination) {
       // no change
     } else if (type === "ROWS") {
-      const newMatrix = reorderRows(siteMatrix, source, destination)
-      onChange(newMatrix)
+      const newSettings = reorderRows(siteSettings, source, destination)
+      onChange(newSettings)
     } else if (type === 'COLS') {
       if (destination.droppableId === '-1') {
-        const newMatrix = dragNewRowArea(siteMatrix, source)
-        onChange(newMatrix)
+        const newSettings = dragNewRowArea(siteSettings, source)
+        onChange(newSettings)
       } else {
-        const newMatrix = reorderCols(siteMatrix, source, destination)
-        onChange(newMatrix)
+        const newSettings = reorderCols(siteSettings, source, destination)
+        onChange(newSettings)
       }
     } else {
       throw Error('unknown result.type')
@@ -172,7 +173,11 @@ export default function DragRows({
                       </div>
                       <Cols
                         rowNum={-1}
-                        row={[]}
+                        settingsRow={{
+                          id: 'newRow',
+                          name: 'newRow',
+                          row: [],
+                        }}
                         edit={edit}
                         isEditMode={Boolean(edit)}
                         onChange={(id, newOption) => {
@@ -189,8 +194,8 @@ export default function DragRows({
                     </div>
                   </SettingItem>
                 </div>
-                {siteMatrix.map((row, rowNum) => (
-                  <Draggable key={rowNum} draggableId={`${rowNum}`} index={rowNum} isDragDisabled={Boolean(edit)}>
+                {siteSettings.map((settingsRow, rowNum) => (
+                  <Draggable key={settingsRow.id} draggableId={`${rowNum}`} index={rowNum} isDragDisabled={Boolean(edit)}>
                     {(provided, snapshot) => (
                       <div
                         ref={provided.innerRef}
@@ -212,16 +217,16 @@ export default function DragRows({
                             </div>
                             <Cols
                               rowNum={rowNum}
-                              row={row}
+                              settingsRow={settingsRow}
                               edit={edit}
                               isEditMode={Boolean(edit)}
                               onChange={(id, newOption) => {
                                 onUpdate(id, newOption)
                               }}
                               onSubmitEdit={(colNum, newOption) => {
-                                const newRow = update(colNum, newOption, row)
-                                const newMatrix = update(rowNum, newRow, siteMatrix)
-                                onChange(newMatrix)
+                                const newRow = update(colNum, newOption, settingsRow.row)
+                                const newSettings = update(rowNum, { ...settingsRow, row: newRow }, siteSettings)
+                                onChange(newSettings)
                                 setEdit(null)
                               }}
                               onClickEdit={(colNum) => {
@@ -232,14 +237,14 @@ export default function DragRows({
                                 setEdit(null)
                               }}
                               onClickRemove={(colNum) => {
-                                const newRow = remove(colNum, 1, row)
-                                const newMatrix = update(rowNum, newRow, siteMatrix)
-                                onChange(newMatrix)
+                                const newRow = remove(colNum, 1, settingsRow.row)
+                                const newSettings = update(rowNum, { ...settingsRow, row: newRow }, siteSettings)
+                                onChange(newSettings)
                               }}
                               onClickAdd={() => onClickAdd(rowNum)}
                             />
                           </div>
-                          <div className={`${s.Floor} ${rowSnapshot.isDraggingOver ? s.isDraggingOver : ''}`}>{siteMatrix.length - (rowNum + 1) + 1}F</div>
+                          <div className={`${s.Floor} ${rowSnapshot.isDraggingOver ? s.isDraggingOver : ''}`}>{siteSettings.length - (rowNum + 1) + 1}F</div>
                         </SettingItem>
                       </div>
                     )}
@@ -249,7 +254,7 @@ export default function DragRows({
               </div>
             )}
           </Droppable>
-          <WarningLine disable={Boolean(edit)} siteMatrix={siteMatrix} />
+          <WarningLine disable={Boolean(edit)} siteSettings={siteSettings} />
         </div>
       </DragDropContext>
       <div className={s._1FTips}>⬆ 使用 Poker 后，最先展示的层</div>

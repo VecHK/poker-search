@@ -1,7 +1,7 @@
 import { equals } from 'ramda'
 import React, { useMemo, useState } from 'react'
 import { Droppable, Draggable, DraggingStyle, NotDraggingStyle } from 'react-beautiful-dnd'
-import { SiteOption, SiteRow } from '../../../../preferences/site-matrix'
+import { SiteOption, SiteSettingsRow } from '../../../../preferences/site-settings'
 import s from './DragCols.module.css'
 import SiteWindow from './SiteWindow'
 
@@ -88,7 +88,7 @@ function SiteOptionDragItem(props: {
 
 function SiteOptionList(props: {
   enableRemoveAnimation: boolean
-  cols: SiteOption[]
+  settingsRow: SiteSettingsRow
   isEditMode: boolean
   edit: Pos
   rowNum: number,
@@ -104,7 +104,7 @@ function SiteOptionList(props: {
       <TransitionGroup
         className={s.SiteOptionList}
       >
-        {props.cols.map((col, colNum) => (
+        {props.settingsRow.row.map((col, colNum) => (
           <CSSTransition
             onExited={props.onRemoveAnimationEnd}
             key={col.id}
@@ -136,7 +136,7 @@ function SiteOptionList(props: {
     )
   } else {
     return <>
-      {props.cols.map((col, colNum) => (
+      {props.settingsRow.row.map((col, colNum) => (
         <SiteOptionDragItem
           key={col.id}
           option={col}
@@ -157,7 +157,7 @@ function SiteOptionList(props: {
 
 export default function Cols(props: {
   rowNum: number,
-  row: SiteRow,
+  settingsRow: SiteSettingsRow,
   edit: Pos
   isEditMode: boolean
   onCancelEdit(): void
@@ -168,16 +168,16 @@ export default function Cols(props: {
   onClickRemove(colNum: number): void
 }) {
   const [enableRemoveAnimation, setEnableRemoveAnimation] = useState(false)
-  const { row, rowNum } = props
+  const { settingsRow, rowNum } = props
 
   const maxWindowPerLine = useMaxWindowPerLine()
   const showAddButton = useMemo(() => {
     if (maxWindowPerLine === null) {
       return true
     } else {
-      return row.length < maxWindowPerLine
+      return settingsRow.row.length < maxWindowPerLine
     }
-  }, [maxWindowPerLine, row.length])
+  }, [maxWindowPerLine, settingsRow.row.length])
 
   return (
     <Droppable droppableId={`${rowNum}`} type="COLS" direction="horizontal">
@@ -188,7 +188,7 @@ export default function Cols(props: {
         >
           <SiteOptionList
             enableRemoveAnimation={enableRemoveAnimation}
-            cols={row}
+            settingsRow={settingsRow}
             isEditMode={props.isEditMode}
             edit={props.edit}
             rowNum={rowNum}
