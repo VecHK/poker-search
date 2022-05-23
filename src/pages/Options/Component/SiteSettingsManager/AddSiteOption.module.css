@@ -1,8 +1,10 @@
 
 .AddSiteOption {
-  margin: 0 8px;
   --normal-width: 132px;
   --timing: 382ms;
+  --gap: 8px;
+  margin-left: var(--gap);
+  margin-right: var(--gap);
   width: var(--normal-width);
   opacity: 1;
   overflow: hidden;
@@ -11,27 +13,39 @@
 .AddSiteOptionEnter {
   width: 0;
   opacity: 0;
+  margin-left: 0;
+  margin-right: 0;
 }
 .AddSiteOptionEnterActive {
   width: 0;
   opacity: 0;
+  margin-left: 0;
+  margin-right: 0;
 }
 .AddSiteOptionEnterDone {
-  transition: width 382ms, opacity 382ms;
+  transition: width 382ms, opacity 382ms, margin-left var(--timing), margin-right var(--timing);
   width: var(--normal-width);
   opacity: 1;
+  margin-left: var(--gap);
+  margin-right: var(--gap);
 }
 
 .AddSiteOptionExit {
-  transition: opacity var(--timing), width var(--timing);
+  transition: opacity var(--timing), width var(--timing), margin-left var(--timing), margin-right var(--timing);
   opacity: 0;
   width: 0px;
+  margin-left: 0px;
+  margin-right: 0px;
 }
 .AddSiteOptionExitActive {
   opacity: 0;
   width: 0px;
+  margin-left: 0px;
+  margin-right: 0px;
 }
 .AddSiteOptionExitDone {
   opacity: 0;
   width: 0px;
+  margin-left: 0px;
+  margin-right: 0px;
 }
