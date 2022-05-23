@@ -78,29 +78,30 @@
 
 .TransitionItem {
   /* display: initial; */
+  --timing: 382ms;
 }
 .TransitionItemEnter {
-  /* display: initial; */
-  /* transition: opacity 382ms; */
+  transition: opacity var(--timing), height var(--timing);
+  height: 0;
+  opacity: 0;
 }
 .TransitionItemEnterActive {
-  /* display: initial; */
+  height: calc(180px + 12px);
+  opacity: 1;
 }
 .TransitionItemEnterDone {
-  /* display: initial; */
+  height: unset;
+  opacity: 1;
 }
 .TransitionItemExit {
-  /* display: initial; */
-  transition: opacity 382ms, height 382ms;
+  transition: opacity var(--timing), height var(--timing);
   height: calc(180px + 12px);
 }
 .TransitionItemExitActive {
-  /* display: initial; */
   opacity: 0;
   height: 0;
 }
 .TransitionItemExitDone {
-  /* display: initial; */
   opacity: 0;
   height: 0;
   display: none;

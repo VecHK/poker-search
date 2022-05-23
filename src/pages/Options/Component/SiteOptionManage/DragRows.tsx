@@ -11,11 +11,13 @@ import {
   SensorAPI
 } from 'react-beautiful-dnd'
 import Cols from './DragCols'
-import { SiteSettings, SiteOption, generateSiteSettingsRow } from '../../../../preferences/site-settings'
+import { SiteSettings, SiteOption } from '../../../../preferences/site-settings'
 import SettingItem from '../SettingItem'
 import s from './DragRows.module.css'
 import WarningLine from './WarningLine'
 import { CSSTransition, TransitionGroup } from 'react-transition-group'
+
+export const ROW_TRANSITION_DURATION = 382
 
 function TransitionList({ nodes }: { nodes: Array<{ id: string; node: ReactNode }> }) {
   return (
@@ -24,7 +26,7 @@ function TransitionList({ nodes }: { nodes: Array<{ id: string; node: ReactNode 
         return (
           <CSSTransition
             key={e.id}
-            timeout={382}
+            timeout={ROW_TRANSITION_DURATION}
             classNames={{
               enter: s.TransitionItemEnter,
               enterActive: s.TransitionItemEnterActive,
@@ -113,21 +115,6 @@ function reorderRows(
   }
 }
 
-function dragNewRowArea(
-  site_settings: SiteSettings,
-  source: DraggableLocation,
-): SiteSettings {
-  const s_row = Number(source.droppableId)
-  return reorderCols(
-    [
-      generateSiteSettingsRow([]),
-      ...site_settings
-    ],
-    { droppableId: `${s_row + 1}`, index: source.index, },
-    { droppableId: '0', index: 0, },
-  )
-}
-
 type Pos = Readonly<[number, number]>
 
 type DragRowProps = {
@@ -153,13 +140,8 @@ export default function DragRows({
       const newSettings = reorderRows(siteSettings, source, destination)
       onChange(newSettings)
     } else if (type === 'COLS') {
-      if (destination.droppableId === '-1') {
-        const newSettings = dragNewRowArea(siteSettings, source)
-        onChange(newSettings)
-      } else {
-        const newSettings = reorderCols(siteSettings, source, destination)
-        onChange(newSettings)
-      }
+      const newSettings = reorderCols(siteSettings, source, destination)
+      onChange(newSettings)
     } else {
       throw Error('unknown result.type')
     }
