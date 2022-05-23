@@ -85,7 +85,7 @@ export default function OptionsPage() {
 
   useEffect(() => {
     if (preferences !== undefined) {
-      save(preferences)
+      // save(preferences)
     }
   }, [preferences])
 

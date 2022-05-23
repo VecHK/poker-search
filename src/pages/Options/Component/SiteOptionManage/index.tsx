@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { nth, update } from 'ramda'
 
 import DragRows from './DragRows'
@@ -18,6 +18,13 @@ export default function SiteOptionManage({ siteSettings, onUpdate, onChange }: {
   onChange: (settings: SiteSettings) => void
 }) {
   const [edit, setEdit] = useState<Pos | null>(null)
+
+  useEffect(() => {
+    const hasEmptyRow = !siteSettings.every(r => r.row.length)
+    if (hasEmptyRow) {
+      onChange( siteSettings.filter(r => r.row.length) )
+    }
+  }, [onChange, siteSettings])
 
   // const newRowNode = useMemo(() => {
   //   return (
@@ -42,12 +49,7 @@ export default function SiteOptionManage({ siteSettings, onUpdate, onChange }: {
         onUpdate={onUpdate}
         onChange={(manageSettings) => {
           let newSettings = [...manageSettings].reverse()
-          const hasEmptyRow = !newSettings.every(r => r.row.length)
-          if (hasEmptyRow) {
-            onChange( newSettings.filter(r => r.row.length) )
-          } else {
-            onChange( newSettings )
-          }
+          onChange( newSettings )
         }}
         onClickAdd={(rowFloor) => {
           const manageSettings = [...siteSettings].reverse()

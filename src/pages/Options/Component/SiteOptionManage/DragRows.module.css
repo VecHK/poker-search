@@ -75,3 +75,33 @@
   background-color: rgba(0, 0, 0, 0.3);
   margin: 2px 0;
 }
+
+.TransitionItem {
+  /* display: initial; */
+}
+.TransitionItemEnter {
+  /* display: initial; */
+  /* transition: opacity 382ms; */
+}
+.TransitionItemEnterActive {
+  /* display: initial; */
+}
+.TransitionItemEnterDone {
+  /* display: initial; */
+}
+.TransitionItemExit {
+  /* display: initial; */
+  transition: opacity 382ms, height 382ms;
+  height: calc(180px + 12px);
+}
+.TransitionItemExitActive {
+  /* display: initial; */
+  opacity: 0;
+  height: 0;
+}
+.TransitionItemExitDone {
+  /* display: initial; */
+  opacity: 0;
+  height: 0;
+  display: none;
+}

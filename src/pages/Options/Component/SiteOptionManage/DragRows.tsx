@@ -1,5 +1,5 @@
 import { all, compose, equals, insert, move, nth, remove, update } from 'ramda'
-import React from 'react'
+import React, { ReactNode } from 'react'
 import {
   DragDropContext,
   Droppable,
@@ -15,6 +15,32 @@ import { SiteSettings, SiteOption, generateSiteSettingsRow } from '../../../../p
 import SettingItem from '../SettingItem'
 import s from './DragRows.module.css'
 import WarningLine from './WarningLine'
+import { CSSTransition, TransitionGroup } from 'react-transition-group'
+
+function TransitionList({ nodes }: { nodes: Array<{ id: string; node: ReactNode }> }) {
+  return (
+    <TransitionGroup>
+      {nodes.map((e) => {
+        return (
+          <CSSTransition
+            key={e.id}
+            timeout={382}
+            classNames={{
+              enter: s.TransitionItemEnter,
+              enterActive: s.TransitionItemEnterActive,
+              enterDone: s.TransitionItemEnterDone,
+              exit: s.TransitionItemExit,
+              exitActive: s.TransitionItemExitActive,
+              exitDone: s.TransitionItemExitDone,
+            }}
+          >
+            <div className={s.TransitionItem}>{e.node}</div>
+          </CSSTransition>
+        )
+      })}
+    </TransitionGroup>
+  )
+}
 
 const getRowListStyle = (isDraggingOver: boolean): React.CSSProperties => ({
   // background: isDraggingOver ? "lightblue" : "lightgrey",
@@ -157,103 +183,74 @@ export default function DragRows({
                 ref={provided.innerRef}
                 style={getRowListStyle(rowSnapshot.isDraggingOver)}
               >
-                <div
-                  ref={provided.innerRef}
-                  className={s.DragRowDnD}
-                >
-                  <SettingItem className={s.RowSettingItem} disableMargin>
-                    <div className={s.DragRowInner}>
-                      <div style={{ visibility: 'hidden' }}>
-                        <div className={s.Handler}>
-                          <div className={s.HandlerLine}></div>
-                          <div className={s.HandlerLine}></div>
-                          <div className={s.HandlerLine}></div>
-                        </div>
-                      </div>
-                      <Cols
-                        rowNum={-1}
-                        settingsRow={{
-                          id: 'newRow',
-                          name: 'newRow',
-                          row: [],
-                        }}
-                        edit={edit}
-                        isEditMode={Boolean(edit)}
-                        onChange={(id, newOption) => {
-                          // onUpdate(id, newOption)
-                        }}
-                        onSubmitEdit={() => {}}
-                        onClickEdit={() => {}}
-                        onCancelEdit={() => {}}
-                        onClickRemove={() => {}}
-                        onClickAdd={() => {
-                          // onClickAdd(rowNum)
-                        }}
-                      />
-                    </div>
-                  </SettingItem>
-                </div>
-                {siteSettings.map((settingsRow, rowNum) => (
-                  <Draggable
-                    key={settingsRow.id}
-                    draggableId={settingsRow.id}
-                    index={rowNum}
-                    isDragDisabled={Boolean(edit)}
-                  >
-                    {(provided, snapshot) => (
-                      <div
-                        ref={provided.innerRef}
-                        {...provided.draggableProps}
-                        className={s.DragRowDnD}
-                        style={getItemStyle(
-                          snapshot.isDragging,
-                          provided.draggableProps.style
-                        )}
-                      >
-                        <SettingItem className={s.RowSettingItem} disableMargin>
-                          <div className={s.DragRowInner}>
-                            <div {...provided.dragHandleProps}>
-                              <div className={s.Handler}>
-                                <div className={s.HandlerLine}></div>
-                                <div className={s.HandlerLine}></div>
-                                <div className={s.HandlerLine}></div>
-                              </div>
+                <TransitionList
+                  nodes={
+                    siteSettings.map((settingsRow, rowNum) => ({
+                      id: settingsRow.id,
+                      node: (
+                        <Draggable
+                          key={settingsRow.id}
+                          draggableId={settingsRow.id}
+                          index={rowNum}
+                          isDragDisabled={Boolean(edit)}
+                        >
+                          {(provided, snapshot) => (
+                            <div
+                              ref={provided.innerRef}
+                              {...provided.draggableProps}
+                              className={s.DragRowDnD}
+                              style={getItemStyle(
+                                snapshot.isDragging,
+                                provided.draggableProps.style
+                              )}
+                            >
+                              <SettingItem className={s.RowSettingItem} disableMargin>
+                                <div className={s.DragRowInner}>
+                                  <div {...provided.dragHandleProps}>
+                                    <div className={s.Handler}>
+                                      <div className={s.HandlerLine}></div>
+                                      <div className={s.HandlerLine}></div>
+                                      <div className={s.HandlerLine}></div>
+                                    </div>
+                                  </div>
+                                  <Cols
+                                    rowNum={rowNum}
+                                    settingsRow={settingsRow}
+                                    edit={edit}
+                                    isEditMode={Boolean(edit)}
+                                    onChange={(id, newOption) => {
+                                      onUpdate(id, newOption)
+                                    }}
+                                    onSubmitEdit={(colNum, newOption) => {
+                                      const newRow = update(colNum, newOption, settingsRow.row)
+                                      const newSettings = update(rowNum, { ...settingsRow, row: newRow }, siteSettings)
+                                      onChange(newSettings)
+                                      setEdit(null)
+                                    }}
+                                    onClickEdit={(colNum) => {
+                                      console.log('onClickEdit')
+                                      setEdit([rowNum, colNum])
+                                    }}
+                                    onCancelEdit={() => {
+                                      setEdit(null)
+                                    }}
+                                    onClickRemove={(colNum) => {
+                                      const newRow = remove(colNum, 1, settingsRow.row)
+                                      const newSettings = update(rowNum, { ...settingsRow, row: newRow }, siteSettings)
+                                      onChange(newSettings)
+                                    }}
+                                    onClickAdd={() => onClickAdd(rowNum)}
+                                  />
+                                </div>
+                                <div className={`${s.Floor} ${rowSnapshot.isDraggingOver ? s.isDraggingOver : ''}`}>{siteSettings.length - (rowNum + 1) + 1}F</div>
+                              </SettingItem>
                             </div>
-                            <Cols
-                              rowNum={rowNum}
-                              settingsRow={settingsRow}
-                              edit={edit}
-                              isEditMode={Boolean(edit)}
-                              onChange={(id, newOption) => {
-                                onUpdate(id, newOption)
-                              }}
-                              onSubmitEdit={(colNum, newOption) => {
-                                const newRow = update(colNum, newOption, settingsRow.row)
-                                const newSettings = update(rowNum, { ...settingsRow, row: newRow }, siteSettings)
-                                onChange(newSettings)
-                                setEdit(null)
-                              }}
-                              onClickEdit={(colNum) => {
-                                console.log('onClickEdit')
-                                setEdit([rowNum, colNum])
-                              }}
-                              onCancelEdit={() => {
-                                setEdit(null)
-                              }}
-                              onClickRemove={(colNum) => {
-                                const newRow = remove(colNum, 1, settingsRow.row)
-                                const newSettings = update(rowNum, { ...settingsRow, row: newRow }, siteSettings)
-                                onChange(newSettings)
-                              }}
-                              onClickAdd={() => onClickAdd(rowNum)}
-                            />
-                          </div>
-                          <div className={`${s.Floor} ${rowSnapshot.isDraggingOver ? s.isDraggingOver : ''}`}>{siteSettings.length - (rowNum + 1) + 1}F</div>
-                        </SettingItem>
-                      </div>
-                    )}
-                  </Draggable>
-                ))}
+                          )}
+                        </Draggable>
+                      )
+                    }))
+                  }
+                />
                 {provided.placeholder}
               </div>
             )}
