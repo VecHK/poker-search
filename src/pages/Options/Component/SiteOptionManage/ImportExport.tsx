@@ -37,13 +37,13 @@ function parseJson<T>(json: string) {
 }
 
 function loadData(raw: string): SiteMatrix {
-  const opts = parseJson(raw)
+  const prefs = parseJson(raw)
 
-  if (!isPokerPreferences(opts)) {
+  if (!isPokerPreferences(prefs)) {
     throw Error('此文件似乎不是 Poker 的站点配置文件')
   } else {
     try {
-      const { site_matrix } = updatePreferences(opts as AllVersion)
+      const { site_matrix } = updatePreferences(prefs as AllVersion)
       return site_matrix
     } catch (err) {
       console.error(err)
