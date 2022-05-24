@@ -1,10 +1,5 @@
-export function getSearchword() {
+export function getSearchword(): string | null {
   const sp = new URLSearchParams(window.location.search)
 
-  const word = sp.get('q')
-  if (word) {
-    return word
-  } else {
-    throw Error('word is empty!')
-  }
+  return sp.get('q')
 }
