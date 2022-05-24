@@ -13,8 +13,6 @@ import SearchForm from './components/SearchForm'
 
 import './Control.css'
 
-const queryKeyword = getSearchword()
-
 type Control = Unpromise<ReturnType<typeof createSearchLayout>>
 
 function createStep() {
@@ -44,8 +42,8 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
   const windowIsFocus = useWindowFocus(true)
   const [isLoading, setLoading] = useState(false)
 
-  const [keyword, setKeyword] = useState(queryKeyword)
-  const [submitedKeyword, submit] = useState<string | false>(false)
+  const [keyword, setKeyword] = useState('')
+  const [submitedKeyword, submitKeyword] = useState<string | false>(false)
 
   const [controlWindowId, setControlWindowId] = useState<null | number>(null)
 
@@ -73,7 +71,11 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
   }, [callCloseAllWindow])
 
   useEffect(() => {
-    submit(queryKeyword)
+    const searchWord = getSearchword()
+    if (searchWord !== null) {
+      submitKeyword(searchWord)
+      setKeyword(searchWord)
+    }
   }, [])
 
   useEffect(() => {
@@ -159,10 +161,10 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
               setLoading(true)
               if (controll !== undefined) {
                 onCloseAllWindow(controll)
-                submit(newSearchKeyword)
+                submitKeyword(newSearchKeyword)
                 setStep(createStep())
               } else {
-                submit(newSearchKeyword)
+                submitKeyword(newSearchKeyword)
                 setStep(createStep())
               }
             }}
