@@ -6,6 +6,16 @@
   "commit": false,
   "contributors": [
     {
+      "login": "VecHK",
+      "name": "Vec",
+      "avatar_url": "https://avatars.githubusercontent.com/u/6480724?v=4",
+      "profile": "http://vec.moe",
+      "contributions": [
+        "code",
+        "ideas"
+      ]
+    },
+    {
       "login": "nt-cubic",
       "name": "NT³",
       "avatar_url": "https://avatars.githubusercontent.com/u/88926027?v=4",
