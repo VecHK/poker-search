@@ -1,14 +1,10 @@
 <img src="src/assets/img/icon-128.png" width="100"/>
-<!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-1-orange.svg?style=flat-square)](#contributors-)
-<!-- ALL-CONTRIBUTORS-BADGE:END -->
-
-![Contributors](https://img.shields.io/github/contributors/VecHK/poker-search?color=%235599FF&logoColor=%23F0F0F0&style=plastic)
-![Build](https://img.shields.io/github/workflow/status/VecHK/poker-search/Build/master?color=%235599FF&label=Build&logo=GitHub%20Actions&logoColor=%23F0F0F0&style=plastic)
-![Version](https://img.shields.io/github/package-json/v/VecHK/poker-search?color=%235599FF&label=version&logoColor=%23F0F0F0&style=plastic)
 
 ![Platform](https://img.shields.io/badge/Platform-macOS%20%7C%20Windows-green?color=%235599FF&style=plastic&logo=Google%20Chrome&logoColor=%23F0F0F0)
 ![Rating](https://img.shields.io/chrome-web-store/stars/test?color=%235599FF&logoColor=F0F0F0&style=plastic)
+
+![Build](https://img.shields.io/github/workflow/status/VecHK/poker-search/Build/master?color=%235599FF&label=Build&logo=GitHub%20Actions&logoColor=%23F0F0F0&style=plastic)
+![Version](https://img.shields.io/github/package-json/v/VecHK/poker-search?color=%235599FF&label=version&logoColor=%23F0F0F0&style=plastic)
 
 # Poker - Search
 
@@ -80,17 +76,13 @@ Poker 搜索启动后，用户能在底部的控制台窗口中再次键入新�
 
 也能直接联系 [Vec](http://vec.moe/) 与 [NT³](https://t.me/nt_cubic) 
 
-# 欢迎 Pull Request
-
-这也是开源的意义，使得 Poker Search 能更好的使用。
-
 # 致谢
 
 灵感来源于 Smartisan TNT 的发牌手。
 
 本项目最初以 [chrome-extension-boilerplate-react](https://github.com/lxieyang/chrome-extension-boilerplate-react) 为模板创建。
 
-## 贡献者 ✨
+# 贡献者 ✨
 
 感谢这些牛逼的人们 ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
 
@@ -109,4 +101,4 @@ Poker 搜索启动后，用户能在底部的控制台窗口中再次键入新�
 
 <!-- ALL-CONTRIBUTORS-LIST:END -->
 
-This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome!
+此项目遵循 [all-contributors](https://github.com/all-contributors/all-contributors) 规范。欢迎提交任何形式的贡献！
