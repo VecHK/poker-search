@@ -1,99 +1,36 @@
 import cfg from '../config'
-import { createBase } from '../core/base'
-import { calcControlWindowPos } from '../core/layout/control-window'
+import launchPoker from './launch'
+import { regRules } from './moble-access'
 
-console.log('TypeScriptBackground')
-
-const { ResourceType, RuleActionType } = chrome.declarativeNetRequest
-
-// const { id: chrome_id } = chrome.runtime
-// const search_entry_url = chrome.runtime.getURL('/search-entry.html')
-
-// chrome.declarativeNetRequest.updateDynamicRules({
-//   addRules:[{
-//     "id": 4,
-//     "priority": 4,
-//     "condition": {
-//       "regexFilter": "^https:\/\/redirect_search\/test.html(.*)",
-//       "resourceTypes": [
-//         ResourceType['MAIN_FRAME']
-//         // "main_frame"
-//       ]
-//     },
-//     "action": {
-//       "type": RuleActionType['REDIRECT'],
-//       "redirect": {
-//         "regexSubstitution": `${search_entry_url}\\1`
-//       }
-//     }
-//   }]
-// })
-
-async function removeAllRules() {
-  const currentRules = await chrome.declarativeNetRequest.getDynamicRules()
-
-  const removeRuleIds = currentRules.map(rule => rule.id)
-  return chrome.declarativeNetRequest.updateDynamicRules({
-    removeRuleIds: removeRuleIds
-  })
-}
-
-async function regRules() {
-  await removeAllRules()
-
-  return chrome.declarativeNetRequest.updateDynamicRules({
-    addRules: [{
-      id: 1,
-      priority: 1,
-      condition: {
-        urlFilter: `${cfg.MOBILE_PAGE_IDENTIFIER}`,
-        resourceTypes: [
-          ResourceType['OTHER'],
-          // ResourceType['WEBBUNDLE'],
-          // ResourceType['WEBTRANSPORT'],
-          ResourceType['MAIN_FRAME'],
-          ResourceType['SUB_FRAME'],
-          ResourceType['STYLESHEET'],
-          ResourceType['SCRIPT'],
-          ResourceType['IMAGE'],
-          ResourceType['FONT'],
-          ResourceType['OBJECT'],
-          ResourceType['XMLHTTPREQUEST'],
-          ResourceType['PING'],
-          ResourceType['CSP_REPORT'],
-          ResourceType['MEDIA'],
-          ResourceType['WEBSOCKET']
-        ]
-      },
-      action: {
-        type: RuleActionType['MODIFY_HEADERS'],
-        requestHeaders: [
-          {
-            header: "user-agent",
-            operation: chrome.declarativeNetRequest.HeaderOperation.SET,
-            value: "Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Mobile/15E148 Safari/604.1"
-          }
-        ]
-      }
-    }]
-  })
-}
+console.log('Poker Background')
 
 regRules()
 
-chrome.omnibox.onInputEntered.addListener((text) => {
-  console.log('search text', text)
-  createBase().then(base => {
-    const [ top, left ] = calcControlWindowPos(base.layout_height, base.limit)
-    chrome.windows.create({
-      type: 'popup',
-      width: Math.round(cfg.CONTROL_WINDOW_WIDTH),
-      height: Math.round(cfg.CONTROL_WINDOW_HEIGHT),
-      left: Math.round(left),
-      top: Math.round(top),
-      url: chrome.runtime.getURL(`/control.html?q=${encodeURIComponent(text)}`)
+// 未启动Poker的控制窗时候，快捷键 focus-layout 为启动 Poker 控制窗
+// 在启动控制窗后，快捷键 focus-layout 就不再是 Poker 控制窗了，
+// 而是原本的切换到搜索窗和控制窗的快捷键
+// 在控制窗关闭后，快捷键 focus-layout 又会激活为启动 Poker 控制窗
+const commandHandler = (command: string) => {
+  if (command === 'focus-layout') {
+    chrome.commands.onCommand.removeListener(commandHandler)
+    launchPoker().then(({ controlWindow }) => {
+      if (controlWindow.id !== undefined) {
+        const evHandler = (id: number) => {
+          if (id === controlWindow.id) {
+            chrome.windows.onRemoved.removeListener(evHandler)
+            chrome.commands.onCommand.addListener(commandHandler)
+          }
+        }
+        chrome.windows.onRemoved.addListener(evHandler)
+      }
     })
-  })
+  }
+}
+chrome.commands.onCommand.addListener(commandHandler)
+
+// omnibox 提交
+chrome.omnibox.onInputEntered.addListener((text) => {
+  launchPoker(text)
 })
 
 chrome.omnibox.onInputChanged.addListener((text, suggest) => {
@@ -102,10 +39,10 @@ chrome.omnibox.onInputChanged.addListener((text, suggest) => {
     description: `Poker搜索: ${text}`,
   })
 
-  suggest([{
-    content: 'content',
-    description: "description",
-  }])
+  // suggest([{
+  //   content: 'content',
+  //   description: "description",
+  // }])
 })
 
 chrome.runtime.onInstalled.addListener((details) => {

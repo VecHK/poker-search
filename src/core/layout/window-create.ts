@@ -65,7 +65,10 @@ export async function constructSearchWindows(
         await p
         const windowId = win.getWindowId()
         ids.push(windowId)
-        newRow.push({ windowId })
+        newRow.push({
+          state: 'NORMAL',
+          windowId
+        })
         const h = (closedWindowId: number) => {
           if (windowId === closedWindowId) {
             chrome.windows.onRemoved.removeListener(h)
@@ -94,7 +97,7 @@ export async function constructSearchWindowsFast(
   keyword: string,
   canContinue: () => boolean,
   stop: () => void
-) {
+): Promise<SearchWindowMatrix> {
   search_matrix = [...search_matrix].reverse()
 
   const create_matrix: CreateData[][] = []
@@ -152,7 +155,10 @@ export async function constructSearchWindowsFast(
         await p
         const windowId = win.getWindowId()
         ids.push(windowId)
-        new_row.push({ windowId })
+        new_row.push({
+          state: 'NORMAL',
+          windowId,
+        })
         const h = (closedWindowId: number) => {
           if (windowId === closedWindowId) {
             chrome.windows.onRemoved.removeListener(h)

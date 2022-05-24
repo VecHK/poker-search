@@ -25,7 +25,7 @@ const cfg = Object.freeze({
   SEARCH_FOCUS_INTERVAL: 300,
 
   ENVIRONMENT_STORAGE_KEY: 'poker-env',
-  OPTIONS_STORAGE_KEY: 'poker-options',
+  PREFERENCES_STORAGE_KEY: 'poker-options',
 
   KEYWORD_REPLACEHOLDER: '%poker%',
 
@@ -40,6 +40,9 @@ const cfg = Object.freeze({
   },
 
   DEFAULT_ENABLE_MOBILE: true,
+
+  EXPORT_SITE_SETTINGS_FILE_NAME: 'poker-sites.json',
+  DEFAULT_SITE_OPTION_NAME: '站点',
 
   get DEFAULT_SITES() {
     return [

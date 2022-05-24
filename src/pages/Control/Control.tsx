@@ -13,8 +13,6 @@ import SearchForm from './components/SearchForm'
 
 import './Control.css'
 
-const queryKeyword = getSearchword()
-
 type Control = Unpromise<ReturnType<typeof createSearchLayout>>
 
 function createStep() {
@@ -43,14 +41,14 @@ const useWindowFocus = (initFocusValue: boolean) => {
 const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
   const windowIsFocus = useWindowFocus(true)
   const [isLoading, setLoading] = useState(false)
-  const [isOpen, setOpen] = useState(false)
-  const [keyword, setKeyword] = useState(queryKeyword)
-  const [submitedKeyword, submit] = useState<string | false>(false)
+
+  const [keyword, setKeyword] = useState('')
+  const [submitedKeyword, submitKeyword] = useState<string | false>(false)
 
   const [controlWindowId, setControlWindowId] = useState<null | number>(null)
 
   const [controll, setControll] = useState<Control | undefined>(undefined)
-  const [text, setText] = useState('text')
+
   const [{ canContinue, stop }, setStep] = useState(createStep())
 
   useEffect(() => {
@@ -62,18 +60,22 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
   }, [])
 
   const callCloseAllWindow = useCallback((ids: number[]) => {
-    setOpen(false)
     closeAllWindow(ids)
   }, [])
   const onCloseAllWindow = useCallback((con: Control) => {
     const ids = con.getMatrix().flat().map(u => u.windowId)
     con.clearFocusChangedHandler()
     con.clearRemoveHandler()
+    con.setBoundsChangedHandler()
     callCloseAllWindow(ids)
   }, [callCloseAllWindow])
 
   useEffect(() => {
-    submit(queryKeyword)
+    const searchWord = getSearchword()
+    if (searchWord !== null) {
+      submitKeyword(searchWord)
+      setKeyword(searchWord)
+    }
   }, [])
 
   useEffect(() => {
@@ -121,6 +123,7 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
       setControll(newControll)
       newControll.setRemoveHandler()
       newControll.setFocusChangedHandler()
+      newControll.setBoundsChangedHandler()
     }).catch(err => {
       if (err.cancel) {
         // 提前取消
@@ -139,8 +142,6 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
   useEffect(() => {
     if (controlWindowId !== null) {
       if (submitedKeyword !== false) {
-        setOpen(true)
-  
         moveControlWindow(controlWindowId).then(() => {
           refreshWindows(controlWindowId, submitedKeyword)
         })
@@ -160,10 +161,10 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
               setLoading(true)
               if (controll !== undefined) {
                 onCloseAllWindow(controll)
-                submit(newSearchKeyword)
+                submitKeyword(newSearchKeyword)
                 setStep(createStep())
               } else {
-                submit(newSearchKeyword)
+                submitKeyword(newSearchKeyword)
                 setStep(createStep())
               }
             }}

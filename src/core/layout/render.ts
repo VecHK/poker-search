@@ -4,25 +4,32 @@ import { calcRealPos } from './pos'
 import { isCurrentRow } from './matrix'
 import { SearchWindow } from './window'
 
-function refreshWindow(
+async function refreshWindow(
   base: Base,
   opts: {
-    windowId: number,
+    window: SearchWindow,
+    // windowId: number,
     focused?: boolean,
     resetSize?: boolean
     row: number
     col: number
   }
-) {
+): Promise<void> {
   const [left, top] = calcRealPos(base, opts.row, opts.col)
-  
-  return chrome.windows.update(opts.windowId, {
-    focused: opts.focused,
-    left,
-    top,
-    width: opts.resetSize ? base.info.window_width : undefined,
-    height: opts.resetSize ? base.info.window_height : undefined,
-  })
+
+  const { state, windowId } = opts.window
+  if (state === 'EMPTY') {
+    return
+  } else {
+    await chrome.windows.update(windowId, {
+      focused: opts.focused,
+      left,
+      top,
+      width: opts.resetSize ? base.info.window_width : undefined,
+      height: opts.resetSize ? base.info.window_height : undefined,
+    })
+    return
+  }
 }
 
 export async function renderMatrix(
@@ -34,16 +41,16 @@ export async function renderMatrix(
 ) {
   const isWin = base.platform.os === 'win'
 
-  const promises: Promise<chrome.windows.Window | null>[] = []
+  const promises: Promise<void>[] = []
   for (let [row, line] of matrix.entries()) {
-    for (let [col, u] of line.entries()) {
+    for (let [col, win] of line.entries()) {
       const isLastLine = isCurrentRow(matrix, row)
 
-      if (skip_ids.indexOf(u.windowId) !== -1) {
-        promises.push(Promise.resolve(null))
+      if (skip_ids.indexOf(win.windowId) !== -1) {
+        promises.push(Promise.resolve(undefined))
       } else {
         const p = refreshWindow(base, {
-          windowId: u.windowId,
+          window: win,
           focused: (presetFocused === undefined) ? (isWin || isLastLine) : presetFocused,
           resetSize,
           row,
@@ -66,13 +73,13 @@ export function renderCol(
 ) {
   const isWin = base.platform.os === 'win'
 
-  const promises: Promise<chrome.windows.Window>[] = []
+  const promises: Promise<void>[] = []
   for (let [row, line] of matrix.entries()) {
-    for (let [col, u] of line.entries()) {
+    for (let [col, win] of line.entries()) {
       if (selectCol === col) {
         const isLastLine = isCurrentRow(matrix, row)
         const p = refreshWindow(base, {
-          windowId: u.windowId,
+          window: win,
           focused: (presetFocused === undefined) ? (isWin || isLastLine) : presetFocused,
           resetSize,
           row,

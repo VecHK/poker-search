@@ -56,6 +56,7 @@ const KeywordInput: React.FC<{
       name="keyword"
       className={s.Input}
       value={value}
+      autoFocus
       onFocus={onFocus}
       onBlur={onBlur}
       onInput={e => {

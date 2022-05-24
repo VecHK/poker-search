@@ -1,0 +1,17 @@
+.ImportExport {
+  margin-top: 10px;
+  padding-left: 20px;
+}
+
+.ImportExport :global(label):first-child {
+  margin-left: 0;
+}
+.ImportExport :global(label) {
+  margin: 0 20px;
+}
+
+.Link {
+  color: grey;
+  cursor: pointer;
+  text-decoration: underline;
+}

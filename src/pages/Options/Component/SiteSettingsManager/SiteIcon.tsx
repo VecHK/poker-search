@@ -1,7 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import Loading from '../../../../components/Loading'
 import cfg from '../../../../config'
-import { SiteOption, toSearchURL } from '../../../../options/site-matrix'
+import useMount from '../../../../hooks/useMount'
+import { SiteOption, toSearchURL } from '../../../../preferences/site-settings'
 import getIcon from '../../../../utils/get-icon'
 
 import s from './SiteIcon.module.css'
@@ -20,6 +21,8 @@ export default function SiteIcon({
   const [nowUrlPattern, setNowUrlPattern] = useState<string>(urlPattern)
   const [loading, setLoading] = useState<boolean>(false)
 
+  const getMount = useMount()
+
   useEffect(() => {
     // urlPattern 修改后再次加载图标
     if (nowUrlPattern !== urlPattern) {
@@ -36,19 +39,23 @@ export default function SiteIcon({
         setNowUrlPattern(urlPattern)
         getIcon(toSearchURL(urlPattern, 'hello'))
           .then(newSrc => {
-            if (newSrc === null) {
-              setLoading(false)
-            } else {
-              setLoading(false)
-              onIconUpdate(newSrc)
+            if (getMount()) {
+              if (newSrc === null) {
+                setLoading(false)
+              } else {
+                setLoading(false)
+                onIconUpdate(newSrc)
+              }
             }
           })
           .catch(() => {
-            setLoading(false)
+            if (getMount()) {
+              setLoading(false)
+            }
           })
       }
     }
-  }, [isStartLoading, onIconUpdate, src, urlPattern])
+  }, [getMount, isStartLoading, onIconUpdate, src, urlPattern])
 
   const innerNode = useMemo(() => {
     if (loading) {

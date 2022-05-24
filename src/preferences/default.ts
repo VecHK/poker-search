@@ -1,19 +1,21 @@
 import cfg from '../config'
 import { mapMatrix } from '../core/common'
-import { SiteMatrix, Options, SiteOption } from './'
-import { generateId } from './site-matrix'
+import generateId from '../utils/generate-id'
+import { SiteSettings, Preferences, SiteOption } from './'
+import { generateSiteSettingsRow } from './site-settings'
 
-export default function getDefaultOptions(
-  append: Partial<Options> = {}
-): Options {
+export default function getDefaultPreferences(
+  append: Partial<Preferences> = {}
+): Preferences {
   return {
-    version: 2,
-    site_matrix: getDefaultSiteMatrix(),
+    __is_poker__: true,
+    version: 3,
+    site_settings: getDefaultSiteSettings(),
     ...append,
   }
 }
 
-function getDefaultSiteMatrix(): SiteMatrix {
+function getDefaultSiteSettings(): SiteSettings {
   return mapMatrix(
     cfg.DEFAULT_SITES,
     (url_pattern) => ({
@@ -21,9 +23,11 @@ function getDefaultSiteMatrix(): SiteMatrix {
       icon: null,
       name: '__DEFAULT_NAME__',
       enable_mobile: cfg.DEFAULT_ENABLE_MOBILE,
-      url_pattern
+      url_pattern,
     })
-  )
+  ).map(row => {
+    return generateSiteSettingsRow(row)
+  })
 }
 
 export function generateExampleOption(): SiteOption {
