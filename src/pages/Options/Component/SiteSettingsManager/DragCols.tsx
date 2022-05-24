@@ -151,13 +151,18 @@ export default function Cols(props: {
   const { settingsRow, rowNum } = props
 
   const maxWindowPerLine = useMaxWindowPerLine()
-  const showAddButton = useMemo(() => {
-    if (maxWindowPerLine === null) {
-      return true
-    } else {
-      return settingsRow.row.length < maxWindowPerLine
-    }
-  }, [maxWindowPerLine, settingsRow.row.length])
+  const showAddButton = settingsRow.row.length < maxWindowPerLine
+  const addSiteIcon = useMemo(() => {
+    return (
+      <AddSiteOption
+        show={showAddButton}
+        disable={props.isEditMode}
+        onClickAdd={() => {
+          appendSiteOption(settingsRow.id, generateExampleOption())
+        }}
+      />
+    )
+  }, [appendSiteOption, props.isEditMode, settingsRow.id, showAddButton])
 
   return (
     <Droppable droppableId={`${rowNum}`} type="COLS" direction="horizontal">
@@ -185,13 +190,7 @@ export default function Cols(props: {
 
           {provided.placeholder}
 
-          <AddSiteOption
-            show={showAddButton}
-            disable={props.isEditMode}
-            onClickAdd={() => {
-              appendSiteOption(settingsRow.id, generateExampleOption())
-            }}
-          />
+          {addSiteIcon}
         </div>
       )}
     </Droppable>

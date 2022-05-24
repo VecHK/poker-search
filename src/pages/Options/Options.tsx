@@ -2,37 +2,40 @@ import pkg from '../../../package.json'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { curry, findIndex, map, propEq, update } from 'ramda'
 
-import { load, Preferences, save } from '../../preferences'
+import { load as loadPreferences, Preferences, save } from '../../preferences'
 import { SiteSettings, toMatrix } from '../../preferences/site-settings'
+import { getCurrentDisplayLimit, Limit } from '../../core/base/limit'
 
 import SettingHeader from './Component/SettingHeader'
 import SettingItem from './Component/SettingItem'
 import SiteSettingsManager from './Component/SiteSettingsManager'
 import Loading from '../../components/Loading'
 import Failure from './Component/Failure'
+import ImportExport from './Component/SiteSettingsManager/ImportExport'
 
 import s from './Options.module.css'
-import ImportExport from './Component/SiteSettingsManager/ImportExport'
 
 function calcMaxColumn(siteSettings: SiteSettings) {
   return toMatrix(siteSettings).reduce((p, c) => Math.max(p, c.length), 0)
 }
 
-function useAdjustMarginCenter(siteSettings: SiteSettings) {
+function useAdjustMarginCenter(siteSettings: SiteSettings, enable: boolean) {
   const ref = useRef<HTMLDivElement>(null)
   const [, setMaxColumn] = useState(calcMaxColumn(siteSettings))
 
-  function adjust(ref: React.RefObject<HTMLDivElement>) {
-    const el = ref.current
-    if (el) {
-      const innerWidth = el.offsetWidth
-      if (innerWidth < window.innerWidth) {
-        el.style['marginLeft'] = `calc((${window.innerWidth}px / 2) - (${innerWidth}px / 2))`
-      } else {
-        el.style['marginLeft'] = `0`
+  const adjust = useCallback((ref: React.RefObject<HTMLDivElement>) => {
+    if (enable) {
+      const el = ref.current
+      if (el) {
+        const innerWidth = el.offsetWidth
+        if (innerWidth < window.innerWidth) {
+          el.style['marginLeft'] = `calc((${window.innerWidth}px / 2) - (${innerWidth}px / 2))`
+        } else {
+          el.style['marginLeft'] = `0`
+        }
       }
     }
-  }
+  }, [enable])
 
   useEffect(() => {
     const el = ref.current
@@ -52,7 +55,7 @@ function useAdjustMarginCenter(siteSettings: SiteSettings) {
 
       return newColumn
     })
-  }, [siteSettings])
+  }, [adjust, siteSettings])
 
   useEffect(() => {
     let timer: NodeJS.Timeout | undefined = undefined
@@ -71,11 +74,17 @@ function useAdjustMarginCenter(siteSettings: SiteSettings) {
 
 export default function OptionsPage() {
   const [preferences, setPreferences] = useState<Preferences>()
+  const [limit, setLimit] = useState<Limit>()
   const [failure, setFailure] = useState<Error>()
 
   const refresh = useCallback(() => {
     setFailure(undefined)
-    load()
+    Promise.all([loadPreferences(), getCurrentDisplayLimit()])
+    .then(([preferences, limit]) => {
+      setPreferences(preferences)
+      setLimit(limit)
+    })
+    loadPreferences()
       .then(setPreferences)
       .catch(setFailure)
   }, [])
@@ -108,7 +117,10 @@ export default function OptionsPage() {
     }
   }, [])
 
-  const innerEl = useAdjustMarginCenter(preferences ? preferences.site_settings : [])
+  const innerEl = useAdjustMarginCenter(
+    preferences ? preferences.site_settings : [],
+    Boolean(preferences) && Boolean(limit)
+  )
 
   return (
     <div className={s.OptionsContainer}>
@@ -116,7 +128,7 @@ export default function OptionsPage() {
         useMemo(() => {
           if (failure) {
             return <Failure error={failure} />
-          } else if (!preferences) {
+          } else if (!preferences || !limit) {
             return <Loading />
           } else {
             return (
@@ -164,6 +176,7 @@ export default function OptionsPage() {
                   </div>
                   <div className={s.OptionsCol}>
                     <SiteSettingsManager
+                      limit={limit}
                       siteSettings={preferences.site_settings}
                       onUpdate={(updateId, newSiteOption) => {
                         setPreferences(latestPreferences => {
@@ -199,7 +212,7 @@ export default function OptionsPage() {
               </>
             )
           }
-        }, [failure, handleSiteSettingsChange, preferences])
+        }, [failure, handleSiteSettingsChange, limit, preferences])
       }</div>
     </div>
   )

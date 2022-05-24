@@ -13,6 +13,8 @@ export default function AddSiteOption(props: {
   return (
     <CSSTransition
       in={props.show}
+      mountOnEnter={true}
+      unmountOnExit={true}
       timeout={382}
       classNames={{
         enter: s.AddSiteOptionEnter,

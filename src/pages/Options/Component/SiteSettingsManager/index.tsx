@@ -5,10 +5,12 @@ import DragRows, { ROW_TRANSITION_DURATION } from './DragRows'
 import { SiteSettings, SiteSettingsRow, SiteOption, generateSiteSettingsRow } from '../../../../preferences/site-settings'
 
 import s from './index.module.css'
+import { Limit } from '../../../../core/base/limit'
 
 export type Edit = SiteOption['id'] | null
 
-function constructContextValue(append: {
+const constructContextValue = (append: {
+  limit: Limit,
   siteSettings: SiteSettings
   edit: Edit
   setEdit: React.Dispatch<React.SetStateAction<Edit>>
@@ -16,16 +18,10 @@ function constructContextValue(append: {
   updateRow: (id: SiteSettingsRow['id'], row: SiteSettingsRow) => void
   updateOne: (id: SiteOption['id'], opt: SiteOption) => void
   submitChange: (settings: SiteSettings) => void
-}) {
-  return {
-    ...append,
-    hello() {
-      console.log('hello')
-    }
-  }
-}
+}) => ({ ...append })
 
 export const ManagerContext = createContext(constructContextValue({
+  limit: {} as Limit,
   siteSettings: [],
   edit: null,
   setEdit: () => {},
@@ -41,10 +37,12 @@ function clearEmptyRow(real_settings: SiteSettings) {
 
 export default function SiteSettingsManager({
   siteSettings: outterSettings,
+  limit,
   onUpdate,
   onChange: emitChange
 }: {
   siteSettings: SiteSettings
+  limit: Limit
   onUpdate: (id: SiteOption['id'], opt: SiteOption) => void
   onChange: (settings: SiteSettings) => void
 }) {
@@ -91,6 +89,8 @@ export default function SiteSettingsManager({
     <div className={s.SiteSettingsManager}>
       <ManagerContext.Provider
         value={constructContextValue({
+          limit,
+
           siteSettings: [...innerSettings].reverse(),
 
           edit,
