@@ -7,8 +7,7 @@
 ![Build](https://img.shields.io/github/workflow/status/VecHK/poker-search/Build/master?color=%235599FF&label=Build&logo=GitHub%20Actions&logoColor=%23F0F0F0&style=plastic)
 ![Version](https://img.shields.io/github/package-json/v/VecHK/poker-search?color=%235599FF&label=version&logoColor=%23F0F0F0&style=plastic)
 
-![Platform](https://img.shields.io/badge/Platform-macOS%20%7C%20Windows-green?color=%235599FF&style=plastic&lo
-go=Google%20Chrome&logoColor=%23F0F0F0)
+![Platform](https://img.shields.io/badge/Platform-macOS%20%7C%20Windows-green?color=%235599FF&style=plastic&logo=Google%20Chrome&logoColor=%23F0F0F0)
 ![Rating](https://img.shields.io/chrome-web-store/stars/test?color=%235599FF&logoColor=F0F0F0&style=plastic)
 
 # Poker - Search
@@ -91,9 +90,9 @@ Poker 搜索启动后，用户能在底部的控制台窗口中再次键入新�
 
 本项目最初以 [chrome-extension-boilerplate-react](https://github.com/lxieyang/chrome-extension-boilerplate-react) 为模板创建。
 
-## Contributors ✨
+## 贡献者 ✨
 
-Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
+感谢这些牛逼的人们 ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
 
 <!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
 <!-- prettier-ignore-start -->
@@ -101,7 +100,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
 <table>
   <tr>
     <td align="center"><a href="http://vec.moe"><img src="https://avatars.githubusercontent.com/u/6480724?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Vec</b></sub></a><br /><a href="https://github.com/VecHK/poker-search/commits?author=VecHK" title="Code">💻</a> <a href="#ideas-VecHK" title="Ideas, Planning, & Feedback">🤔</a></td>
-    <td align="center"><a href="https://github.com/nt-cubic"><img src="https://avatars.githubusercontent.com/u/88926027?v=4?s=100" width="100px;" alt=""/><br /><sub><b>NT³</b></sub></a><br /><a href="#design-nt-cubic" title="Design">🎨</a></td>
+    <td align="center"><a href="https://github.com/nt-cubic"><img src="https://avatars.githubusercontent.com/u/88926027?v=4?s=100" width="100px;" alt=""/><br /><sub><b>NT³</b></sub></a><br /><a href="#design-nt-cubic" title="Design">🎨</a> <a href="#ideas-nt-cubic" title="Ideas, Planning, & Feedback">🤔</a></td>
   </tr>
 </table>
 
