@@ -1,8 +1,8 @@
-import { timeout } from 'vait'
+import { Lock, timeout } from 'vait'
 import { Base } from '../base'
 import { constructSearchWindowsFast } from './window-create'
-import { selectWindow } from './window-update'
-import { closeAllWindow, SearchWindow } from './window'
+import { selectWindow, updateWindowById } from './window-update'
+import { closeAllWindow, getSearchWindowTabId, getWindowId, SearchWindow } from './window'
 import { renderCol, renderMatrix } from './render'
 import { Matrix, selectCol } from '../common'
 import cfg from '../../config'
@@ -31,6 +31,9 @@ export async function createSearchLayout({
   let matrix = await constructSearchWindowsFast(
     base, search_matrix, keyword, canContinue, stop
   )
+  function getRegIds(): number[] {
+    return matrix.flat().map(u => u.windowId)
+  }
 
   let __need_refresh__ = false
 
@@ -39,13 +42,47 @@ export async function createSearchLayout({
     await chrome.windows.update(control_window_id, { focused: true })
   }
 
+  const handleBoundsChange = async (win: chrome.windows.Window) => {
+    try {
+      clearFocusChangedHandler()
+      clearRemoveHandler()
+
+      const window_id = getWindowId(win)
+
+      const is_matrix_window = getRegIds().indexOf(window_id) !== -1
+      const trigger = 
+        win.state === 'fullscreen' ||
+        win.state === 'maximized'
+
+      if (is_matrix_window && trigger) {
+        const tab_id = await getSearchWindowTabId(window_id)
+
+        const [__waiting_close__, emitWindowClosed] = Lock()
+        chrome.windows.onRemoved.addListener((removed_id) => {
+          if (removed_id === window_id) {
+            emitWindowClosed()
+          }
+        })
+
+        await chrome.windows.create({ tabId: tab_id })
+
+        matrix = updateWindowById(matrix, window_id, { state: 'EMPTY' })
+
+        await __waiting_close__
+      }
+    } finally {
+      setFocusChangedHandler()
+      setRemoveHandler()
+    }
+  }
+  const clearBoundsChangedHandler = () => chrome.windows.onBoundsChanged.removeListener(handleBoundsChange)
+  const setBoundsChangedHandler = () => chrome.windows.onBoundsChanged.addListener(handleBoundsChange)
+
   const handleFocusChanged = async (focused_window_id: number) => {
-    const reg_ids = matrix.flat().map(u => u.windowId)
-  
     const is_not_control_window = focused_window_id !== control_window_id
-    const is_not_matrix_window = reg_ids.indexOf(focused_window_id) === -1
-    const is_not_chrome_window = focused_window_id === chrome.windows.WINDOW_ID_NONE
-    if ((is_not_control_window && is_not_matrix_window) || is_not_chrome_window) {
+    const is_not_search_window = getRegIds().indexOf(focused_window_id) === -1
+    const focused_is_not_chrome = focused_window_id === chrome.windows.WINDOW_ID_NONE
+    if ((is_not_control_window && is_not_search_window) || focused_is_not_chrome) {
       __need_refresh__ = true
     } else {
       try {
@@ -85,8 +122,8 @@ export async function createSearchLayout({
   const handleRemovedHandler = (windowId: number) => {
     const regIds = matrix.flat().map(u => u.windowId)
     if (regIds.indexOf(windowId) !== -1) {
-      clearFocusChangedHandler()
       clearRemoveHandler()
+      clearFocusChangedHandler()
       closeAllWindow(regIds)
     }
   }
@@ -104,9 +141,14 @@ export async function createSearchLayout({
     setMatrix: (newMatrix: Matrix<SearchWindow>) => {
       matrix = newMatrix
     },
+
+    clearBoundsChangedHandler,
+    setBoundsChangedHandler,
+
     handleFocusChanged,
     clearFocusChangedHandler,
     setFocusChangedHandler,
+
     clearRemoveHandler,
     setRemoveHandler,
   } as const

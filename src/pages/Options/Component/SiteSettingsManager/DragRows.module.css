@@ -75,3 +75,34 @@
   background-color: rgba(0, 0, 0, 0.3);
   margin: 2px 0;
 }
+
+.TransitionItem {
+  /* display: initial; */
+  --timing: 382ms;
+}
+.TransitionItemEnter {
+  transition: opacity var(--timing), height var(--timing);
+  height: 0;
+  opacity: 0;
+}
+.TransitionItemEnterActive {
+  height: calc(180px + 12px);
+  opacity: 1;
+}
+.TransitionItemEnterDone {
+  height: unset;
+  opacity: 1;
+}
+.TransitionItemExit {
+  transition: opacity var(--timing), height var(--timing);
+  height: calc(180px + 12px);
+}
+.TransitionItemExitActive {
+  opacity: 0;
+  height: 0;
+}
+.TransitionItemExitDone {
+  opacity: 0;
+  height: 0;
+  display: none;
+}

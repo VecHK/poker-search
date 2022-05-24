@@ -1,44 +1,42 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useContext, useMemo } from 'react'
 import { Transition } from 'react-transition-group'
+import { ManagerContext } from '.'
 
 import cfg from '../../../../config'
-import { SiteMatrix } from '../../../../options/'
 import { autoAdjustWidth, calcWindowsTotalWidth } from '../../../../core/base/auto-adjust'
-import { getCurrentDisplayLimit } from '../../../../core/base/limit'
+import { SiteSettings } from '../../../../preferences'
 
 import s from './WarningLine.module.css'
 
 const DURATION = 382
 
 export function useMaxWindowPerLine() {
-  const [maxWindowPerLine, setMaxWindowPerLine] = useState<null | number>(null)
-  useEffect(() => {
-    getCurrentDisplayLimit().then(limit => {
-      const { max_window_per_line } = autoAdjustWidth(
-        cfg.SEARCH_WINDOW_GAP_HORIZONTAL, limit.width,
-      )
-      setMaxWindowPerLine(max_window_per_line)
-    })
-  }, [])
-  return maxWindowPerLine
+  const { limit } = useContext(ManagerContext)
+  const { max_window_per_line } = autoAdjustWidth(
+    cfg.SEARCH_WINDOW_GAP_HORIZONTAL,
+    limit.width,
+  )
+  return max_window_per_line
 }
 
-export default function WarningLine({ disable, siteMatrix }: { disable: boolean; siteMatrix: SiteMatrix }) {
+export default function WarningLine(
+  { disable, siteSettings }: { disable: boolean; siteSettings: SiteSettings }
+) {
   const maxWindowPerLine = useMaxWindowPerLine()
 
   const hasMaxCol = useMemo(() => {
     if (maxWindowPerLine === null) {
       return false
     } else {
-      return !siteMatrix.every((cols) => {
+      return !siteSettings.every((r) => {
         if (maxWindowPerLine === -1) {
           return false
         } else {
-          return cols.length <= maxWindowPerLine
+          return r.row.length <= maxWindowPerLine
         }
       })
     }
-  }, [maxWindowPerLine, siteMatrix])
+  }, [maxWindowPerLine, siteSettings])
 
   const left = useMemo(() => {
     if (maxWindowPerLine === null) {

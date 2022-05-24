@@ -1,6 +1,6 @@
-import { selectCol } from '../common'
+import { mapMatrix, selectCol } from '../common'
 import { isCurrentRow } from './matrix'
-import { SearchWindowMatrix } from './window'
+import { SearchWindowMatrix, SearchWindow } from './window'
 
 const pickItem = <T extends unknown>(arr: T[], idx: number) => [
   arr[idx],
@@ -68,4 +68,21 @@ export function selectWindow(
   } else {
     return [ false ]
   }
+}
+
+export function updateWindowById(
+  matrix: SearchWindowMatrix,
+  find_id: number,
+  update: Partial<Omit<SearchWindow, 'windowId'>>
+) {
+  return mapMatrix(matrix, (u => {
+    if (find_id === u.windowId) {
+      return {
+        ...u,
+        ...update,
+      }
+    } else {
+      return u
+    }
+  }))
 }

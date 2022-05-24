@@ -1,5 +1,5 @@
 import React, { ReactNode, useEffect, useMemo, useState } from 'react'
-import { SiteOption } from '../../../../options/site-matrix'
+import { SiteOption } from '../../../../preferences/site-settings'
 import s from './SiteWindow.module.css'
 
 import RemoveIconSrc from './remove.svg'
@@ -62,22 +62,22 @@ type SiteWindowProps = {
   isEdit: boolean
   isBlur: boolean
   siteOption: SiteOption
-  onChange(id: SiteOption['id'], s: SiteOption): void
-  onSubmit(s: SiteOption): void
   onCancelEdit(): void
-  onClickRemove(): void
   onClickEdit(): void
+  onClickRemove(): void
+  onChange(s: SiteOption): void
+  onSubmit(s: SiteOption): void
 }
 
 export default function SiteWindow({
   isEdit, 
   isBlur,
   siteOption,
+  onCancelEdit,
+  onClickEdit,
   onClickRemove,
   onChange,
   onSubmit,
-  onClickEdit,
-  onCancelEdit
 }: SiteWindowProps) {
   const [editSiteOption, setEditSiteOption] = useState<SiteOption | null>(null)
   const [enableEdit, setEnableEdit] = useState<boolean>(false)
@@ -117,7 +117,7 @@ export default function SiteWindow({
           src={siteOption.icon}
           urlPattern={siteOption.url_pattern}
           onIconUpdate={newSrc => {
-            onChange(siteOption.id, {
+            onChange({
               ...siteOption,
               icon: newSrc,
             })

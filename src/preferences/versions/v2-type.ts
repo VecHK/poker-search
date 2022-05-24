@@ -9,7 +9,7 @@ export type SiteOption = {
 export type SiteRow = Array<SiteOption>
 export type SiteMatrix = Array<SiteRow>
 
-export type OptionsV2 = Readonly<{
+export type PreferencesV2 = Readonly<{
   version: 2
   site_matrix: SiteMatrix
 }>
