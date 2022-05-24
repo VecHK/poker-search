@@ -36,10 +36,10 @@
       "global": true,
       "description": "切换回 Poker 搜索窗阵列",
       "suggested_key": {
-        "mac": "Command+Shift+0",
-        "windows": "Ctrl+Shift+0",
-        "chromeos": "Ctrl+Shift+0",
-        "linux": "Ctrl+Shift+0"
+        "mac": "Command+Shift+1",
+        "windows": "Ctrl+Shift+1",
+        "chromeos": "Ctrl+Shift+1",
+        "linux": "Ctrl+Shift+1"
       }
     }
   },
