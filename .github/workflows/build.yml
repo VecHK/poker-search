@@ -1,0 +1,42 @@
+name: Build
+
+# Controls when the action will run. Triggers the workflow on push or pull request
+# events but only for the master branch
+on:
+  push:
+    branches:
+      - master
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  build:
+    name: Build App with production
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Use Node.js
+      uses: actions/setup-node@v1
+      with:
+        node-version: '16'
+
+    - name: Setup Python 2.7
+      uses: actions/setup-python@v2
+      with:
+        python-version: '2.7'
+
+    - name: Copy Repo Files
+      uses: actions/checkout@v2
+
+    - name: Install Modules
+      run: yarn
+
+    - name: Lint
+      run: yarn lint-strict
+
+    - name: TSC
+      run: yarn tsc --noEmit
+
+    - name: Build App
+      env:
+        NODE_ENV: production
+      run: yarn build
