@@ -99,7 +99,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
 <!-- markdownlint-disable -->
 <table>
   <tr>
-    <td align="center"><a href="https://github.com/nt-cubic"><img src="https://avatars.githubusercontent.com/u/88926027?v=4?s=100" width="100px;" alt=""/><br /><sub><b>NT³</b></sub></a><br /><a href="#design-nt-cubic" title="Design">🎨</a></td>
+    <td align="center"><a href="https://github.com/nt-cubic"><img src="https://avatars.githubusercontent.com/u/88926027?v=4?s=100" width="100px;" alt=""/><br /><sub><b>NT³</b></sub></a><br /><a href="#design-nt-cubic" title="Design">🎨</a> <a href="#ideas-nt-cubic" title="Ideas, Planning, & Feedback">🤔</a></td>
   </tr>
 </table>
 
