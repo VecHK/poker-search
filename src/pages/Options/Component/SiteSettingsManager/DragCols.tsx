@@ -1,5 +1,5 @@
-import { equals } from 'ramda'
-import React, { useMemo, useState } from 'react'
+import { curry, equals, remove } from 'ramda'
+import React, { useContext, useMemo, useState } from 'react'
 import { CSSTransition, TransitionGroup } from 'react-transition-group'
 import { Droppable, Draggable, DraggingStyle, NotDraggingStyle } from 'react-beautiful-dnd'
 
@@ -10,7 +10,8 @@ import s from './DragCols.module.css'
 
 import AddSiteOption from './AddSiteOption'
 import { useMaxWindowPerLine } from './WarningLine'
-import { Edit } from '.'
+import { Edit, ManagerContext } from '.'
+import { generateExampleOption } from '../../../../preferences/default'
 
 const getItemStyle = (
   isDragging: boolean,
@@ -33,19 +34,18 @@ export const getColListStyle = (isDraggingOver: boolean): React.CSSProperties =>
 })
 
 function SiteOptionDragItem(props: {
+  settingsRow: SiteSettingsRow
   option: SiteOption
   isEditMode: boolean
   edit: Edit
   colNum: number
-  rowNum: number
-  onCancelEdit(): void
-  onChange(id: SiteOption['id'], s: SiteOption): void
-  onSubmitEdit(colNum: number, s: SiteOption): void
-  onClickEdit(colNum: number): void
+  // rowNum: number
   onClickRemove(colNum: number): void
 }) {
+  const { updateOne, setEdit } = useContext(ManagerContext)
   const { colNum } = props
   const isEdit = equals(props.edit, props.option.id)
+
   return (
     <div className={s.SiteOption}>
       <Draggable
@@ -66,20 +66,16 @@ function SiteOptionDragItem(props: {
               )}
             >
             <SiteWindow
+              siteOption={props.option}
               isEdit={isEdit}
               isBlur={props.isEditMode && !isEdit}
-              onCancelEdit={props.onCancelEdit}
-              siteOption={props.option}
-              onChange={props.onChange}
+              onCancelEdit={() => setEdit(null)}
+              onClickEdit={() => setEdit(props.option.id)}
+              onClickRemove={() => props.onClickRemove(colNum)}
+              onChange={curry(updateOne)(props.option.id)}
               onSubmit={(newOption) => {
-                props.onSubmitEdit(colNum, newOption)
-              }}
-              onClickEdit={() => {
-                console.log('inner onClickEdit')
-                props.onClickEdit(colNum)
-              }}
-              onClickRemove={() => {
-                props.onClickRemove(colNum)
+                updateOne(newOption.id, newOption)
+                setEdit(null)
               }}
             />
           </div>
@@ -94,14 +90,25 @@ function SiteOptionList(props: {
   settingsRow: SiteSettingsRow
   isEditMode: boolean
   edit: Edit
-  rowNum: number,
-  onCancelEdit(): void
-  onChange(id: SiteOption['id'], s: SiteOption): void
-  onSubmitEdit(colNum: number, s: SiteOption): void
-  onClickEdit(colNum: number): void
+  // rowNum: number,
   onClickRemove(colNum: number): void
   onRemoveAnimationEnd(): void
 }) {
+  const renderDragItem = (option: SiteOption, colNum: number) => {
+    return (
+      <SiteOptionDragItem
+        key={option.id}
+        option={option}
+        settingsRow={props.settingsRow}
+        isEditMode={props.isEditMode}
+        edit={props.edit}
+        colNum={colNum}
+        // rowNum={props.rowNum}
+        onClickRemove={props.onClickRemove}
+      />
+    )
+  }
+
   if (props.enableRemoveAnimation) {
     return (
       <TransitionGroup
@@ -109,8 +116,8 @@ function SiteOptionList(props: {
       >
         {props.settingsRow.row.map((col, colNum) => (
           <CSSTransition
-            onExited={props.onRemoveAnimationEnd}
             key={col.id}
+            onExited={props.onRemoveAnimationEnd}
             timeout={382}
             classNames={{
               enter: s.SiteOptionEnter,
@@ -121,39 +128,14 @@ function SiteOptionList(props: {
               exitDone: s.SiteOptionExitDone,
             }}
           >
-            <SiteOptionDragItem
-              option={col}
-              isEditMode={props.isEditMode}
-              edit={props.edit}
-              colNum={colNum}
-              rowNum={props.rowNum}
-              onCancelEdit={props.onCancelEdit}
-              onChange={props.onChange}
-              onSubmitEdit={props.onSubmitEdit}
-              onClickEdit={props.onClickEdit}
-              onClickRemove={props.onClickRemove}
-            />
+            {renderDragItem(col, colNum)}
           </CSSTransition>
         ))}
       </TransitionGroup>
     )
   } else {
     return <>
-      {props.settingsRow.row.map((col, colNum) => (
-        <SiteOptionDragItem
-          key={col.id}
-          option={col}
-          isEditMode={props.isEditMode}
-          edit={props.edit}
-          colNum={colNum}
-          rowNum={props.rowNum}
-          onCancelEdit={props.onCancelEdit}
-          onChange={props.onChange}
-          onSubmitEdit={props.onSubmitEdit}
-          onClickEdit={props.onClickEdit}
-          onClickRemove={props.onClickRemove}
-        />
-      ))}
+      {props.settingsRow.row.map(renderDragItem)}
     </>
   }
 }
@@ -163,13 +145,8 @@ export default function Cols(props: {
   settingsRow: SiteSettingsRow,
   edit: Edit
   isEditMode: boolean
-  onCancelEdit(): void
-  onChange(id: SiteOption['id'], s: SiteOption): void
-  onClickAdd(): void
-  onSubmitEdit(colNum: number, s: SiteOption): void
-  onClickEdit(colNum: number): void
-  onClickRemove(colNum: number): void
 }) {
+  const { appendSiteOption, updateRow } = useContext(ManagerContext)
   const [enableRemoveAnimation, setEnableRemoveAnimation] = useState(false)
   const { settingsRow, rowNum } = props
 
@@ -190,19 +167,19 @@ export default function Cols(props: {
           style={getColListStyle(snapshot.isDraggingOver)}
         >
           <SiteOptionList
-            enableRemoveAnimation={enableRemoveAnimation}
             settingsRow={settingsRow}
-            isEditMode={props.isEditMode}
             edit={props.edit}
-            rowNum={rowNum}
-            onCancelEdit={props.onCancelEdit}
-            onChange={props.onChange}
-            onSubmitEdit={props.onSubmitEdit}
-            onClickEdit={props.onClickEdit}
+            isEditMode={props.isEditMode}
+            enableRemoveAnimation={enableRemoveAnimation}
             onRemoveAnimationEnd={() => setEnableRemoveAnimation(false)}
             onClickRemove={(colNum) => {
               setEnableRemoveAnimation(true)
-              setTimeout(() => props.onClickRemove(colNum))
+              setTimeout(() => {
+                updateRow(settingsRow.id, {
+                  ...settingsRow,
+                  row: remove(colNum, 1, settingsRow.row)
+                })
+              })
             }}
           />
 
@@ -211,7 +188,9 @@ export default function Cols(props: {
           <AddSiteOption
             show={showAddButton}
             disable={props.isEditMode}
-            onClickAdd={props.onClickAdd}
+            onClickAdd={() => {
+              appendSiteOption(settingsRow.id, generateExampleOption())
+            }}
           />
         </div>
       )}

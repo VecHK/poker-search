@@ -98,9 +98,12 @@ export default function OptionsPage() {
     if (site_settings.length === 0) {
       alert('站点配置项无法留空')
     } else {
-      setPreferences({
-        ...currentPreferences,
-        site_settings,
+      setPreferences((latest) => {
+        return {
+          ...latest,
+          ...currentPreferences,
+          site_settings,
+        }
       })
     }
   }, [])

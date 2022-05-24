@@ -1,13 +1,43 @@
-import React, { useEffect, useState } from 'react'
-import { nth, update } from 'ramda'
+import React, { createContext, useEffect, useState } from 'react'
+import { findIndex, map, nth, propEq, reverse, update } from 'ramda'
 
 import DragRows, { ROW_TRANSITION_DURATION } from './DragRows'
-import { SiteSettings, SiteOption, generateSiteSettingsRow } from '../../../../preferences/site-settings'
-import { generateExampleOption } from '../../../../preferences/default'
+import { SiteSettings, SiteSettingsRow, SiteOption, generateSiteSettingsRow } from '../../../../preferences/site-settings'
 
 import s from './index.module.css'
 
 export type Edit = SiteOption['id'] | null
+
+function constructContextValue(append: {
+  siteSettings: SiteSettings
+  edit: Edit
+  setEdit: React.Dispatch<React.SetStateAction<Edit>>
+  appendSiteOption(settingsRowId: SiteSettingsRow['id'], siteOption: SiteOption): void
+  updateRow: (id: SiteSettingsRow['id'], row: SiteSettingsRow) => void
+  updateOne: (id: SiteOption['id'], opt: SiteOption) => void
+  submitChange: (settings: SiteSettings) => void
+}) {
+  return {
+    ...append,
+    hello() {
+      console.log('hello')
+    }
+  }
+}
+
+export const ManagerContext = createContext(constructContextValue({
+  siteSettings: [],
+  edit: null,
+  setEdit: () => {},
+  appendSiteOption: () => {},
+  updateRow: () => {},
+  updateOne: () => {},
+  submitChange: () => {},
+}))
+
+function clearEmptyRow(real_settings: SiteSettings) {
+  return real_settings.filter(r => r.row.length)
+}
 
 export default function SiteSettingsManager({
   siteSettings: outterSettings,
@@ -24,10 +54,6 @@ export default function SiteSettingsManager({
     ...outterSettings,
     generateSiteSettingsRow([], 'N/A')
   ])
-
-  function clearEmptyRow(real_settings: SiteSettings) {
-    return real_settings.filter(r => r.row.length)
-  }
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -54,7 +80,7 @@ export default function SiteSettingsManager({
     return () => clearTimeout(handler)
   }, [innerSettings])
 
-  function handleChange(manageSettings: SiteSettings) {
+  function submitChange(manageSettings: SiteSettings) {
     const [new_row, ...remain_manage_settings] = manageSettings
     let realSettings = [...remain_manage_settings].reverse()
     emitChange(clearEmptyRow(realSettings))
@@ -63,33 +89,61 @@ export default function SiteSettingsManager({
 
   return (
     <div className={s.SiteSettingsManager}>
-      <DragRows
-        edit={edit}
-        setEdit={setEdit}
-        siteSettings={[...innerSettings].reverse()}
-        onUpdate={onUpdate}
-        onChange={handleChange}
-        onClickAdd={(rowFloor) => {
-          const manageSettings = [...innerSettings].reverse()
-          const settingsRow = nth(rowFloor, manageSettings)
-          if (settingsRow !== undefined) {
-            const { row } = settingsRow
-            const newRow = [...row, generateExampleOption()]
-            const newSettings = update(
-              rowFloor,
-              {
-                ...settingsRow,
-                row: newRow
-              },
-              manageSettings
-            )
-            handleChange(newSettings)
+      <ManagerContext.Provider
+        value={constructContextValue({
+          siteSettings: [...innerSettings].reverse(),
 
-            const willEdit = newRow[newRow.length - 1]
-            setEdit(willEdit.id)
-          }
-        }}
-      />
+          edit,
+          setEdit,
+
+          appendSiteOption(settingsRowId, siteOption) {
+            const row = findIndex(propEq('id', settingsRowId), innerSettings)
+            const settingsRow = nth(row, innerSettings)
+            if (settingsRow === undefined) {
+              throw Error('settingsRow not found')
+            } else {
+              const newR = {
+                ...settingsRow,
+                row: [...settingsRow.row, siteOption]
+              }
+
+              submitChange(reverse(update(row, newR, innerSettings)))
+              setEdit(siteOption.id)
+            }
+          },
+
+          updateRow(rowId, newRow) {
+            const row = findIndex(propEq('id', rowId), innerSettings)
+            if (row === -1) {
+              throw Error('row not found')
+            } else {
+              submitChange(reverse(update(row, newRow, innerSettings)))
+            }
+          },
+
+          updateOne(updateId, newSiteOption) {
+            onUpdate(updateId, newSiteOption)
+            setInnerSettings(latestSettings => {
+              return map(settings_row => {
+                const row = settings_row.row
+                const find_idx = findIndex(propEq('id', updateId), row)
+                if (find_idx === -1) {
+                  return settings_row
+                } else {
+                  return {
+                    ...settings_row,
+                    row: update(find_idx, newSiteOption, row)
+                  }
+                }
+              }, latestSettings)
+            })
+          },
+
+          submitChange,
+        })}
+      >
+        <DragRows />
+      </ManagerContext.Provider>
     </div>
   )
 }

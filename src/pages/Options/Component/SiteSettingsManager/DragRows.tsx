@@ -1,5 +1,5 @@
 import { all, compose, equals, insert, move, nth, remove, update } from 'ramda'
-import React, { ReactNode } from 'react'
+import React, { ReactNode, useContext } from 'react'
 import {
   DragDropContext,
   Droppable,
@@ -7,16 +7,15 @@ import {
   DropResult,
   DraggingStyle,
   NotDraggingStyle,
-  DraggableLocation,
-  SensorAPI
+  DraggableLocation
 } from 'react-beautiful-dnd'
 import { CSSTransition, TransitionGroup } from 'react-transition-group'
 
-import { SiteSettings, SiteOption } from '../../../../preferences/site-settings'
+import { SiteSettings } from '../../../../preferences/site-settings'
 import SettingItem from '../SettingItem'
 import WarningLine from './WarningLine'
 import Cols from './DragCols'
-import { Edit } from '.'
+import { ManagerContext } from '.'
 
 import s from './DragRows.module.css'
 
@@ -118,38 +117,26 @@ function reorderRows(
   }
 }
 
-type DragRowProps = {
-  edit: Edit,
-  setEdit: React.Dispatch<React.SetStateAction<Edit>>
-  siteSettings: SiteSettings
-  onUpdate: (id: SiteOption['id'], newOption: SiteOption) => void
-  onChange: (s: SiteSettings) => void
-  onClickAdd: (rowNum: number) => void
-}
-export default function DragRows({
-  edit,
-  setEdit,
-  siteSettings,
-  onUpdate,
-  onChange,
-  onClickAdd,
-}: DragRowProps) {
+export default function DragRows() {
+  const {
+    siteSettings,
+    edit,
+    submitChange,
+  } = useContext(ManagerContext)
+
   const onDragEnd = ({ type, source, destination }: DropResult) => {
     if (!destination) {
       // no change
     } else if (type === "ROWS") {
       const newSettings = reorderRows(siteSettings, source, destination)
-      onChange(newSettings)
+      console.log('newSettings', newSettings)
+      submitChange(newSettings)
     } else if (type === 'COLS') {
       const newSettings = reorderCols(siteSettings, source, destination)
-      onChange(newSettings)
+      submitChange(newSettings)
     } else {
       throw Error('unknown result.type')
     }
-  }
-
-  function useMyCoolSensor(api: SensorAPI) {
-    Object.assign(window, { api })
   }
 
   function handleDragUpdate(...args: any[]) {
@@ -158,7 +145,10 @@ export default function DragRows({
 
   return (
     <div className={s.DragRows}>
-      <DragDropContext onDragEnd={onDragEnd} sensors={[useMyCoolSensor]} onDragUpdate={handleDragUpdate}>
+      <DragDropContext
+        onDragEnd={onDragEnd}
+        onDragUpdate={handleDragUpdate}
+      >
         <div className={s.DragDropContextInner}>
           <Droppable droppableId={ROW_DROP} type="ROWS">
             {(provided, rowSnapshot) => (
@@ -201,29 +191,6 @@ export default function DragRows({
                                     settingsRow={settingsRow}
                                     edit={edit}
                                     isEditMode={edit !== null}
-                                    onChange={(id, newOption) => {
-                                      onUpdate(id, newOption)
-                                    }}
-                                    onSubmitEdit={(colNum, newOption) => {
-                                      const newRow = update(colNum, newOption, settingsRow.row)
-                                      const newSettings = update(rowNum, { ...settingsRow, row: newRow }, siteSettings)
-                                      onChange(newSettings)
-                                      setEdit(null)
-                                    }}
-                                    onClickEdit={(colNum) => {
-                                      console.log('onClickEdit')
-                                      const willEdit = settingsRow.row[colNum]
-                                      setEdit(willEdit.id)
-                                    }}
-                                    onCancelEdit={() => {
-                                      setEdit(null)
-                                    }}
-                                    onClickRemove={(colNum) => {
-                                      const newRow = remove(colNum, 1, settingsRow.row)
-                                      const newSettings = update(rowNum, { ...settingsRow, row: newRow }, siteSettings)
-                                      onChange(newSettings)
-                                    }}
-                                    onClickAdd={() => onClickAdd(rowNum)}
                                   />
                                 </div>
                                 <div className={`${s.Floor} ${rowSnapshot.isDraggingOver ? s.isDraggingOver : ''}`}>{siteSettings.length - (rowNum + 1) + 1}F</div>
