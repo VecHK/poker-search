@@ -9,6 +9,8 @@ export default function AddSiteOption(props: {
   show: boolean
   disable: boolean
   onClickAdd(): void
+  onEntered: () => void
+  onExited: () => void
 }) {
   return (
     <CSSTransition
@@ -24,6 +26,8 @@ export default function AddSiteOption(props: {
         exitActive: s.AddSiteOptionExitActive,
         exitDone: s.AddSiteOptionExitDone,
       }}
+      onEntered={props.onEntered}
+      onExited={props.onExited}
     >
       <div className={s.AddSiteOption} style={{ opacity: props.disable ? '0.5' : '' }}>
         <SiteWindowFrame>

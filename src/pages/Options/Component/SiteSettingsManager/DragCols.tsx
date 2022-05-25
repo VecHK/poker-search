@@ -146,7 +146,7 @@ export default function Cols(props: {
   edit: Edit
   isEditMode: boolean
 }) {
-  const { appendSiteOption, updateRow } = useContext(ManagerContext)
+  const { appendSiteOption, updateRow, adjustWidth } = useContext(ManagerContext)
   const [enableRemoveAnimation, setEnableRemoveAnimation] = useState(false)
   const { settingsRow, rowNum } = props
 
@@ -160,9 +160,11 @@ export default function Cols(props: {
         onClickAdd={() => {
           appendSiteOption(settingsRow.id, generateExampleOption())
         }}
+        onEntered={() => adjustWidth(500)}
+        onExited={() => adjustWidth(500)}
       />
     )
-  }, [appendSiteOption, props.isEditMode, settingsRow.id, showAddButton])
+  }, [adjustWidth, appendSiteOption, props.isEditMode, settingsRow.id, showAddButton])
 
   return (
     <Droppable droppableId={`${rowNum}`} type="COLS" direction="horizontal">
