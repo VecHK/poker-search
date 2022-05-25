@@ -1,5 +1,6 @@
 import React from 'react'
 import { render } from 'react-dom'
+import cfg from '../../config'
 import { createBase, RevertContainerID } from '../../core/base'
 import getQuery from '../../utils/get-query'
 
@@ -7,7 +8,7 @@ import Control from './Control'
 import './Control.css'
 
 function revertContainerId(): RevertContainerID {
-  const revert_container_id_raw = getQuery('revert')
+  const revert_container_id_raw = getQuery(cfg.CONTROL_QUERY_REVERT)
   if (revert_container_id_raw === null) {
     return undefined
   } else {

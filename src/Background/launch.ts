@@ -8,10 +8,10 @@ function detectUrl({ text, revert_container_id }: {
 }): string {
   const usp = new URLSearchParams()
   if (text !== undefined) {
-    usp.append('q', text)
+    usp.append(cfg.CONTROL_QUERY_TEXT, text)
   }
   if (revert_container_id !== undefined) {
-    usp.append('revert', String(revert_container_id))
+    usp.append(cfg.CONTROL_QUERY_REVERT, String(revert_container_id))
   }
 
   const param_string = usp.toString()
