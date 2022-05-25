@@ -64,7 +64,12 @@ function useAdjustMarginCenter(enable: boolean) {
   useEffect(() => {
     let timer: NodeJS.Timeout | undefined = undefined
     const resizeHandler = () => {
-      timer = setTimeout(() => _adjust(ref), 300)
+      if (timer !== undefined) {
+        clearTimeout(timer)
+      }
+      timer = setTimeout(() => {
+        _adjust(ref)
+      }, 300)
     }
     window.addEventListener('resize', resizeHandler)
     return () => {
