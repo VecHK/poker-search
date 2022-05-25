@@ -3,7 +3,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { curry, findIndex, map, propEq, update } from 'ramda'
 
 import { load as loadPreferences, Preferences, save } from '../../preferences'
-import { SiteSettings, toMatrix } from '../../preferences/site-settings'
+import { SiteSettings } from '../../preferences/site-settings'
 import { getCurrentDisplayLimit, Limit } from '../../core/base/limit'
 
 import SettingHeader from './Component/SettingHeader'
@@ -14,16 +14,17 @@ import Failure from './Component/Failure'
 import ImportExport from './Component/SiteSettingsManager/ImportExport'
 
 import s from './Options.module.css'
+import { createMemo } from 'vait'
 
-function calcMaxColumn(siteSettings: SiteSettings) {
-  return toMatrix(siteSettings).reduce((p, c) => Math.max(p, c.length), 0)
-}
 
-function useAdjustMarginCenter(siteSettings: SiteSettings, enable: boolean) {
+const [getAdjustTask, setAdjustTask] = createMemo<NodeJS.Timeout | null>(null)
+
+function useAdjustMarginCenter(enable: boolean) {
   const ref = useRef<HTMLDivElement>(null)
-  const [, setMaxColumn] = useState(calcMaxColumn(siteSettings))
 
-  const adjust = useCallback((ref: React.RefObject<HTMLDivElement>) => {
+  const _adjust = useCallback((ref: React.RefObject<HTMLDivElement>) => {
+    console.log('adjust')
+
     if (enable) {
       const el = ref.current
       if (el) {
@@ -37,6 +38,19 @@ function useAdjustMarginCenter(siteSettings: SiteSettings, enable: boolean) {
     }
   }, [enable])
 
+  const adjust = useCallback((ref: React.RefObject<HTMLDivElement>, timeout: number) => {
+    console.log('adjust')
+
+    if (getAdjustTask() === null) {
+      setAdjustTask(
+        setTimeout(() => {
+          _adjust(ref)
+          setAdjustTask(null)
+        }, timeout)
+      )
+    }
+  }, [_adjust])
+
   useEffect(() => {
     const el = ref.current
 
@@ -44,23 +58,18 @@ function useAdjustMarginCenter(siteSettings: SiteSettings, enable: boolean) {
       el.style['transition'] = 'margin-left 382ms'
     }
 
-    setMaxColumn(latestColumn => {
-      const newColumn = calcMaxColumn(siteSettings)
-
-      if (newColumn > latestColumn) {
-        adjust(ref)
-      } else {
-        setTimeout(() => adjust(ref), 382)
-      }
-
-      return newColumn
-    })
-  }, [adjust, siteSettings])
+    _adjust(ref)
+  }, [_adjust])
 
   useEffect(() => {
     let timer: NodeJS.Timeout | undefined = undefined
     const resizeHandler = () => {
-      timer = setTimeout(() => adjust(ref), 300)
+      if (timer !== undefined) {
+        clearTimeout(timer)
+      }
+      timer = setTimeout(() => {
+        _adjust(ref)
+      }, 300)
     }
     window.addEventListener('resize', resizeHandler)
     return () => {
@@ -69,7 +78,7 @@ function useAdjustMarginCenter(siteSettings: SiteSettings, enable: boolean) {
     }
   })
 
-  return ref
+  return [ref, (timeout: number) => adjust(ref, timeout)] as const
 }
 
 export default function OptionsPage() {
@@ -80,12 +89,10 @@ export default function OptionsPage() {
   const refresh = useCallback(() => {
     setFailure(undefined)
     Promise.all([loadPreferences(), getCurrentDisplayLimit()])
-    .then(([preferences, limit]) => {
-      setPreferences(preferences)
-      setLimit(limit)
-    })
-    loadPreferences()
-      .then(setPreferences)
+      .then(([preferences, limit]) => {
+        setPreferences(preferences)
+        setLimit(limit)
+      })
       .catch(setFailure)
   }, [])
 
@@ -117,8 +124,7 @@ export default function OptionsPage() {
     }
   }, [])
 
-  const innerEl = useAdjustMarginCenter(
-    preferences ? preferences.site_settings : [],
+  const [innerEl, adjustWidth] = useAdjustMarginCenter(
     Boolean(preferences) && Boolean(limit)
   )
 
@@ -177,6 +183,7 @@ export default function OptionsPage() {
                   <div className={s.OptionsCol}>
                     <SiteSettingsManager
                       limit={limit}
+                      adjustWidth={adjustWidth}
                       siteSettings={preferences.site_settings}
                       onUpdate={(updateId, newSiteOption) => {
                         setPreferences(latestPreferences => {
@@ -212,7 +219,7 @@ export default function OptionsPage() {
               </>
             )
           }
-        }, [failure, handleSiteSettingsChange, limit, preferences])
+        }, [adjustWidth, failure, handleSiteSettingsChange, limit, preferences])
       }</div>
     </div>
   )

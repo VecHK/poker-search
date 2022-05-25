@@ -1,9 +1,5 @@
 import { useEffect, useRef } from 'react'
-
-const createMemo = <Data extends unknown>(data: Data) => [
-  () => data,
-  (newData: Data) => { data = newData }
-] as const
+import { createMemo } from 'vait'
 
 export default function useMount() {
   const ref = useRef(createMemo(false))

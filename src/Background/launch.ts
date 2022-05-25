@@ -1,30 +1,49 @@
 import cfg from '../config'
-import { createBase } from '../core/base'
+import { createBase, RevertContainerID } from '../core/base'
 import { calcControlWindowPos } from '../core/layout/control-window'
 
-function detectUrl(text?: string) {
-  if (text === undefined) {
-    return chrome.runtime.getURL(`/control.html`)
+function detectUrl({ text, revert_container_id }: {
+  text?: string
+  revert_container_id: RevertContainerID
+}): string {
+  const usp = new URLSearchParams()
+  if (text !== undefined) {
+    usp.append(cfg.CONTROL_QUERY_TEXT, text)
+  }
+  if (revert_container_id !== undefined) {
+    usp.append(cfg.CONTROL_QUERY_REVERT, String(revert_container_id))
+  }
+
+  const param_string = usp.toString()
+  if (param_string.length !== 0) {
+    return chrome.runtime.getURL(`/control.html?${param_string}`)
   } else {
-    return chrome.runtime.getURL(`/control.html?q=${encodeURIComponent(text)}`)
+    return chrome.runtime.getURL(`/control.html`)
   }
 }
 
-export default async function launchPoker(text?: string) {
-  const base = await createBase()
+async function getControlPos() {
+  const base = await createBase(undefined)
 
   const [ top, left ] = calcControlWindowPos(base.layout_height, base.limit)
+  return [ top, left ] as const
+}
+
+export default async function launchControlWindow({ text, revert_container_id }: {
+  text: string | undefined
+  revert_container_id: RevertContainerID
+}) {
+  const [ top, left ] = await getControlPos()
   const controlWindow = await chrome.windows.create({
     type: 'popup',
     width: Math.round(cfg.CONTROL_WINDOW_WIDTH),
     height: Math.round(cfg.CONTROL_WINDOW_HEIGHT),
     left: Math.round(left),
     top: Math.round(top),
-    url: detectUrl(text)
+    url: detectUrl({ text, revert_container_id })
   })
 
   return {
-    base,
     controlWindow
   }
 }

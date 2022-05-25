@@ -1,12 +1,18 @@
 import React, { useCallback, useEffect, useState } from 'react'
-import Loading from '../../components/Loading'
+
+import cfg from '../../config'
+
+import AddChromeEvent from '../../utils/chrome-event'
+import getQuery from '../../utils/get-query'
+
 import { Base } from '../../core/base'
 import { Matrix } from '../../core/common'
-import { calcControlWindowPos } from '../../core/layout/control-window'
 import { createSearchLayout } from '../../core/layout'
 import { renderMatrix } from '../../core/layout/render'
 import { closeAllWindow, SearchWindow } from '../../core/layout/window'
-import { getSearchword } from '../../utils/search'
+import { calcControlWindowPos } from '../../core/layout/control-window'
+
+import Loading from '../../components/Loading'
 import ArrowButtonGroup from './components/ArrowGroup'
 
 import SearchForm from './components/SearchForm'
@@ -47,11 +53,11 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
 
   const [controlWindowId, setControlWindowId] = useState<null | number>(null)
 
-  const [controll, setControll] = useState<Control | undefined>(undefined)
+  const [controll, setControll] = useState<Control | null>(null)
 
   const [{ canContinue, stop }, setStep] = useState(createStep())
 
-  useEffect(() => {
+  useEffect(function setControllWindowId() {
     chrome.windows.getCurrent().then(({ id }) => {
       if (id !== undefined) {
         setControlWindowId(id)
@@ -62,6 +68,7 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
   const callCloseAllWindow = useCallback((ids: number[]) => {
     closeAllWindow(ids)
   }, [])
+
   const onCloseAllWindow = useCallback((con: Control) => {
     const ids = con.getMatrix().flat().map(u => u.windowId)
     con.clearFocusChangedHandler()
@@ -70,33 +77,33 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
     callCloseAllWindow(ids)
   }, [callCloseAllWindow])
 
-  useEffect(() => {
-    const searchWord = getSearchword()
+  useEffect(function setSearchwordFromURL() {
+    const searchWord = getQuery(cfg.CONTROL_QUERY_TEXT)
     if (searchWord !== null) {
       submitKeyword(searchWord)
       setKeyword(searchWord)
     }
   }, [])
 
-  useEffect(() => {
-    if ((controlWindowId !== null) && (controll !== undefined)) {
-      const commandHandler = (command: string) => {
+  useEffect(function handleShortcutKey() {
+    return AddChromeEvent(
+      chrome.commands.onCommand,
+      (command: string) => {
         if (command === 'focus-layout') {
-          controll.handleFocusChanged(controlWindowId)
+          if ((controlWindowId !== null) && (controll !== null)) {
+            controll.handleFocusChanged(controlWindowId)
+          } else if (controlWindowId !== null) {
+            chrome.windows.update(controlWindowId, { focused: true })
+          }
         }
       }
-      chrome.commands.onCommand.addListener(commandHandler)
-
-      return () => {
-        chrome.commands.onCommand.removeListener(commandHandler)
-      }
-    }
+    )
   }, [controlWindowId, controll])
 
-  useEffect(() => {
+  useEffect(function closeAllWindowBeforeExit() {
     const handler = () => {
       stop()
-      if (controll !== undefined) {
+      if (controll !== null) {
         onCloseAllWindow(controll)
       }
     }
@@ -127,6 +134,7 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
     }).catch(err => {
       if (err.cancel) {
         // 提前取消
+        console.log('提前取消')
         const ids = err.ids as number[]
         callCloseAllWindow(ids)
         window.close()
@@ -139,7 +147,7 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
     })
   }, [base, callCloseAllWindow, canContinue, stop])
 
-  useEffect(() => {
+  useEffect(function openSearchWindows() {
     if (controlWindowId !== null) {
       if (submitedKeyword !== false) {
         moveControlWindow(controlWindowId).then(() => {
@@ -159,7 +167,7 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
             submitButtonActive={windowIsFocus}
             onSubmit={({ keyword: newSearchKeyword }) => {
               setLoading(true)
-              if (controll !== undefined) {
+              if (controll !== null) {
                 onCloseAllWindow(controll)
                 submitKeyword(newSearchKeyword)
                 setStep(createStep())

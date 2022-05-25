@@ -1,17 +1,28 @@
 import React, { createContext, useEffect, useState } from 'react'
 import { findIndex, map, nth, propEq, reverse, update } from 'ramda'
 
+import cfg from '../../../../config'
+import {
+  SiteSettings,
+  SiteSettingsRow,
+  SiteOption,
+  generateSiteSettingsRow,
+  toMatrix
+} from '../../../../preferences/site-settings'
+
+import { Limit } from '../../../../core/base/limit'
+import { autoAdjustWidth } from '../../../../core/base/auto-adjust'
+
 import DragRows, { ROW_TRANSITION_DURATION } from './DragRows'
-import { SiteSettings, SiteSettingsRow, SiteOption, generateSiteSettingsRow } from '../../../../preferences/site-settings'
 
 import s from './index.module.css'
-import { Limit } from '../../../../core/base/limit'
 
 export type Edit = SiteOption['id'] | null
 
 const constructContextValue = (append: {
-  limit: Limit,
   siteSettings: SiteSettings
+  adjustWidth: (t: number) => void
+  limit: Limit,
   edit: Edit
   setEdit: React.Dispatch<React.SetStateAction<Edit>>
   appendSiteOption(settingsRowId: SiteSettingsRow['id'], siteOption: SiteOption): void
@@ -22,6 +33,7 @@ const constructContextValue = (append: {
 
 export const ManagerContext = createContext(constructContextValue({
   limit: {} as Limit,
+  adjustWidth: () => {},
   siteSettings: [],
   edit: null,
   setEdit: () => {},
@@ -35,14 +47,63 @@ function clearEmptyRow(real_settings: SiteSettings) {
   return real_settings.filter(r => r.row.length)
 }
 
+function calcMaxColumn(siteSettings: SiteSettings) {
+  return toMatrix(siteSettings).reduce((p, c) => Math.max(p, c.length), 0)
+}
+
+function hasEmptyRow(siteSettingsRows: SiteSettings) {
+  return !siteSettingsRows.every(r => r.row.length)
+} 
+
+function needAdjustWidth({
+  oldSettings,
+  newSettings,
+  isAddNewRow,
+  limit,
+}: {
+  oldSettings: SiteSettings
+  newSettings: SiteSettings
+  isAddNewRow: boolean
+  limit: Limit
+}): number | false {
+  const { max_window_per_line } = autoAdjustWidth(
+    cfg.SEARCH_WINDOW_GAP_HORIZONTAL,
+    limit.width,
+  )
+
+  const newCol = calcMaxColumn(newSettings)
+  const oldCol = calcMaxColumn(oldSettings)
+  const colDiff = newCol !== oldCol
+
+  const isShowOrHideAddIcon = (colDiff &&
+    (newCol === max_window_per_line)) ||
+    (oldCol === max_window_per_line)
+
+  const isBig =
+    (newCol > max_window_per_line) ||
+    (oldCol > max_window_per_line)
+  
+  if (!isShowOrHideAddIcon || isBig) {
+    if (hasEmptyRow(newSettings) || isAddNewRow) {
+      return 1000
+    } else {
+      return 500
+    }
+  } else {
+    return false
+  }
+}
+
 export default function SiteSettingsManager({
   siteSettings: outterSettings,
   limit,
+  adjustWidth,
   onUpdate,
   onChange: emitChange
 }: {
   siteSettings: SiteSettings
   limit: Limit
+  adjustWidth: (t: number) => void
   onUpdate: (id: SiteOption['id'], opt: SiteOption) => void
   onChange: (settings: SiteSettings) => void
 }) {
@@ -57,8 +118,7 @@ export default function SiteSettingsManager({
     const handler = setTimeout(() => {
       const [first_row, ...remain_reverse_settings] = [...innerSettings].reverse()
       const real_settings = [...remain_reverse_settings].reverse()
-      const hasEmptyRow = !real_settings.every(r => r.row.length)
-      if (hasEmptyRow) {
+      if (hasEmptyRow(real_settings)) {
         setInnerSettings([
           ...clearEmptyRow(real_settings),
           first_row,
@@ -83,15 +143,25 @@ export default function SiteSettingsManager({
     let realSettings = [...remain_manage_settings].reverse()
     emitChange(clearEmptyRow(realSettings))
     setInnerSettings([...realSettings, new_row])
+
+    const adjustTimeout = needAdjustWidth({
+      oldSettings: outterSettings,
+      newSettings: realSettings,
+      isAddNewRow: Boolean(new_row.row.length),
+      limit
+    })
+    if (adjustTimeout !== false) {
+      adjustWidth(adjustTimeout)
+    }
   }
 
   return (
     <div className={s.SiteSettingsManager}>
       <ManagerContext.Provider
         value={constructContextValue({
-          limit,
-
           siteSettings: [...innerSettings].reverse(),
+          limit,
+          adjustWidth,
 
           edit,
           setEdit,

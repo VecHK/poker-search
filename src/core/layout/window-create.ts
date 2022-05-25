@@ -33,58 +33,58 @@ function CreateWindow(url: string, CreateData: chrome.windows.CreateData) {
   return [newUnit, createP] as const
 }
 
-export async function constructSearchWindows(
-  base: Base,
-  search_matrix: SearchMatrix,
-  keyword: string,
-  canContinue: () => boolean,
-  stop: () => void
-) {
-  const ids: number[] = []
-  const newMatrix: SearchWindowMatrix = []
+// export async function constructSearchWindows(
+//   base: Base,
+//   search_matrix: SearchMatrix,
+//   keyword: string,
+//   canContinue: () => boolean,
+//   stop: () => void
+// ) {
+//   const ids: number[] = []
+//   const newMatrix: SearchWindowMatrix = []
 
-  search_matrix = [...search_matrix].reverse()
+//   search_matrix = [...search_matrix].reverse()
 
-  for (let [row, cols] of search_matrix.entries()) {
-    const newRow: SearchWindowRow = []
-    newMatrix.push(newRow)
-    for (let [col, getSearchURL] of cols.entries()) {
+//   for (let [row, cols] of search_matrix.entries()) {
+//     const newRow: SearchWindowRow = []
+//     newMatrix.push(newRow)
+//     for (let [col, getSearchURL] of cols.entries()) {
 
-      const url = getSearchURL(keyword)
+//       const url = getSearchURL(keyword)
 
-      const [left, top] = calcRealPos(base, row, col)
+//       const [left, top] = calcRealPos(base, row, col)
 
-      if (canContinue()) {
-        const [win, p] = CreateWindow(url, {
-          type: 'popup',
-          width: base.info.window_width,
-          height: base.info.window_height,
-          left,
-          top,
-        })
-        await p
-        const windowId = win.getWindowId()
-        ids.push(windowId)
-        newRow.push({
-          state: 'NORMAL',
-          windowId
-        })
-        const h = (closedWindowId: number) => {
-          if (windowId === closedWindowId) {
-            chrome.windows.onRemoved.removeListener(h)
-            stop()
-          }
-        }
-        chrome.windows.onRemoved.addListener(h)
-      } else {
-        // cancel
-        throw Object.assign(Error('Cancel'), { ids, cancel: true })
-      }
-    }
-  }
+//       if (canContinue()) {
+//         const [win, p] = CreateWindow(url, {
+//           type: 'popup',
+//           width: base.info.window_width,
+//           height: base.info.window_height,
+//           left,
+//           top,
+//         })
+//         await p
+//         const windowId = win.getWindowId()
+//         ids.push(windowId)
+//         newRow.push({
+//           state: 'NORMAL',
+//           windowId
+//         })
+//         const h = (closedWindowId: number) => {
+//           if (windowId === closedWindowId) {
+//             chrome.windows.onRemoved.removeListener(h)
+//             stop()
+//           }
+//         }
+//         chrome.windows.onRemoved.addListener(h)
+//       } else {
+//         // cancel
+//         throw Object.assign(Error('Cancel'), { ids, cancel: true })
+//       }
+//     }
+//   }
 
-  return newMatrix
-}
+//   return newMatrix
+// }
 
 type CreateData = {
   url: string
@@ -139,6 +139,7 @@ export async function constructSearchWindowsFast(
     }
   }
 
+  const handler_list: ((closedWindowId: number) => void)[] = []
   const ids: number[] = []
   let new_matrix: SearchWindowMatrix = []
 
@@ -161,10 +162,12 @@ export async function constructSearchWindowsFast(
         })
         const h = (closedWindowId: number) => {
           if (windowId === closedWindowId) {
+            console.log('creating close')
             chrome.windows.onRemoved.removeListener(h)
             stop()
           }
         }
+        handler_list.push(h)
         chrome.windows.onRemoved.addListener(h)
       } else {
         // cancel
@@ -178,6 +181,10 @@ export async function constructSearchWindowsFast(
       await timeout(100)
     }
   }
+
+  handler_list.forEach((fn) => {
+    chrome.windows.onRemoved.removeListener(fn)
+  })
 
   new_matrix = [...new_matrix].reverse()
 
