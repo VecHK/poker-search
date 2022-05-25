@@ -1,18 +1,19 @@
 import React, { useCallback, useEffect, useState } from 'react'
-import Loading from '../../components/Loading'
+import { getSearchword } from '../../utils/search'
+import AddChromeEvent from '../../utils/chrome-event'
 import { Base } from '../../core/base'
 import { Matrix } from '../../core/common'
-import { calcControlWindowPos } from '../../core/layout/control-window'
 import { createSearchLayout } from '../../core/layout'
 import { renderMatrix } from '../../core/layout/render'
 import { closeAllWindow, SearchWindow } from '../../core/layout/window'
-import { getSearchword } from '../../utils/search'
+import { calcControlWindowPos } from '../../core/layout/control-window'
+
+import Loading from '../../components/Loading'
 import ArrowButtonGroup from './components/ArrowGroup'
 
 import SearchForm from './components/SearchForm'
 
 import './Control.css'
-import ChromeEvent from '../../utils/chrome-event'
 
 type Control = Unpromise<ReturnType<typeof createSearchLayout>>
 
@@ -48,11 +49,11 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
 
   const [controlWindowId, setControlWindowId] = useState<null | number>(null)
 
-  const [controll, setControll] = useState<Control | undefined>(undefined)
+  const [controll, setControll] = useState<Control | null>(null)
 
   const [{ canContinue, stop }, setStep] = useState(createStep())
 
-  useEffect(() => {
+  useEffect(function setControllWindowId() {
     chrome.windows.getCurrent().then(({ id }) => {
       if (id !== undefined) {
         setControlWindowId(id)
@@ -63,6 +64,7 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
   const callCloseAllWindow = useCallback((ids: number[]) => {
     closeAllWindow(ids)
   }, [])
+
   const onCloseAllWindow = useCallback((con: Control) => {
     const ids = con.getMatrix().flat().map(u => u.windowId)
     con.clearFocusChangedHandler()
@@ -71,7 +73,7 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
     callCloseAllWindow(ids)
   }, [callCloseAllWindow])
 
-  useEffect(() => {
+  useEffect(function setSearchwordFromURL() {
     const searchWord = getSearchword()
     if (searchWord !== null) {
       submitKeyword(searchWord)
@@ -79,12 +81,12 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
     }
   }, [])
 
-  useEffect(() => {
-    return ChromeEvent(
+  useEffect(function handleShortcutKey() {
+    return AddChromeEvent(
       chrome.commands.onCommand,
       (command: string) => {
         if (command === 'focus-layout') {
-          if ((controlWindowId !== null) && (controll !== undefined)) {
+          if ((controlWindowId !== null) && (controll !== null)) {
             controll.handleFocusChanged(controlWindowId)
           } else if (controlWindowId !== null) {
             chrome.windows.update(controlWindowId, { focused: true })
@@ -94,10 +96,10 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
     )
   }, [controlWindowId, controll])
 
-  useEffect(() => {
+  useEffect(function closeAllWindowBeforeExit() {
     const handler = () => {
       stop()
-      if (controll !== undefined) {
+      if (controll !== null) {
         onCloseAllWindow(controll)
       }
     }
@@ -140,7 +142,7 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
     })
   }, [base, callCloseAllWindow, canContinue, stop])
 
-  useEffect(() => {
+  useEffect(function openSearchWindows() {
     if (controlWindowId !== null) {
       if (submitedKeyword !== false) {
         moveControlWindow(controlWindowId).then(() => {
@@ -160,7 +162,7 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
             submitButtonActive={windowIsFocus}
             onSubmit={({ keyword: newSearchKeyword }) => {
               setLoading(true)
-              if (controll !== undefined) {
+              if (controll !== null) {
                 onCloseAllWindow(controll)
                 submitKeyword(newSearchKeyword)
                 setStep(createStep())

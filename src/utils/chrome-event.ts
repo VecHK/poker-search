@@ -1,9 +1,10 @@
-// chrome.events.Event
-
-export default function ChromeEvent<Fn extends Function>(e: chrome.events.Event<Fn>, fn: Fn) {
-  e.addListener(fn)
+export default function AddChromeEvent<Fn extends Function>(
+  ev: chrome.events.Event<Fn>,
+  processFn: Fn
+) {
+  ev.addListener(processFn)
 
   return function cancelEvent() {
-    e.removeListener(fn)
+    ev.removeListener(processFn)
   }
 }
