@@ -130,6 +130,7 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
     }).catch(err => {
       if (err.cancel) {
         // 提前取消
+        console.log('提前取消')
         const ids = err.ids as number[]
         callCloseAllWindow(ids)
         window.close()

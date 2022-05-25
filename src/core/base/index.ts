@@ -4,7 +4,9 @@ import { load as loadPreferences, Preferences } from '../../preferences'
 import { getCurrentDisplayLimit, Limit } from './limit'
 import { autoAdjustHeight, autoAdjustWidth } from './auto-adjust'
 import { initSearchMatrix, SearchMatrix } from './search-matrix'
+import { createMemo } from 'vait'
 
+export type RevertContainerID = number | undefined
 type BaseInfo = {
   window_height: number
   window_width: number
@@ -12,18 +14,22 @@ type BaseInfo = {
   titlebar_height: number
 }
 export type Base = {
-  limit: Limit,
+  limit: Limit
   platform: chrome.runtime.PlatformInfo,
   info: BaseInfo,
   preferences: Preferences,
   search_matrix: SearchMatrix
   layout_width: number
   layout_height: number
+
+  getRevertContainerId: () => RevertContainerID 
+  setRevertContainerId: (r: RevertContainerID) => void
 }
 
 async function initBase(
   environment: Environment,
   preferences: Preferences,
+  revert_container_id: RevertContainerID,
 ): Promise<Base> {
   const [limit, platform] = await Promise.all([
     getCurrentDisplayLimit(),
@@ -47,6 +53,8 @@ async function initBase(
     limit.height
   )
 
+  const [getRevertContainerId, setRevertContainerId] = createMemo(revert_container_id)
+
   return Object.freeze({
     limit,
     platform,
@@ -55,6 +63,9 @@ async function initBase(
 
     layout_width: total_width,
     layout_height: total_height,
+
+    getRevertContainerId,
+    setRevertContainerId,
 
     info: {
       window_height,
@@ -65,11 +76,11 @@ async function initBase(
   })
 }
 
-export async function createBase() {
+export async function createBase(from_window_id: RevertContainerID) {
   const [environment, preferences] = await Promise.all([
     loadEnvironment(),
     loadPreferences()
   ])
 
-  return initBase(environment, preferences)
+  return initBase(environment, preferences, from_window_id)
 }

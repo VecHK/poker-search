@@ -1,5 +1,5 @@
 import cfg from '../config'
-import launchPoker from './launch'
+import launchControlWindow from './launch'
 import { regRules } from './moble-access'
 
 console.log('Poker Background')
@@ -13,7 +13,10 @@ regRules()
 const commandHandler = (command: string) => {
   if (command === 'focus-layout') {
     chrome.commands.onCommand.removeListener(commandHandler)
-    launchPoker().then(({ controlWindow }) => {
+    launchControlWindow({
+      text: undefined,
+      revert_container_id: undefined
+    }).then(({ controlWindow }) => {
       if (controlWindow.id !== undefined) {
         const evHandler = (id: number) => {
           if (id === controlWindow.id) {
@@ -30,7 +33,12 @@ chrome.commands.onCommand.addListener(commandHandler)
 
 // omnibox 提交
 chrome.omnibox.onInputEntered.addListener((text) => {
-  launchPoker(text)
+  chrome.windows.getCurrent(({ id }) => {
+    launchControlWindow({
+      text,
+      revert_container_id: id
+    })
+  })
 })
 
 chrome.omnibox.onInputChanged.addListener((text, suggest) => {
