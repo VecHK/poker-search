@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect, useState } from 'react'
-import { getSearchword } from '../../utils/search'
 import AddChromeEvent from '../../utils/chrome-event'
 import { Base } from '../../core/base'
 import { Matrix } from '../../core/common'
@@ -14,6 +13,7 @@ import ArrowButtonGroup from './components/ArrowGroup'
 import SearchForm from './components/SearchForm'
 
 import './Control.css'
+import getQuery from '../../utils/get-query'
 
 type Control = Unpromise<ReturnType<typeof createSearchLayout>>
 
@@ -74,7 +74,7 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
   }, [callCloseAllWindow])
 
   useEffect(function setSearchwordFromURL() {
-    const searchWord = getSearchword()
+    const searchWord = getQuery('q')
     if (searchWord !== null) {
       submitKeyword(searchWord)
       setKeyword(searchWord)
