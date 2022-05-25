@@ -3,7 +3,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { curry, findIndex, map, propEq, update } from 'ramda'
 
 import { load as loadPreferences, Preferences, save } from '../../preferences'
-import { SiteSettings, toMatrix } from '../../preferences/site-settings'
+import { SiteSettings } from '../../preferences/site-settings'
 import { getCurrentDisplayLimit, Limit } from '../../core/base/limit'
 
 import SettingHeader from './Component/SettingHeader'
@@ -16,15 +16,11 @@ import ImportExport from './Component/SiteSettingsManager/ImportExport'
 import s from './Options.module.css'
 import { createMemo } from 'vait'
 
-function calcMaxColumn(siteSettings: SiteSettings) {
-  return toMatrix(siteSettings).reduce((p, c) => Math.max(p, c.length), 0)
-}
 
 const [getAdjustTask, setAdjustTask] = createMemo<NodeJS.Timeout | null>(null)
 
-function useAdjustMarginCenter(siteSettings: SiteSettings, enable: boolean) {
+function useAdjustMarginCenter(enable: boolean) {
   const ref = useRef<HTMLDivElement>(null)
-  const [, setMaxColumn] = useState(calcMaxColumn(siteSettings))
 
   const _adjust = useCallback((ref: React.RefObject<HTMLDivElement>) => {
     console.log('adjust')
@@ -124,7 +120,6 @@ export default function OptionsPage() {
   }, [])
 
   const [innerEl, adjustWidth] = useAdjustMarginCenter(
-    preferences ? preferences.site_settings : [],
     Boolean(preferences) && Boolean(limit)
   )
 
