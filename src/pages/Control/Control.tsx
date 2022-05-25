@@ -12,6 +12,7 @@ import ArrowButtonGroup from './components/ArrowGroup'
 import SearchForm from './components/SearchForm'
 
 import './Control.css'
+import ChromeEvent from '../../utils/chrome-event'
 
 type Control = Unpromise<ReturnType<typeof createSearchLayout>>
 
@@ -79,18 +80,18 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
   }, [])
 
   useEffect(() => {
-    if ((controlWindowId !== null) && (controll !== undefined)) {
-      const commandHandler = (command: string) => {
+    return ChromeEvent(
+      chrome.commands.onCommand,
+      (command: string) => {
         if (command === 'focus-layout') {
-          controll.handleFocusChanged(controlWindowId)
+          if ((controlWindowId !== null) && (controll !== undefined)) {
+            controll.handleFocusChanged(controlWindowId)
+          } else if (controlWindowId !== null) {
+            chrome.windows.update(controlWindowId, { focused: true })
+          }
         }
       }
-      chrome.commands.onCommand.addListener(commandHandler)
-
-      return () => {
-        chrome.commands.onCommand.removeListener(commandHandler)
-      }
-    }
+    )
   }, [controlWindowId, controll])
 
   useEffect(() => {
