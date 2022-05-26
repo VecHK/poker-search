@@ -116,8 +116,8 @@ export async function createSearchLayout({
         if (__bounds_processing__ === true) {
           // focus 事件会先于 bounds 触发
           // 在窗口失焦的时候，点击最大化或全屏按钮后，会先触发 focus 事件，如果这时
-          // 不注释这条语句的话，就会禁用掉 bounds 事件的处理了，也就无法做到变为
-          // 普通窗口的功能了，故在这块地方是需要 nextTick 等到下一个 tick 后，再来
+          // 不做特殊处理的话，就会无法正确执行bounds 事件的处理了，也就无法做到变为
+          // 普通窗口的功能了。故在这块地方是需要 nextTick 等到下一个 tick 后，再来
           // 查看到底触发的是不是 bounds 事件，是的话 focus 的后续操作都不需要了
           return
         }
