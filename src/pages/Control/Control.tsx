@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react'
+import { Atomic } from 'vait'
 
 import cfg from '../../config'
 
@@ -20,6 +21,8 @@ import SearchForm from './components/SearchForm'
 import './Control.css'
 
 type Control = Unpromise<ReturnType<typeof createSearchLayout>>
+
+const changeRow = Atomic()
 
 function createStep() {
   let _continue = true
@@ -181,36 +184,45 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
             if (!controll) {
               return
             }
-            const remainMatrix = [...controll.getMatrix()]
-            const latestRow = type === 'next' ? remainMatrix.pop() : remainMatrix.shift()
+            changeRow(async () => {
+              try {
+                controll.clearBoundsChangedHandler()
+                controll.clearRemoveHandler()
+                controll.clearFocusChangedHandler()
 
-            let newMatrix: Matrix<SearchWindow>
+                const remainMatrix = [...controll.getMatrix()]
+                const latestRow = type === 'next' ? remainMatrix.pop() : remainMatrix.shift()
+    
+                let newMatrix: Matrix<SearchWindow>
+    
+                if (latestRow === undefined) {
+                  throw Error('latestRow is undefined')
+                } else if (type === 'next') {
+                  newMatrix = [latestRow, ...remainMatrix]
+                } else {
+                  newMatrix = [...remainMatrix, latestRow]
+                }
 
-            if (latestRow === undefined) {
-              throw Error('latestRow is undefined')
-            } else if (type === 'next') {
-              newMatrix = [latestRow, ...remainMatrix]
-            } else {
-              newMatrix = [...remainMatrix, latestRow]
-            }
-
-            controll.clearFocusChangedHandler()
-            renderMatrix(
-              base,
-              newMatrix,
-              type === 'next' ? true : undefined,
-              true
-            ).then(() => {
-              return chrome.windows.getCurrent()
-            }).then(({id}) => {
-              if (id !== undefined) {
-                return chrome.windows.update(id, {
-                  focused: true,
-                })
+                await renderMatrix(
+                  base,
+                  newMatrix,
+                  type === 'next' ? true : undefined,
+                  true
+                )
+                
+                const { id } = await chrome.windows.getCurrent()
+                if (id !== undefined) {
+                  await chrome.windows.update(id, {
+                    focused: true,
+                  })
+                }
+                
+                controll.setMatrix(newMatrix)
+              } finally {
+                controll.setBoundsChangedHandler()
+                controll.setRemoveHandler()
+                controll.setFocusChangedHandler()
               }
-            }).then(() => {
-              controll.setMatrix(newMatrix)
-              controll.setFocusChangedHandler()
             })
           }} />
         </>
