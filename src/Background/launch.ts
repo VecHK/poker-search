@@ -40,7 +40,8 @@ export default async function launchControlWindow({ text, revert_container_id }:
     height: Math.round(cfg.CONTROL_WINDOW_HEIGHT),
     left: Math.round(left),
     top: Math.round(top),
-    url: detectUrl({ text, revert_container_id })
+    url: detectUrl({ text, revert_container_id }),
+    focused: true,
   })
 
   return {

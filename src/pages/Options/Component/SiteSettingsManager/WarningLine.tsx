@@ -1,63 +1,36 @@
-import React, { useContext, useMemo } from 'react'
+import React, { useMemo } from 'react'
 import { Transition } from 'react-transition-group'
-import { ManagerContext } from '.'
 
-import cfg from '../../../../config'
-import { autoAdjustWidth, calcWindowsTotalWidth } from '../../../../core/base/auto-adjust'
-import { SiteSettings } from '../../../../preferences'
+import { calcWindowsTotalWidth } from '../../../../core/base/auto-adjust'
 
 import s from './WarningLine.module.css'
 
 const DURATION = 382
 
-export function useMaxWindowPerLine() {
-  const { limit } = useContext(ManagerContext)
-  const { max_window_per_line } = autoAdjustWidth(
-    cfg.SEARCH_WINDOW_GAP_HORIZONTAL,
-    limit.width,
-  )
-  return max_window_per_line
+function useLeft(maxWindowPerLine: number) {
+  return useMemo(() => {
+    const SiteWindowBorderWidth = 2
+    const SiteWindowWidth = 128 + SiteWindowBorderWidth * 2
+    const SiteWindowGap = 16
+    const SiteWindowGapHalf = SiteWindowGap / 2
+    const SettingItemPadding = 20
+    const HandlerWidth = 34
+    const LineWidthHalf = 1 / 2
+    
+    const width = calcWindowsTotalWidth(
+      maxWindowPerLine, SiteWindowWidth, SiteWindowGap
+    )
+
+    const BaseLeft = SiteWindowGapHalf + SettingItemPadding + HandlerWidth
+    return `${BaseLeft + width + SiteWindowGapHalf - LineWidthHalf}px`
+  }, [maxWindowPerLine])
 }
 
-export default function WarningLine(
-  { disable, siteSettings }: { disable: boolean; siteSettings: SiteSettings }
-) {
-  const maxWindowPerLine = useMaxWindowPerLine()
-
-  const hasMaxCol = useMemo(() => {
-    if (maxWindowPerLine === null) {
-      return false
-    } else {
-      return !siteSettings.every((r) => {
-        if (maxWindowPerLine === -1) {
-          return false
-        } else {
-          return r.row.length <= maxWindowPerLine
-        }
-      })
-    }
-  }, [maxWindowPerLine, siteSettings])
-
-  const left = useMemo(() => {
-    if (maxWindowPerLine === null) {
-      return 0
-    } else {
-      const SiteWindowBorderWidth = 2
-      const SiteWindowWidth = 128 + SiteWindowBorderWidth * 2
-      const SiteWindowGap = 16
-      const SiteWindowGapHalf = SiteWindowGap / 2
-      const SettingItemPadding = 20
-      const HandlerWidth = 34
-      const LineWidthHalf = 1 / 2
-      
-      const width = calcWindowsTotalWidth(
-        maxWindowPerLine, SiteWindowWidth, SiteWindowGap
-      )
-    
-      const BaseLeft = SiteWindowGapHalf + SettingItemPadding + HandlerWidth
-      return `${BaseLeft + width + SiteWindowGapHalf - LineWidthHalf}px`
-    }
-  }, [maxWindowPerLine])
+export default function WarningLine({
+  disable,
+  maxWindowPerLine
+}: { disable: boolean; maxWindowPerLine: number }) {
+  const left = useLeft(maxWindowPerLine)
 
   const DescriptionWidth = 200
   const DescriptionLeft = -6.5
@@ -71,12 +44,11 @@ export default function WarningLine(
   }
 
   return (
-    <Transition in={hasMaxCol} timeout={DURATION}>
+    <Transition in={!disable} timeout={DURATION}>
       {state => (
         <div
-          className={`${s.WarningLineWrapper} ${(!disable && hasMaxCol) ? s.WarningEnable : ''}`}
+          className={`${s.WarningLineWrapper} ${(!disable) ? s.WarningEnable : ''}`}
           style={{
-            display: maxWindowPerLine === null ? 'none' : '',
             transition: 'opacity 382ms',
             ...transitionStyles[state],
           }}

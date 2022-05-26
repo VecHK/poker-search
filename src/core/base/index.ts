@@ -13,7 +13,7 @@ type BaseInfo = {
   gap_horizontal: number
   titlebar_height: number
 }
-export type Base = {
+export type Base = Readonly<{
   limit: Limit
   platform: chrome.runtime.PlatformInfo,
   info: BaseInfo,
@@ -24,7 +24,7 @@ export type Base = {
 
   getRevertContainerId: () => RevertContainerID 
   setRevertContainerId: (r: RevertContainerID) => void
-}
+}>
 
 async function initBase(
   environment: Environment,

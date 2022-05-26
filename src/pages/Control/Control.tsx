@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react'
+import { Atomic } from 'vait'
 
 import cfg from '../../config'
 
@@ -9,7 +10,7 @@ import { Base } from '../../core/base'
 import { Matrix } from '../../core/common'
 import { createSearchLayout } from '../../core/layout'
 import { renderMatrix } from '../../core/layout/render'
-import { closeAllWindow, SearchWindow } from '../../core/layout/window'
+import { closeWindows, SearchWindow } from '../../core/layout/window'
 import { calcControlWindowPos } from '../../core/layout/control-window'
 
 import Loading from '../../components/Loading'
@@ -18,16 +19,19 @@ import ArrowButtonGroup from './components/ArrowGroup'
 import SearchForm from './components/SearchForm'
 
 import './Control.css'
+import CreateSignal from '../../core/layout/signal'
 
 type Control = Unpromise<ReturnType<typeof createSearchLayout>>
 
-function createStep() {
-  let _continue = true
-  return {
-    canContinue: () => _continue,
-    stop() { _continue = false }
-  }
-}
+const changeRow = Atomic()
+
+// function createStep() {
+//   let _continue = true
+//   return {
+//     canContinue: () => _continue,
+//     stop() { _continue = false }
+//   }
+// }
 
 const useWindowFocus = (initFocusValue: boolean) => {
   const [ focus, setFocus ] = useState(initFocusValue)
@@ -54,8 +58,10 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
   const [controlWindowId, setControlWindowId] = useState<null | number>(null)
 
   const [controll, setControll] = useState<Control | null>(null)
+  const [stop_creating_signal] = useState(CreateSignal<void>())
+  const [creating_signal] = useState(CreateSignal<void>())
 
-  const [{ canContinue, stop }, setStep] = useState(createStep())
+  // const [{ canContinue, stop }, setStep] = useState(createStep())
 
   useEffect(function setControllWindowId() {
     chrome.windows.getCurrent().then(({ id }) => {
@@ -64,18 +70,6 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
       }
     })
   }, [])
-
-  const callCloseAllWindow = useCallback((ids: number[]) => {
-    closeAllWindow(ids)
-  }, [])
-
-  const onCloseAllWindow = useCallback((con: Control) => {
-    const ids = con.getMatrix().flat().map(u => u.windowId)
-    con.clearFocusChangedHandler()
-    con.clearRemoveHandler()
-    con.setBoundsChangedHandler()
-    callCloseAllWindow(ids)
-  }, [callCloseAllWindow])
 
   useEffect(function setSearchwordFromURL() {
     const searchWord = getQuery(cfg.CONTROL_QUERY_TEXT)
@@ -100,18 +94,23 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
     )
   }, [controlWindowId, controll])
 
+  const closeAllSearchWindows = useCallback((con: Control) => {
+    con.disableAllEvent()
+    closeWindows(con.getRegIds())
+  }, [])
+
   useEffect(function closeAllWindowBeforeExit() {
     const handler = () => {
-      stop()
+      stop_creating_signal.trigger()
       if (controll !== null) {
-        onCloseAllWindow(controll)
+        closeAllSearchWindows(controll)
       }
     }
     window.addEventListener('beforeunload', handler)
     return () => {
       window.removeEventListener('beforeunload', handler)
     }
-  }, [controll, onCloseAllWindow, stop])
+  }, [closeAllSearchWindows, controll, stop_creating_signal])
 
   const moveControlWindow = useCallback(async (id: number) => {
     const [ top, left ] = calcControlWindowPos(base.layout_height, base.limit)
@@ -120,32 +119,35 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
 
   const refreshWindows = useCallback((control_window_id: number, keyword: string) => {
     setLoading(true)
+
+    const closeHandler = () => {
+      stop_creating_signal.trigger()
+      window.close()
+    }
+    creating_signal.receive(closeHandler)
+
     createSearchLayout({
       control_window_id,
       base,
       keyword,
-      canContinue,
-      stop,
+      stop_creating_signal,
+      creating_signal,
     }).then(newControll => {
+      newControll.enableAllEvent()
       setControll(newControll)
-      newControll.setRemoveHandler()
-      newControll.setFocusChangedHandler()
-      newControll.setBoundsChangedHandler()
     }).catch(err => {
+      console.error('createSearchLayout error', err)
       if (err.cancel) {
         // 提前取消
         console.log('提前取消')
-        const ids = err.ids as number[]
-        callCloseAllWindow(ids)
-        window.close()
       } else {
-        console.error('createSearchLayout error', err)
         throw err
       }
-    }).then(() => {
+    }).finally(() => {
+      creating_signal.unReceive(closeHandler)
       setLoading(false)
     })
-  }, [base, callCloseAllWindow, canContinue, stop])
+  }, [base, creating_signal, stop_creating_signal])
 
   useEffect(function openSearchWindows() {
     if (controlWindowId !== null) {
@@ -168,12 +170,12 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
             onSubmit={({ keyword: newSearchKeyword }) => {
               setLoading(true)
               if (controll !== null) {
-                onCloseAllWindow(controll)
+                closeAllSearchWindows(controll)
                 submitKeyword(newSearchKeyword)
-                setStep(createStep())
+                // setStep(createStep())
               } else {
                 submitKeyword(newSearchKeyword)
-                setStep(createStep())
+                // setStep(createStep())
               }
             }}
           />
@@ -181,36 +183,41 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
             if (!controll) {
               return
             }
-            const remainMatrix = [...controll.getMatrix()]
-            const latestRow = type === 'next' ? remainMatrix.pop() : remainMatrix.shift()
+            changeRow(async () => {
+              try {
+                controll.disableAllEvent()
 
-            let newMatrix: Matrix<SearchWindow>
+                const remainMatrix = [...controll.getMatrix()]
+                const latestRow = type === 'next' ? remainMatrix.pop() : remainMatrix.shift()
+    
+                let newMatrix: Matrix<SearchWindow>
+    
+                if (latestRow === undefined) {
+                  throw Error('latestRow is undefined')
+                } else if (type === 'next') {
+                  newMatrix = [latestRow, ...remainMatrix]
+                } else {
+                  newMatrix = [...remainMatrix, latestRow]
+                }
 
-            if (latestRow === undefined) {
-              throw Error('latestRow is undefined')
-            } else if (type === 'next') {
-              newMatrix = [latestRow, ...remainMatrix]
-            } else {
-              newMatrix = [...remainMatrix, latestRow]
-            }
-
-            controll.clearFocusChangedHandler()
-            renderMatrix(
-              base,
-              newMatrix,
-              type === 'next' ? true : undefined,
-              true
-            ).then(() => {
-              return chrome.windows.getCurrent()
-            }).then(({id}) => {
-              if (id !== undefined) {
-                return chrome.windows.update(id, {
-                  focused: true,
-                })
+                await renderMatrix(
+                  base,
+                  newMatrix,
+                  type === 'next' ? true : undefined,
+                  true
+                )
+                
+                const { id } = await chrome.windows.getCurrent()
+                if (id !== undefined) {
+                  await chrome.windows.update(id, {
+                    focused: true,
+                  })
+                }
+                
+                controll.setMatrix(newMatrix)
+              } finally {
+                controll.enableAllEvent()
               }
-            }).then(() => {
-              controll.setMatrix(newMatrix)
-              controll.setFocusChangedHandler()
             })
           }} />
         </>

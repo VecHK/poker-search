@@ -4,14 +4,14 @@ import { CSSTransition, TransitionGroup } from 'react-transition-group'
 import { Droppable, Draggable, DraggingStyle, NotDraggingStyle } from 'react-beautiful-dnd'
 
 import { SiteOption, SiteSettingsRow } from '../../../../preferences/site-settings'
+import { generateExampleOption } from '../../../../preferences/default'
+
 import SiteWindow from './SiteWindow'
+import { Edit, ManagerContext } from '.'
+import AddSiteOption from './AddSiteOption'
+import useMaxWindowPerLine from './hooks/useMaxWindowPerLine'
 
 import s from './DragCols.module.css'
-
-import AddSiteOption from './AddSiteOption'
-import { useMaxWindowPerLine } from './WarningLine'
-import { Edit, ManagerContext } from '.'
-import { generateExampleOption } from '../../../../preferences/default'
 
 const getItemStyle = (
   isDragging: boolean,
