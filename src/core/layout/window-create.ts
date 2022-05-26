@@ -4,6 +4,8 @@ import { SearchMatrix } from '../base/search-matrix'
 import { calcRealPos } from './pos'
 import { isCurrentRow } from './matrix'
 import { renderMatrix } from './render'
+import { Signal } from './signal'
+import { Lock } from 'vait'
 
 type PlainUnit = null
 type Unit = PlainUnit | {
@@ -95,8 +97,8 @@ export async function constructSearchWindowsFast(
   base: Base,
   search_matrix: SearchMatrix,
   keyword: string,
-  canContinue: () => boolean,
-  stop: () => void
+  creating_signal: Signal<void>,
+  stop_creating_signal: Signal<void>,
 ): Promise<SearchWindowMatrix> {
   search_matrix = [...search_matrix].reverse()
 
@@ -139,20 +141,40 @@ export async function constructSearchWindowsFast(
     }
   }
 
+  let __is_creating_close__ = false
   const handler_list: ((closedWindowId: number) => void)[] = []
   const ids: number[] = []
   let new_matrix: SearchWindowMatrix = []
+
+  const stopCreatingHandler = () => {
+    stop_creating_signal.unReceive(stopCreatingHandler)
+    __is_creating_close__ = true
+    ids.forEach(id => {
+      chrome.windows.remove(id)
+    })
+  }
+  stop_creating_signal.receive(stopCreatingHandler)
 
   for (const [row, create_row] of [...create_matrix].reverse().entries()) {
     const new_row: SearchWindowRow = []
     new_matrix.push(new_row)
 
+    if (row === 1) {
+      await timeout(1000)
+    } else {
+      await timeout(100)
+    }
+
     for (const create of create_row) {
-      if (canContinue()) {
+      if (__is_creating_close__) {
+        creating_signal.trigger()
+        const [wait_eternal] = Lock()
+        await wait_eternal
+      } else {
         const [win, p] = CreateWindow(create.url, {
           ...create.window_data
         })
-
+  
         await p
         const windowId = win.getWindowId()
         ids.push(windowId)
@@ -160,28 +182,21 @@ export async function constructSearchWindowsFast(
           state: 'NORMAL',
           windowId,
         })
+
         const h = (closedWindowId: number) => {
           if (windowId === closedWindowId) {
             console.log('creating close')
             chrome.windows.onRemoved.removeListener(h)
-            stop()
+            __is_creating_close__ = true
           }
         }
         handler_list.push(h)
         chrome.windows.onRemoved.addListener(h)
-      } else {
-        // cancel
-        throw Object.assign(Error('Cancel'), { ids, cancel: true })
       }
-    }
-
-    if (row === 0) {
-      await timeout(1000)
-    } else {
-      await timeout(100)
     }
   }
 
+  stop_creating_signal.unReceive(stopCreatingHandler)
   handler_list.forEach((fn) => {
     chrome.windows.onRemoved.removeListener(fn)
   })

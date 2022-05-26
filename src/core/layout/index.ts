@@ -4,9 +4,10 @@ import { constructSearchWindowsFast } from './window-create'
 import { selectWindow, updateWindowById } from './window-update'
 import { closeWindows, getSearchWindowTabId, getWindowId, SearchWindow } from './window'
 import { renderCol, renderMatrix } from './render'
-import { Matrix, selectCol } from '../common'
+import { selectCol } from '../common'
 import cfg from '../../config'
 import AddChromeEvent from '../../utils/chrome-event'
+import { Signal } from './signal'
 
 export type LayoutInfo = {
   width: number
@@ -19,19 +20,23 @@ export async function createSearchLayout({
   control_window_id,
   base,
   keyword,
-  canContinue,
-  stop,
+  creating_signal,
+  stop_creating_signal,
 }: {
   control_window_id: number,
   base: Base
   keyword: string
-  canContinue: () => boolean
-  stop: () => void
+  creating_signal: Signal<void>
+  stop_creating_signal: Signal<void>
 }) {
   const { search_matrix } = base
   const [getMatrix, setMatrix] = createMemo(
     await constructSearchWindowsFast(
-      base, search_matrix, keyword, canContinue, stop
+      base,
+      search_matrix,
+      keyword,
+      creating_signal,
+      stop_creating_signal
     )
   )
 
@@ -158,8 +163,7 @@ export async function createSearchLayout({
     console.log('handleRemovedHandler')
     const regIds = getRegIds()
     const is_search_window = regIds.indexOf(windowId) !== -1
-    const is_control_window = control_window_id === windowId
-    if (is_search_window || is_control_window) {
+    if (is_search_window) {
       exit()
     }
   }
