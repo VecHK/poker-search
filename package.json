@@ -1,6 +1,6 @@
 {
   "name": "poker",
-  "version": "0.6.6",
+  "version": "1.0.0",
   "description": "A Search tool for Chrome Extension",
   "license": "MIT",
   "repository": {
