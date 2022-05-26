@@ -18,6 +18,7 @@ import Cols from './DragCols'
 import { ManagerContext } from '.'
 
 import s from './DragRows.module.css'
+import useMaxWindowPerLine from './hooks/useMaxWindowPerLine'
 
 export const ROW_TRANSITION_DURATION = 382
 
@@ -143,6 +144,15 @@ export default function DragRows() {
     console.log(...args)
   }
 
+  const maxWindowPerLine = useMaxWindowPerLine()
+  const hasMaxCol = !siteSettings.every((r) => {
+    if (maxWindowPerLine === -1) {
+      return false
+    } else {
+      return r.row.length <= maxWindowPerLine
+    }
+  })
+
   return (
     <div className={s.DragRows}>
       <DragDropContext
@@ -206,7 +216,10 @@ export default function DragRows() {
               </div>
             )}
           </Droppable>
-          <WarningLine disable={Boolean(edit)} siteSettings={siteSettings} />
+          <WarningLine
+            disable={Boolean(edit) || !hasMaxCol}
+            maxWindowPerLine={maxWindowPerLine}
+          />
         </div>
       </DragDropContext>
       <div className={s._1FTips}>⬆ 使用 Poker 后，最先展示的层</div>
