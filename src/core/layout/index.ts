@@ -1,8 +1,8 @@
-import { Lock, nextTick, timeout } from 'vait'
+import { createMemo, Lock, nextTick, timeout } from 'vait'
 import { Base } from '../base'
 import { constructSearchWindowsFast } from './window-create'
 import { selectWindow, updateWindowById } from './window-update'
-import { closeAllWindow, getSearchWindowTabId, getWindowId, SearchWindow } from './window'
+import { closeWindows, getSearchWindowTabId, getWindowId, SearchWindow } from './window'
 import { renderCol, renderMatrix } from './render'
 import { Matrix, selectCol } from '../common'
 import cfg from '../../config'
@@ -29,17 +29,20 @@ export async function createSearchLayout({
   stop: () => void
 }) {
   const { search_matrix } = base
-  let matrix = await constructSearchWindowsFast(
-    base, search_matrix, keyword, canContinue, stop
+  const [getMatrix, setMatrix] = createMemo(
+    await constructSearchWindowsFast(
+      base, search_matrix, keyword, canContinue, stop
+    )
   )
+
   function getRegIds(): number[] {
-    return matrix.flat().map(u => u.windowId)
+    return getMatrix().flat().map(u => u.windowId)
   }
 
   let __need_refocus__ = false
 
   async function refreshLayout(skip_ids: number[]) {
-    await renderMatrix(base, matrix, true, false, skip_ids)
+    await renderMatrix(base, getMatrix(), true, false, skip_ids)
     await chrome.windows.update(control_window_id, { focused: true })
   }
 
@@ -48,9 +51,7 @@ export async function createSearchLayout({
     console.log('handleBoundsChange')
     try {
       __bounds_processing__ = true
-      clearBoundsChangedHandler()
-      clearFocusChangedHandler()
-      clearRemoveHandler()
+      disableAllEvent()
 
       const window_id = getWindowId(win)
 
@@ -88,14 +89,14 @@ export async function createSearchLayout({
           setRevertContainerId(new_window.id)
         }
 
-        matrix = updateWindowById(matrix, window_id, { state: 'EMPTY' })
+        setMatrix(
+          updateWindowById(getMatrix(), window_id, { state: 'EMPTY' })
+        )
 
         await __waiting_close__
       }
     } finally {
-      setBoundsChangedHandler()
-      setFocusChangedHandler()
-      setRemoveHandler()
+      enableAllEvent()
       __bounds_processing__ = false
     }
   }
@@ -122,7 +123,7 @@ export async function createSearchLayout({
           return
         }
 
-        const [need_update, update] = selectWindow(matrix, focused_window_id)
+        const [need_update, update] = selectWindow(getMatrix(), focused_window_id)
         if (need_update) {
           await timeout(cfg.SEARCH_FOCUS_INTERVAL)
   
@@ -131,14 +132,14 @@ export async function createSearchLayout({
           )
 
           if (__need_refocus__) {
-            const skip_ids = selectCol(matrix, update.col).map(u => u.windowId)
+            const skip_ids = selectCol(getMatrix(), update.col).map(u => u.windowId)
             await refreshLayout([focused_window_id, ...skip_ids])
             await chrome.windows.update(focused_window_id, { focused: true })
           }
 
           await col_refresh_waiting
 
-          matrix = update.new_matrix
+          setMatrix(update.new_matrix)
         }
         else if (__need_refocus__) {
           await refreshLayout([focused_window_id])
@@ -155,27 +156,43 @@ export async function createSearchLayout({
 
   const handleRemovedHandler = (windowId: number) => {
     console.log('handleRemovedHandler')
-    const regIds = matrix.flat().map(u => u.windowId)
-    if (regIds.indexOf(windowId) !== -1) {
-      clearRemoveHandler()
-      clearFocusChangedHandler()
-      closeAllWindow(regIds)
+    const regIds = getRegIds()
+    const is_search_window = regIds.indexOf(windowId) !== -1
+    const is_control_window = control_window_id === windowId
+    if (is_search_window || is_control_window) {
+      exit()
     }
   }
   const clearRemoveHandler = () => chrome.windows.onRemoved.removeListener(handleRemovedHandler)
   const setRemoveHandler = () => chrome.windows.onRemoved.addListener(handleRemovedHandler)
 
+  const disableAllEvent = () => {
+    clearBoundsChangedHandler()
+    clearFocusChangedHandler()
+    clearRemoveHandler()
+  }
+
+  const enableAllEvent = () => {
+    setBoundsChangedHandler()
+    setFocusChangedHandler()
+    setRemoveHandler()
+  }
+
+  const exit = () => {
+    disableAllEvent()
+    closeWindows([...getRegIds(), control_window_id])
+  }
+
   return {
-    stop: () => {
-      const ids = matrix.flat().map(u => u.windowId)
-      clearFocusChangedHandler()
-      clearRemoveHandler()
-      return closeAllWindow(ids)
-    },
-    getMatrix: () => matrix,
-    setMatrix: (newMatrix: Matrix<SearchWindow>) => {
-      matrix = newMatrix
-    },
+    getRegIds,
+
+    disableAllEvent,
+    enableAllEvent,
+
+    exit,
+
+    getMatrix,
+    setMatrix,
 
     clearBoundsChangedHandler,
     setBoundsChangedHandler,

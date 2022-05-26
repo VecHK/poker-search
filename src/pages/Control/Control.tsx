@@ -10,7 +10,7 @@ import { Base } from '../../core/base'
 import { Matrix } from '../../core/common'
 import { createSearchLayout } from '../../core/layout'
 import { renderMatrix } from '../../core/layout/render'
-import { closeAllWindow, SearchWindow } from '../../core/layout/window'
+import { closeWindows, SearchWindow } from '../../core/layout/window'
 import { calcControlWindowPos } from '../../core/layout/control-window'
 
 import Loading from '../../components/Loading'
@@ -68,18 +68,6 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
     })
   }, [])
 
-  const callCloseAllWindow = useCallback((ids: number[]) => {
-    closeAllWindow(ids)
-  }, [])
-
-  const onCloseAllWindow = useCallback((con: Control) => {
-    const ids = con.getMatrix().flat().map(u => u.windowId)
-    con.clearFocusChangedHandler()
-    con.clearRemoveHandler()
-    con.setBoundsChangedHandler()
-    callCloseAllWindow(ids)
-  }, [callCloseAllWindow])
-
   useEffect(function setSearchwordFromURL() {
     const searchWord = getQuery(cfg.CONTROL_QUERY_TEXT)
     if (searchWord !== null) {
@@ -103,18 +91,23 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
     )
   }, [controlWindowId, controll])
 
+  const closeAllSearchWindows = useCallback((con: Control) => {
+    con.disableAllEvent()
+    closeWindows(con.getRegIds())
+  }, [])
+
   useEffect(function closeAllWindowBeforeExit() {
     const handler = () => {
       stop()
       if (controll !== null) {
-        onCloseAllWindow(controll)
+        closeAllSearchWindows(controll)
       }
     }
     window.addEventListener('beforeunload', handler)
     return () => {
       window.removeEventListener('beforeunload', handler)
     }
-  }, [controll, onCloseAllWindow, stop])
+  }, [controll, closeAllSearchWindows, stop])
 
   const moveControlWindow = useCallback(async (id: number) => {
     const [ top, left ] = calcControlWindowPos(base.layout_height, base.limit)
@@ -130,16 +123,14 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
       canContinue,
       stop,
     }).then(newControll => {
+      newControll.enableAllEvent()
       setControll(newControll)
-      newControll.setRemoveHandler()
-      newControll.setFocusChangedHandler()
-      newControll.setBoundsChangedHandler()
     }).catch(err => {
       if (err.cancel) {
         // 提前取消
         console.log('提前取消')
         const ids = err.ids as number[]
-        callCloseAllWindow(ids)
+        closeWindows(ids)
         window.close()
       } else {
         console.error('createSearchLayout error', err)
@@ -148,7 +139,7 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
     }).then(() => {
       setLoading(false)
     })
-  }, [base, callCloseAllWindow, canContinue, stop])
+  }, [base, canContinue, stop])
 
   useEffect(function openSearchWindows() {
     if (controlWindowId !== null) {
@@ -171,7 +162,7 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
             onSubmit={({ keyword: newSearchKeyword }) => {
               setLoading(true)
               if (controll !== null) {
-                onCloseAllWindow(controll)
+                closeAllSearchWindows(controll)
                 submitKeyword(newSearchKeyword)
                 setStep(createStep())
               } else {
@@ -186,9 +177,7 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
             }
             changeRow(async () => {
               try {
-                controll.clearBoundsChangedHandler()
-                controll.clearRemoveHandler()
-                controll.clearFocusChangedHandler()
+                controll.disableAllEvent()
 
                 const remainMatrix = [...controll.getMatrix()]
                 const latestRow = type === 'next' ? remainMatrix.pop() : remainMatrix.shift()
@@ -219,9 +208,7 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
                 
                 controll.setMatrix(newMatrix)
               } finally {
-                controll.setBoundsChangedHandler()
-                controll.setRemoveHandler()
-                controll.setFocusChangedHandler()
+                controll.enableAllEvent()
               }
             })
           }} />
