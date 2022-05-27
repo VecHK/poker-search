@@ -11,11 +11,10 @@ import SettingItem from './Component/SettingItem'
 import SiteSettingsManager from './Component/SiteSettingsManager'
 import Loading from '../../components/Loading'
 import Failure from './Component/Failure'
-import ImportExport from './Component/SiteSettingsManager/ImportExport'
+import ImportExport from './Component/ImportExport'
 
 import s from './Options.module.css'
 import { createMemo } from 'vait'
-
 
 const [getAdjustTask, setAdjustTask] = createMemo<NodeJS.Timeout | null>(null)
 
@@ -81,10 +80,16 @@ function useAdjustMarginCenter(enable: boolean) {
   return [ref, (timeout: number) => adjust(ref, timeout)] as const
 }
 
+function useKey() {
+  const [key, setKey] = useState(`${Date.now()}`)
+  return [key, function updateKey() { setKey(`${Date.now()}`) }] as const
+}
+
 export default function OptionsPage() {
   const [preferences, setPreferences] = useState<Preferences>()
   const [limit, setLimit] = useState<Limit>()
   const [failure, setFailure] = useState<Error>()
+  const [managerKey, refreshManagerKey] = useKey()
 
   const refresh = useCallback(() => {
     setFailure(undefined)
@@ -182,6 +187,7 @@ export default function OptionsPage() {
                   </div>
                   <div className={s.OptionsCol}>
                     <SiteSettingsManager
+                      key={managerKey}
                       limit={limit}
                       adjustWidth={adjustWidth}
                       siteSettings={preferences.site_settings}
@@ -212,14 +218,17 @@ export default function OptionsPage() {
                     />
                     <ImportExport
                       siteSettings={preferences.site_settings}
-                      onImport={curry(handleSiteSettingsChange)(preferences)}
+                      onImport={(newSettings) => {
+                        handleSiteSettingsChange(preferences, newSettings)
+                        refreshManagerKey()
+                      }}
                     />
                   </div>
                 </div>
               </>
             )
           }
-        }, [adjustWidth, failure, handleSiteSettingsChange, limit, preferences])
+        }, [adjustWidth, failure, handleSiteSettingsChange, limit, managerKey, preferences, refreshManagerKey])
       }</div>
     </div>
   )
