@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react'
-import { Atomic } from 'vait'
+import { Atomic, nextTick } from 'vait'
 
 import cfg from '../../config'
 
@@ -23,15 +23,7 @@ import CreateSignal from '../../core/layout/signal'
 
 type Control = Unpromise<ReturnType<typeof createSearchLayout>>
 
-const changeRow = Atomic()
-
-// function createStep() {
-//   let _continue = true
-//   return {
-//     canContinue: () => _continue,
-//     stop() { _continue = false }
-//   }
-// }
+const controllProcessing = Atomic()
 
 const useWindowFocus = (initFocusValue: boolean) => {
   const [ focus, setFocus ] = useState(initFocusValue)
@@ -61,7 +53,11 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
   const [stop_creating_signal] = useState(CreateSignal<void>())
   const [creating_signal] = useState(CreateSignal<void>())
 
-  // const [{ canContinue, stop }, setStep] = useState(createStep())
+  const focusControlWindow = useCallback(async () => {
+    if (controlWindowId) {
+      return chrome.windows.update(controlWindowId, { focused: true })
+    }
+  }, [controlWindowId])
 
   useEffect(function setControllWindowId() {
     chrome.windows.getCurrent().then(({ id }) => {
@@ -96,7 +92,7 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
 
   const closeAllSearchWindows = useCallback((con: Control) => {
     con.disableAllEvent()
-    closeWindows(con.getRegIds())
+    return closeWindows(con.getRegIds())
   }, [])
 
   useEffect(function closeAllWindowBeforeExit() {
@@ -118,6 +114,7 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
   }, [base.layout_height, base.limit])
 
   const refreshWindows = useCallback((control_window_id: number, keyword: string) => {
+    console.log('refreshWindows')
     setLoading(true)
 
     const closeHandler = () => {
@@ -133,31 +130,41 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
       stop_creating_signal,
       creating_signal,
     }).then(newControll => {
-      newControll.enableAllEvent()
       setControll(newControll)
     }).catch(err => {
-      console.error('createSearchLayout error', err)
       if (err.cancel) {
         // 提前取消
         console.log('提前取消')
       } else {
+        console.error('createSearchLayout error', err)
         throw err
       }
     }).finally(() => {
       creating_signal.unReceive(closeHandler)
       setLoading(false)
+      focusControlWindow()
     })
-  }, [base, creating_signal, stop_creating_signal])
+  }, [base, creating_signal, focusControlWindow, stop_creating_signal])
+
+  useEffect(function controllEventsEffect() {
+    if (controll !== null) {
+      controll.enableAllEvent()
+      return () => controll.disableAllEvent()
+    }
+  }, [controll])
 
   useEffect(function openSearchWindows() {
+    console.log('openSearchWindows', controlWindowId, submitedKeyword)
     if (controlWindowId !== null) {
       if (submitedKeyword !== false) {
-        moveControlWindow(controlWindowId).then(() => {
-          refreshWindows(controlWindowId, submitedKeyword)
-        })
+        if (controll === null) {
+          moveControlWindow(controlWindowId).then(() => {
+            refreshWindows(controlWindowId, submitedKeyword)
+          })
+        }
       }
     }
-  }, [controlWindowId, moveControlWindow, refreshWindows, submitedKeyword])
+  }, [controlWindowId, controll, moveControlWindow, refreshWindows, submitedKeyword])
 
   return (
     <div className="container">
@@ -168,22 +175,28 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
             setKeyword={setKeyword}
             submitButtonActive={windowIsFocus}
             onSubmit={({ keyword: newSearchKeyword }) => {
-              setLoading(true)
-              if (controll !== null) {
-                closeAllSearchWindows(controll)
-                submitKeyword(newSearchKeyword)
-                // setStep(createStep())
-              } else {
-                submitKeyword(newSearchKeyword)
-                // setStep(createStep())
-              }
+              controllProcessing(async () => {
+                console.log('onSubmit', newSearchKeyword)
+                if (controll === null) {
+                  submitKeyword(newSearchKeyword)
+                } else {
+                  try {
+                    setLoading(true)
+                    await nextTick()
+                    await Promise.all(closeAllSearchWindows(controll))
+                  } finally {
+                    setControll(null)
+                    submitKeyword(newSearchKeyword)
+                  }
+                }
+              })
             }}
           />
           <ArrowButtonGroup onClick={(type) => {
             if (!controll) {
               return
             }
-            changeRow(async () => {
+            controllProcessing(async () => {
               try {
                 controll.disableAllEvent()
 
@@ -206,14 +219,9 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
                   type === 'next' ? true : undefined,
                   true
                 )
-                
-                const { id } = await chrome.windows.getCurrent()
-                if (id !== undefined) {
-                  await chrome.windows.update(id, {
-                    focused: true,
-                  })
-                }
-                
+
+                await focusControlWindow()
+
                 controll.setMatrix(newMatrix)
               } finally {
                 controll.enableAllEvent()

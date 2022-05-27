@@ -159,17 +159,10 @@ export async function constructSearchWindowsFast(
     const new_row: SearchWindowRow = []
     new_matrix.push(new_row)
 
-    if (row === 1) {
-      await timeout(1000)
-    } else {
-      await timeout(100)
-    }
-
     for (const create of create_row) {
       if (__is_creating_close__) {
         creating_signal.trigger()
-        const [wait_eternal] = Lock()
-        await wait_eternal
+        throw Object.assign(Error(), { cancel: true })
       } else {
         const [win, p] = CreateWindow(create.url, {
           ...create.window_data
@@ -193,6 +186,12 @@ export async function constructSearchWindowsFast(
         handler_list.push(h)
         chrome.windows.onRemoved.addListener(h)
       }
+    }
+
+    if (row === 0) {
+      await timeout(1000)
+    } else {
+      await timeout(100)
     }
   }
 

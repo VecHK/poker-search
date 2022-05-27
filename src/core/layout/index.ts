@@ -29,6 +29,8 @@ export async function createSearchLayout({
   creating_signal: Signal<void>
   stop_creating_signal: Signal<void>
 }) {
+  console.log('createSearchLayout')
+
   const { search_matrix } = base
   const [getMatrix, setMatrix] = createMemo(
     await constructSearchWindowsFast(
