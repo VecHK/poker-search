@@ -5,7 +5,6 @@ import { calcRealPos } from './pos'
 import { isCurrentRow } from './matrix'
 import { renderMatrix } from './render'
 import { Signal } from './signal'
-import { Lock } from 'vait'
 
 type PlainUnit = null
 type Unit = PlainUnit | {
