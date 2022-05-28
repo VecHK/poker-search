@@ -22,11 +22,11 @@ jobs:
       - name: Install Modules
         run: yarn
 
-      - name: ESLint
-        run: yarn lint-strict
+      # - name: ESLint
+      #   run: yarn lint-strict
 
-      - name: TSC
-        run: yarn tsc --noEmit
+      # - name: TSC
+      #   run: yarn tsc --noEmit
 
       - name: Build Poker
         env:
@@ -37,7 +37,13 @@ jobs:
         run: |
           mv build poker
           zip -r poker.zip ./poker
-          
+      
+      - name: Run latest-tag
+        uses: EndBug/latest-tag@latest
+        with:
+          ref: latest
+          force-branch: true
+
       - name: Latest Release
         uses: softprops/action-gh-release@v1
         # if: startsWith('latest', 'refs/tags/')
