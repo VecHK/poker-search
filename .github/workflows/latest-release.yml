@@ -42,7 +42,7 @@ jobs:
         uses: EndBug/latest-tag@latest
         with:
           ref: latest
-          force-branch: true
+          # force-branch: true
 
       - name: Latest Release
         uses: softprops/action-gh-release@v1
@@ -55,7 +55,9 @@ jobs:
           body: |
             此为开发版，并不是 crx 文件，而是 zip 文件，安装方式有点差异：
 
-            先打开 Chrome，在地址栏输入 chrome://extensions 后进入扩展程序管理页面启用页面右上角的「开发者模式」然后解压 poker.zip ，将解压出来的文件夹拖拽到这个页面上，即可完成安装
+            先打开 Chrome，在地址栏输入 chrome://extensions 后进入扩展程序管理页面
+            启用页面右上角的「开发者模式」
+            然后解压 poker.zip ，将解压出来的文件夹拖拽到这个页面上，即可完成安装
           files: |
             LICENSE
             poker.zip
