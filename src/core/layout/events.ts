@@ -1,6 +1,6 @@
 import { createMemo, Lock, timeout } from 'vait'
 import cfg from '../../config'
-import CreateSignal from './signal'
+import { CreateChannel } from './signal'
 import { getWindowId } from './window'
 
 function InitRefocusLayout() {
@@ -47,12 +47,14 @@ export function trustedWindowEvents({
     const regIds = getRegIds()
     const is_search_window = regIds.indexOf(removed_window_id) !== -1
     if (is_search_window) {
-      focus_signal.trigger('REMOVED')
+      channel(removed_window_id).trigger('REMOVED')
       callbacks.onRemovedWindow(removed_window_id)
     }
   }
 
-  const focus_signal = CreateSignal<'BOUNDS' | 'REMOVED'>()
+  const channel = CreateChannel<number, 'BOUNDS' | 'REMOVED'>()
+
+  // const focus_signal = CreateSignal<'BOUNDS' | 'REMOVED'>()
 
   const onFocusChanged = (focused_window_id: number) => {
     console.log('onFocusChanged')
@@ -65,13 +67,14 @@ export function trustedWindowEvents({
     } else {
       const [waiting, pass] = Lock<'BOUNDS' | 'FOCUS' | 'REMOVED'>()
       const detectingBoundsExist = (sig: 'REMOVED' | 'BOUNDS') => {
-        focus_signal.unReceive(detectingBoundsExist)
+        channel(focused_window_id).unReceive(detectingBoundsExist)
         pass(sig)
       }
       // 等待 bounds/removed 的信号，超时时间为 cfg.SEARCH_FOCUS_INTERVAL
       // 超时了，即可认为不是 情况5 ，也就确保了调用顺序
       // 至于情况7，可以判断 sig/route 是不是 REMOVED
-      focus_signal.receive(detectingBoundsExist)
+      // focus_signal.receive(detectingBoundsExist)
+      channel(focused_window_id).receive(detectingBoundsExist)
       timeout(cfg.SEARCH_FOCUS_INTERVAL).then(() => pass('FOCUS'))
 
       waiting.then(route => {
@@ -100,9 +103,10 @@ export function trustedWindowEvents({
 
   const onBoundsChanged = (win: chrome.windows.Window) => {
     console.log('onBoundsChanged')
-    if (isMatrixWindow(getWindowId(win))) {
+    const bounds_window_id = getWindowId(win)
+    if (isMatrixWindow(bounds_window_id)) {
       if (isFullscreenOrMaximized(win)) {
-        focus_signal.trigger('BOUNDS')
+        channel(bounds_window_id).trigger('BOUNDS')
         disableWindowsEvent()
         callbacks.onEnterFullscreenOrMaximized(win, RefocusLayout)
           .finally(() => {
