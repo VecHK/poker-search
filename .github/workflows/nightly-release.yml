@@ -1,14 +1,32 @@
-name: 'Latest Release'
+name: 'Nightly Release'
 
 on:
-  push:
-    branches:
-      - dev
+  schedule:
+    - cron: '0 16 * * *' # run at UTC 16:00:00 (beijing time 00:00)
 
 jobs:
-  latest-release:
-    name: Latest Release
+  check-date:
     runs-on: ubuntu-latest
+    name: Check latest commit
+    outputs:
+      should_run: ${{ steps.should_run.outputs.should_run }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: print latest_commit
+        run: echo ${{ github.sha }}
+
+      - id: should_run
+        continue-on-error: true
+        name: check latest commit is less than a day
+        if: ${{ github.event_name == 'schedule' }}
+        run: test -z $(git rev-list  --after="24 hours"  ${{ github.sha }}) && echo "::set-output name=should_run::false"
+
+  nightly-release:
+    needs: check date and select dev branch
+    if: ${{ needs.check_date.outputs.should_run != 'false' && github.ref_name == 'dev' }}
+
+    runs-on: ubuntu-latest
+    name: Nightly Release
 
     steps:
       - name: Copy Repo Files
@@ -45,7 +63,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           prerelease: true
           tag_name: latest
-          name: 最新开发版(latest development release)
+          name: Nightly
           body: |
             此为开发版，并不是 crx 文件，而是 zip 文件，安装方式有点差异：
 
