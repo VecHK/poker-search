@@ -7,7 +7,7 @@ import { renderCol, renderMatrix } from './render'
 import { selectCol } from '../common'
 import AddChromeEvent from '../../utils/chrome-event'
 import { Signal } from './signal'
-import { trustedWindowEvents } from './events'
+import { trustedSearchWindowEvents } from './events'
 
 export type LayoutInfo = {
   width: number
@@ -53,7 +53,7 @@ export async function createSearchLayout({
     }
   }
 
-  const { enableWindowsEvent, disableWindowsEvent } = trustedWindowEvents({
+  const { enableWindowsEvent, disableWindowsEvent } = trustedSearchWindowEvents({
     getRegIds,
     control_window_id,
     onRemovedWindow: () => exit(),
