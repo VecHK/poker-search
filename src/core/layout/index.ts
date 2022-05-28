@@ -43,7 +43,7 @@ export async function createSearchLayout({
   )
 
   function getRegIds(): number[] {
-    return getMatrix().flat().map(u => u.windowId)
+    return getMatrix().flat().filter(u => u.state !== 'EMPTY').map(u => u.windowId)
   }
 
   async function refreshLayout(skip_ids: number[]) {
