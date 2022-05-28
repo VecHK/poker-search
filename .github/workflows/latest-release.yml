@@ -22,12 +22,6 @@ jobs:
       - name: Install Modules
         run: yarn
 
-      # - name: ESLint
-      #   run: yarn lint-strict
-
-      # - name: TSC
-      #   run: yarn tsc --noEmit
-
       - name: Build Poker
         env:
           NODE_ENV: production
@@ -55,19 +49,12 @@ jobs:
           body: |
             此为开发版，并不是 crx 文件，而是 zip 文件，安装方式有点差异：
 
-            先打开 Chrome，在地址栏输入 chrome://extensions 后进入扩展程序管理页面
-            启用页面右上角的「开发者模式」
-            然后解压 poker.zip ，将解压出来的文件夹拖拽到这个页面上，即可完成安装
+            1. 先打开 Chrome，在地址栏输入 chrome://extensions 后进入扩展程序管理页面
+            2. 启用页面右上角的「开发者模式」
+            3. 然后解压 poker.zip ，将解压出来的文件夹拖拽到这个页面上，即可完成安装
+
+            最新开发版可以体验到最新开发的功能，**但程序可能会有严重的缺陷，以至于无法正常使用的情况**，请酌情考虑。
+            建议使用稳定版作为日常使用，⬇️往下翻看。
           files: |
             LICENSE
             poker.zip
-
-      # - uses: "marvinpinto/action-automatic-releases@latest"
-      #   with:
-      #     repo_token: "${{ secrets.GITHUB_TOKEN }}"
-      #     automatic_release_tag: "latest"
-      #     title: 最新开发版(latest development release)
-      #     prerelease: true
-      #     files: |
-      #       LICENSE.txt
-      #       poker.zip
