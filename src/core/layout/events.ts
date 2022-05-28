@@ -52,9 +52,8 @@ export function trustedWindowEvents({
     }
   }
 
-  const channel = CreateChannel<number, 'BOUNDS' | 'REMOVED'>()
-
-  // const focus_signal = CreateSignal<'BOUNDS' | 'REMOVED'>()
+  type SignalType = 'BOUNDS' | 'REMOVED'
+  const channel = CreateChannel<number, SignalType>()
 
   const onFocusChanged = (focused_window_id: number) => {
     console.log('onFocusChanged')
@@ -65,15 +64,14 @@ export function trustedWindowEvents({
     if ((is_not_control_window && is_not_search_window) || focused_is_not_chrome) {
       shouldRefocusLayout(true)
     } else {
-      const [waiting, pass] = Lock<'BOUNDS' | 'FOCUS' | 'REMOVED'>()
-      const detectingBoundsExist = (sig: 'REMOVED' | 'BOUNDS') => {
+      const [waiting, pass] = Lock<SignalType | 'FOCUS'>()
+      const detectingBoundsExist = (sig: SignalType) => {
         channel(focused_window_id).unReceive(detectingBoundsExist)
         pass(sig)
       }
       // 等待 bounds/removed 的信号，超时时间为 cfg.SEARCH_FOCUS_INTERVAL
       // 超时了，即可认为不是 情况5 ，也就确保了调用顺序
       // 至于情况7，可以判断 sig/route 是不是 REMOVED
-      // focus_signal.receive(detectingBoundsExist)
       channel(focused_window_id).receive(detectingBoundsExist)
       timeout(cfg.SEARCH_FOCUS_INTERVAL).then(() => pass('FOCUS'))
 
