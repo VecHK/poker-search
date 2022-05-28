@@ -1,0 +1,48 @@
+name: 'Latest Release'
+
+on:
+  push:
+    branches:
+      - dev
+
+jobs:
+  latest-release:
+    name: Latest Release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Copy Repo Files
+        uses: actions/checkout@v2
+
+      - name: Use Node.js
+        uses: actions/setup-node@v1
+        with:
+          node-version: '16'
+
+      - name: Install Modules
+        run: yarn
+
+      - name: ESLint
+        run: yarn lint-strict
+
+      - name: TSC
+        run: yarn tsc --noEmit
+
+      - name: Build Poker
+        env:
+          NODE_ENV: production
+        run: yarn build
+
+      - name: create poker.zip
+        run: |
+          mv build poker
+          zip -r poker.zip ./poker
+
+      - uses: "marvinpinto/action-automatic-releases@latest"
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          title: latest release
+          prerelease: true
+          files: |
+            LICENSE.txt
+            poker.zip
