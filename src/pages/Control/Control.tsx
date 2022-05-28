@@ -100,7 +100,10 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
       (command: string) => {
         if (command === 'focus-layout') {
           if ((controlWindowId !== null) && (controll !== null)) {
-            controll.handleFocusChanged(controlWindowId)
+            controll.disableAllEvent()
+            controll.refreshLayout([]).finally(() => {
+              controll.enableAllEvent()
+            })
           } else if (controlWindowId !== null) {
             chrome.windows.update(controlWindowId, { focused: true })
           }
