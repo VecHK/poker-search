@@ -3,6 +3,12 @@ import cfg from '../../config'
 import { CreateChannel } from './signal'
 import { getWindowId } from './window'
 
+type SignalType = 'BOUNDS' | 'REMOVED'
+
+function isFullscreenOrMaximized(win: chrome.windows.Window) {
+  return win.state === 'fullscreen' || win.state === 'maximized'
+}
+
 function InitRefocusLayout() {
   return createMemo(false)
 }
@@ -37,28 +43,25 @@ export function trustedWindowEvents({
     RefocusLayout: ReturnType<typeof InitRefocusLayout>
   ): Promise<void>
 }) {
-  const isMatrixWindow = (id: number) => getRegIds().indexOf(id) !== -1
-  
+  const isSearchWindow = (id: number) => getRegIds().indexOf(id) !== -1
+
+  const channel = CreateChannel<number, SignalType>()
+
   const RefocusLayout = InitRefocusLayout()
   const [, shouldRefocusLayout] = RefocusLayout
 
   const onRemoved = (removed_window_id: number) => {
     console.log('onRemoved')
-    const regIds = getRegIds()
-    const is_search_window = regIds.indexOf(removed_window_id) !== -1
-    if (is_search_window) {
+    if (isSearchWindow(removed_window_id)) {
       channel(removed_window_id).trigger('REMOVED')
       callbacks.onRemovedWindow(removed_window_id)
     }
   }
 
-  type SignalType = 'BOUNDS' | 'REMOVED'
-  const channel = CreateChannel<number, SignalType>()
-
   const onFocusChanged = (focused_window_id: number) => {
     console.log('onFocusChanged')
     const is_not_control_window = focused_window_id !== control_window_id
-    const is_not_search_window = getRegIds().indexOf(focused_window_id) === -1
+    const is_not_search_window = !isSearchWindow(focused_window_id)
     const focused_is_not_chrome = focused_window_id === chrome.windows.WINDOW_ID_NONE
 
     if ((is_not_control_window && is_not_search_window) || focused_is_not_chrome) {
@@ -95,14 +98,10 @@ export function trustedWindowEvents({
     }
   }
 
-  function isFullscreenOrMaximized(win: chrome.windows.Window) {
-    return win.state === 'fullscreen' || win.state === 'maximized'
-  }
-
   const onBoundsChanged = (win: chrome.windows.Window) => {
     console.log('onBoundsChanged')
     const bounds_window_id = getWindowId(win)
-    if (isMatrixWindow(bounds_window_id)) {
+    if (isSearchWindow(bounds_window_id)) {
       if (isFullscreenOrMaximized(win)) {
         channel(bounds_window_id).trigger('BOUNDS')
         disableWindowsEvent()
