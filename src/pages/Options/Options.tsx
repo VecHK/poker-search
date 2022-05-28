@@ -114,10 +114,10 @@ export default function OptionsPage() {
   const handleSiteSettingsChange = useCallback((
     currentPreferences: Preferences,
     site_settings: SiteSettings
-  ) => {
+  ): Readonly<[boolean, string]> => {
     console.log('site settings change', site_settings)
     if (site_settings.length === 0) {
-      alert('站点配置项无法留空')
+      return [false, '站点配置项无法留空']
     } else {
       setPreferences((latest) => {
         return {
@@ -126,6 +126,7 @@ export default function OptionsPage() {
           site_settings,
         }
       })
+      return [true, 'OK']
     }
   }, [])
 
@@ -214,12 +215,22 @@ export default function OptionsPage() {
                           }
                         })
                       }}
-                      onChange={curry(handleSiteSettingsChange)(preferences)}
+                      onChange={newSettings => {
+                        const [isUpdate, message] = handleSiteSettingsChange(preferences, newSettings)
+                        if (!isUpdate) {
+                          refreshManagerKey()
+                          alert(message)
+                        }
+                      }}
                     />
                     <ImportExport
                       siteSettings={preferences.site_settings}
                       onImport={(newSettings) => {
-                        handleSiteSettingsChange(preferences, newSettings)
+                        const [isUpdate, message] = handleSiteSettingsChange(preferences, newSettings)
+                        if (!isUpdate) {
+                          alert(message)
+                        }
+
                         refreshManagerKey()
                       }}
                     />
