@@ -40,7 +40,7 @@ jobs:
           
       - name: Latest Release
         uses: softprops/action-gh-release@v1
-        if: startsWith(latest, 'refs/tags/')
+        # if: startsWith('latest', 'refs/tags/')
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           prerelease: true
