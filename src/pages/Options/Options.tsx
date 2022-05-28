@@ -1,6 +1,6 @@
 import pkg from '../../../package.json'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { curry, findIndex, map, propEq, update } from 'ramda'
+import { findIndex, map, propEq, update } from 'ramda'
 
 import { load as loadPreferences, Preferences, save } from '../../preferences'
 import { SiteSettings } from '../../preferences/site-settings'
