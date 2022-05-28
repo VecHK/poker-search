@@ -33,17 +33,33 @@ jobs:
           NODE_ENV: production
         run: yarn build
 
-      - name: create poker.zip
+      - name: Create poker.zip
         run: |
           mv build poker
           zip -r poker.zip ./poker
-
-      - uses: "marvinpinto/action-automatic-releases@latest"
+          
+      - name: Latest Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(latest, 'refs/tags/')
         with:
-          repo_token: "${{ secrets.GITHUB_TOKEN }}"
-          automatic_release_tag: "latest"
-          title: latest release
+          token: ${{ secrets.GITHUB_TOKEN }}
           prerelease: true
+          tag_name: latest
+          name: 最新开发版(latest development release)
+          body: |
+            此为开发版，并不是 crx 文件，而是 zip 文件，安装方式有点差异：
+
+            先打开 Chrome，在地址栏输入 chrome://extensions 后进入扩展程序管理页面启用页面右上角的「开发者模式」然后解压 poker.zip ，将解压出来的文件夹拖拽到这个页面上，即可完成安装
           files: |
-            LICENSE.txt
+            LICENSE
             poker.zip
+
+      # - uses: "marvinpinto/action-automatic-releases@latest"
+      #   with:
+      #     repo_token: "${{ secrets.GITHUB_TOKEN }}"
+      #     automatic_release_tag: "latest"
+      #     title: 最新开发版(latest development release)
+      #     prerelease: true
+      #     files: |
+      #       LICENSE.txt
+      #       poker.zip
