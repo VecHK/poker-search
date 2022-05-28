@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react'
+import React, { useState } from 'react'
 import s from './index.module.css'
 
 import IconSubmitSrc from './submit.svg'
@@ -6,10 +6,11 @@ import IconSubmitClickedSrc from './submit-clicked.svg'
 
 const SearchForm: React.FC<{
   keyword: string
+  keywordPlaceholder?: string
   submitButtonActive: boolean
   setKeyword: React.Dispatch<React.SetStateAction<string>>
   onSubmit: (e: { keyword: string }) => void
-}> = ({ keyword, submitButtonActive, setKeyword, onSubmit }) => {
+}> = ({ keyword, keywordPlaceholder, submitButtonActive, setKeyword, onSubmit }) => {
   const [focus, setFocus] = useState(false)
   const focusClass = focus ? s.Focus : ''
 
@@ -20,6 +21,7 @@ const SearchForm: React.FC<{
     >
       <KeywordInput
         value={keyword}
+        placeholder={keywordPlaceholder}
         setValue={setKeyword}
         onFocus={() => setFocus(true)}
         onBlur={() => setFocus(false)}
@@ -46,14 +48,16 @@ const formDataTransform = (e: React.FormEvent<HTMLFormElement>) => {
 
 const KeywordInput: React.FC<{
   value: string
+  placeholder?: string
   setValue: React.Dispatch<React.SetStateAction<string>>
   onFocus: React.FocusEventHandler<HTMLInputElement>
   onBlur: React.FocusEventHandler<HTMLInputElement>
-}> = ({ value, setValue, onFocus, onBlur }) => useMemo(() => {
+}> = ({ value, placeholder, setValue, onFocus, onBlur }) => {
   return (
     <input
       alt="input-keyword"
       name="keyword"
+      placeholder={placeholder}
       className={s.Input}
       value={value}
       autoFocus
@@ -64,26 +68,19 @@ const KeywordInput: React.FC<{
       }}
     />
   )
-}, [onBlur, onFocus, setValue, value])
+}
 
 const SubmitButton: React.FC<{ active: boolean }> = ({ active }) => {
-  const imgNode = useMemo(() => {
-    const src = active ? IconSubmitClickedSrc : IconSubmitSrc
-    return (
-      <img
-        alt="submit-keyword"
-        src={src}
-        className={s.IconSubmitImg}
-      />
-    )
-  }, [active])
-
   return (
     <button
       type="submit"
       className={s.IconSubmit}
     >
-      {imgNode}
+      <img
+        alt="submit-keyword"
+        src={active ? IconSubmitClickedSrc : IconSubmitSrc}
+        className={s.IconSubmitImg}
+      />
     </button>
   )
-  }
+}

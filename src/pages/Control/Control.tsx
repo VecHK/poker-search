@@ -172,6 +172,7 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
         <>
           <SearchForm
             keyword={keyword}
+            keywordPlaceholder="请输入搜索词"
             setKeyword={setKeyword}
             submitButtonActive={windowIsFocus}
             onSubmit={({ keyword: newSearchKeyword }) => {
