@@ -72,6 +72,36 @@ export function trustedSearchWindowEvents({
     }
   }
 
+  function focusEventDispatch(focused_window_id: number) {
+    const [waiting, pass] = Lock<SignalType | 'FOCUS'>()
+    const detectingSignalExist = (sig: SignalType) => {
+      channel(focused_window_id).unReceive(detectingSignalExist)
+      pass(sig)
+    }
+    // 等待 bounds/removed 的信号，超时时间为 cfg.SEARCH_FOCUS_INTERVAL
+    // 超时了，即可认为不是情况2、7 ，也就确保了调用顺序
+    channel(focused_window_id).receive(detectingSignalExist)
+    timeout(cfg.SEARCH_FOCUS_INTERVAL).then(() => pass('FOCUS'))
+
+    waiting.then(route => {
+      if (route === 'REMOVED') {
+        // ignore
+      } else if (route === 'BOUNDS') {
+        // ignore
+      } else if (route === 'FOCUS') {
+        clearFocusChanged()
+        clearBoundsChanged()
+        return callbacks
+          .onSelectSearchWindow(focused_window_id, RefocusLayout)
+          .finally(() => {
+            shouldRefocusLayout(false)
+            setFocusChanged()
+            setBoundsChanged()
+          })
+      }
+    })
+  }
+
   const onFocusChanged = (focused_window_id: number) => {
     console.log('onFocusChanged')
     const is_not_control_window = focused_window_id !== control_window_id
@@ -81,33 +111,7 @@ export function trustedSearchWindowEvents({
     if ((is_not_control_window && is_not_search_window) || focused_is_not_chrome) {
       shouldRefocusLayout(true)
     } else {
-      const [waiting, pass] = Lock<SignalType | 'FOCUS'>()
-      const detectingSignalExist = (sig: SignalType) => {
-        channel(focused_window_id).unReceive(detectingSignalExist)
-        pass(sig)
-      }
-      // 等待 bounds/removed 的信号，超时时间为 cfg.SEARCH_FOCUS_INTERVAL
-      // 超时了，即可认为不是情况2、7 ，也就确保了调用顺序
-      channel(focused_window_id).receive(detectingSignalExist)
-      timeout(cfg.SEARCH_FOCUS_INTERVAL).then(() => pass('FOCUS'))
-
-      waiting.then(route => {
-        if (route === 'REMOVED') {
-          // ignore
-        } else if (route === 'BOUNDS') {
-          // ignore
-        } else if (route === 'FOCUS') {
-          clearFocusChanged()
-          clearBoundsChanged()
-          return callbacks
-            .onSelectSearchWindow(focused_window_id, RefocusLayout)
-            .finally(() => {
-              shouldRefocusLayout(false)
-              setFocusChanged()
-              setBoundsChanged()
-            })
-        }
-      })
+      focusEventDispatch(focused_window_id)
     }
   }
 
