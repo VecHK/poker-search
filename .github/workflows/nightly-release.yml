@@ -1,0 +1,79 @@
+name: 'Nightly Release'
+
+on:
+  schedule:
+    - cron: '0 16 * * *' # run at UTC 16:00:00 (beijing time 00:00)
+
+jobs:
+  check-date:
+    runs-on: ubuntu-latest
+    name: Check latest commit
+    outputs:
+      should_run: ${{ steps.should_run.outputs.should_run }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: print latest_commit
+        run: echo ${{ github.sha }}
+
+      - id: should_run
+        continue-on-error: true
+        name: check latest commit is less than a day
+        if: ${{ github.event_name == 'schedule' }}
+        run: test -z $(git rev-list  --after="24 hours"  ${{ github.sha }}) && echo "::set-output name=should_run::false"
+
+  nightly-release:
+    needs: check-date
+
+    if: ${{ needs.check_date.outputs.should_run != 'false' && github.ref_name == 'dev' }}
+
+    runs-on: ubuntu-latest
+    name: Nightly Release
+
+    steps:
+      - name: Copy Repo Files
+        uses: actions/checkout@v2
+
+      - name: Use Node.js
+        uses: actions/setup-node@v1
+        with:
+          node-version: '16'
+
+      - name: Install Modules
+        run: yarn
+
+      - name: Build Poker
+        env:
+          NODE_ENV: production
+        run: yarn build
+
+      - name: Create poker.zip
+        run: |
+          mv build poker
+          zip -r poker.zip ./poker
+      
+      - name: Run latest-tag
+        uses: EndBug/latest-tag@latest
+        with:
+          ref: latest
+          # force-branch: true
+
+      - name: Latest Release
+        uses: softprops/action-gh-release@v1
+        # if: startsWith('latest', 'refs/tags/')
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          prerelease: true
+          tag_name: latest
+          name: Nightly
+          body: |
+            此为开发版，并不是 crx 文件，而是 zip 文件，安装方式有点差异：
+
+            1. 先打开 Chrome，在地址栏输入 chrome://extensions 后进入扩展程序管理页面
+            2. 启用页面右上角的「开发者模式」
+            3. 然后解压 poker.zip ，将解压出来的文件夹拖拽到这个页面上，即可完成安装
+
+            最新开发版可以体验到最新开发的功能，**但程序可能会有严重的缺陷，以至于无法正常使用的情况**，请酌情考虑。
+            建议使用稳定版作为日常使用，⬇️往下翻看。
+          files: |
+            LICENSE
+            poker.zip

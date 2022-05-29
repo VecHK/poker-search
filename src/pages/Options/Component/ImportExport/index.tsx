@@ -4,7 +4,7 @@ import { Preferences, AllVersion, SiteSettings } from '../../../../preferences'
 import getDefaultPreferences from '../../../../preferences/default'
 import { updatePreferences } from '../../../../preferences/versions/update'
 
-import s from './ImportExport.module.css'
+import s from './index.module.css'
 
 function toDataHref(site_settings: SiteSettings): string {
   const exportData: Preferences = {

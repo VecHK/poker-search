@@ -33,7 +33,7 @@ export async function load(): Promise<Preferences> {
 
 export const save = saveStorage
 
-export async function init(append: Partial<Preferences>) {
+export async function init(append: Parameters<typeof getDefaultPreferences>[0]) {
   const default_preferences = getDefaultPreferences(append)
   await save(default_preferences)
   return load()

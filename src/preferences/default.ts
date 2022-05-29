@@ -4,8 +4,13 @@ import generateId from '../utils/generate-id'
 import { SiteSettings, Preferences, SiteOption } from './'
 import { generateSiteSettingsRow } from './site-settings'
 
+type AppendPreferences = Omit<
+  Partial<Preferences>,
+  'version' | '__is_poker__'
+>
+
 export default function getDefaultPreferences(
-  append: Partial<Preferences> = {}
+  append: AppendPreferences = {}
 ): Preferences {
   return {
     __is_poker__: true,

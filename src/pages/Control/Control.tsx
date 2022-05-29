@@ -40,6 +40,25 @@ const useWindowFocus = (initFocusValue: boolean) => {
   return focus
 }
 
+function useChangeRowShortcutKey(props: {
+  onPressUp: () => void
+  onPressDown: () => void
+}) {
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowUp') {
+        e.preventDefault()
+        props.onPressUp()
+      } else if (e.key === 'ArrowDown') {
+        e.preventDefault()
+        props.onPressDown()
+      }
+    }
+    window.addEventListener('keydown', handler, true)
+    return () => window.removeEventListener('keydown', handler, true)
+  }, [props])
+}
+
 const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
   const windowIsFocus = useWindowFocus(true)
   const [isLoading, setLoading] = useState(false)
@@ -81,7 +100,10 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
       (command: string) => {
         if (command === 'focus-layout') {
           if ((controlWindowId !== null) && (controll !== null)) {
-            controll.handleFocusChanged(controlWindowId)
+            controll.disableAllEvent()
+            controll.refreshLayout([]).finally(() => {
+              controll.enableAllEvent()
+            })
           } else if (controlWindowId !== null) {
             chrome.windows.update(controlWindowId, { focused: true })
           }
@@ -166,12 +188,56 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
     }
   }, [controlWindowId, controll, moveControlWindow, refreshWindows, submitedKeyword])
 
+  const changeRow = useCallback((type: 'previus' | 'next') => {
+    console.log('changeRow', type, controll)
+    if (!controll) {
+      return
+    }
+    controllProcessing(async () => {
+      try {
+        controll.disableAllEvent()
+
+        const remainMatrix = [...controll.getMatrix()]
+        const latestRow = type === 'next' ? remainMatrix.pop() : remainMatrix.shift()
+
+        let newMatrix: Matrix<SearchWindow>
+
+        if (latestRow === undefined) {
+          throw Error('latestRow is undefined')
+        } else if (type === 'next') {
+          newMatrix = [latestRow, ...remainMatrix]
+        } else {
+          newMatrix = [...remainMatrix, latestRow]
+        }
+
+        await renderMatrix(
+          base,
+          newMatrix,
+          type === 'next' ? true : undefined,
+          true
+        )
+
+        await focusControlWindow()
+
+        controll.setMatrix(newMatrix)
+      } finally {
+        controll.enableAllEvent()
+      }
+    })
+  }, [base, controll, focusControlWindow])
+
+  useChangeRowShortcutKey({
+    onPressUp: () => changeRow('previus'),
+    onPressDown: () => changeRow('next'),
+  })
+
   return (
     <div className="container">
       {isLoading ? <Loading /> : (
         <>
           <SearchForm
             keyword={keyword}
+            keywordPlaceholder="请输入搜索词"
             setKeyword={setKeyword}
             submitButtonActive={windowIsFocus}
             onSubmit={({ keyword: newSearchKeyword }) => {
@@ -192,42 +258,7 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
               })
             }}
           />
-          <ArrowButtonGroup onClick={(type) => {
-            if (!controll) {
-              return
-            }
-            controllProcessing(async () => {
-              try {
-                controll.disableAllEvent()
-
-                const remainMatrix = [...controll.getMatrix()]
-                const latestRow = type === 'next' ? remainMatrix.pop() : remainMatrix.shift()
-    
-                let newMatrix: Matrix<SearchWindow>
-    
-                if (latestRow === undefined) {
-                  throw Error('latestRow is undefined')
-                } else if (type === 'next') {
-                  newMatrix = [latestRow, ...remainMatrix]
-                } else {
-                  newMatrix = [...remainMatrix, latestRow]
-                }
-
-                await renderMatrix(
-                  base,
-                  newMatrix,
-                  type === 'next' ? true : undefined,
-                  true
-                )
-
-                await focusControlWindow()
-
-                controll.setMatrix(newMatrix)
-              } finally {
-                controll.enableAllEvent()
-              }
-            })
-          }} />
+          <ArrowButtonGroup onClick={changeRow} />
         </>
       )}
     </div>
