@@ -5,7 +5,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/VecHK/poker"
+    "url": "https://github.com/VecHK/poker-search/"
   },
   "scripts": {
     "build": "rm -rf ./build/ && node utils/build.js",
