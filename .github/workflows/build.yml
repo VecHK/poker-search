@@ -10,7 +10,7 @@ on:
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   build:
-    if: contains(github.event.commits.*.message, '[build]') == false
+    if: contains(github.event.commits.*.message, '[build]') == true
 
     name: Build Poker and draft Release
     runs-on: ubuntu-latest
@@ -58,7 +58,7 @@ jobs:
         token: ${{ secrets.GITHUB_TOKEN }}
         tag_name: v${{ steps.package-version.outputs.current-version}}
         draft: true
-        name: release
+        name: v${{ steps.package-version.outputs.current-version}}
         body: |
           作者目前还没有提交到 Chrome Store 上，所以目前的发布还并不是 crx 文件，而是 zip 文件，安装方式有点差异：
 
