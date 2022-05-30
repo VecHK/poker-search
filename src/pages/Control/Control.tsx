@@ -59,6 +59,10 @@ function useChangeRowShortcutKey(props: {
   }, [props])
 }
 
+function validKeyword(keyword: string): boolean {
+  return Boolean(keyword.trim().length)
+}
+
 const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
   const windowIsFocus = useWindowFocus(true)
   const [isLoading, setLoading] = useState(false)
@@ -89,8 +93,10 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
   useEffect(function setSearchwordFromURL() {
     const searchWord = getQuery(cfg.CONTROL_QUERY_TEXT)
     if (searchWord !== null) {
-      submitKeyword(searchWord)
-      setKeyword(searchWord)
+      if (validKeyword(searchWord)) {
+        submitKeyword(searchWord)
+        setKeyword(searchWord)
+      }
     }
   }, [])
 
@@ -241,21 +247,23 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
             setKeyword={setKeyword}
             submitButtonActive={windowIsFocus}
             onSubmit={({ keyword: newSearchKeyword }) => {
-              controllProcessing(async () => {
-                console.log('onSubmit', newSearchKeyword)
-                if (controll === null) {
-                  submitKeyword(newSearchKeyword)
-                } else {
-                  try {
-                    setLoading(true)
-                    await nextTick()
-                    await Promise.all(closeAllSearchWindows(controll))
-                  } finally {
-                    setControll(null)
+              if (validKeyword(newSearchKeyword)) {
+                controllProcessing(async () => {
+                  console.log('onSubmit', newSearchKeyword)
+                  if (controll === null) {
                     submitKeyword(newSearchKeyword)
+                  } else {
+                    try {
+                      setLoading(true)
+                      await nextTick()
+                      await Promise.all(closeAllSearchWindows(controll))
+                    } finally {
+                      setControll(null)
+                      submitKeyword(newSearchKeyword)
+                    }
                   }
-                }
-              })
+                })
+              }
             }}
           />
           <ArrowButtonGroup onClick={changeRow} />
