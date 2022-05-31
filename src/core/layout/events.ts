@@ -42,10 +42,12 @@ function InitRefocusLayout() {
 export function trustedSearchWindowEvents({
   getRegIds,
   control_window_id,
+  platform,
   ...callbacks
 }: {
   getRegIds(): number[]
   control_window_id: number
+  platform: chrome.runtime.PlatformInfo
 
   onRemovedWindow(removed_window_id: number): void
   onSelectSearchWindow(
@@ -67,8 +69,32 @@ export function trustedSearchWindowEvents({
   const onRemoved = (removed_window_id: number) => {
     console.log('onRemoved')
     if (isSearchWindow(removed_window_id)) {
+      if (__ctx__ !== undefined) {
+        __ctx__.setRoute('REMOVED')
+      }
       channel(removed_window_id).trigger('REMOVED')
       callbacks.onRemovedWindow(removed_window_id)
+    }
+  }
+
+  function focusRoute(
+    focused_window_id: number,
+    route: SignalType | 'FOCUS' | void
+  ) {
+    if (route === 'REMOVED') {
+      // ignore
+    } else if (route === 'BOUNDS') {
+      // ignore
+    } else if (route === 'FOCUS') {
+      clearFocusChanged()
+      clearBoundsChanged()
+      return callbacks
+        .onSelectSearchWindow(focused_window_id, RefocusLayout)
+        .finally(() => {
+          shouldRefocusLayout(false)
+          setFocusChanged()
+          setBoundsChanged()
+        })
     }
   }
 
@@ -84,34 +110,90 @@ export function trustedSearchWindowEvents({
     timeout(cfg.SEARCH_FOCUS_INTERVAL).then(() => pass('FOCUS'))
 
     waiting.then(route => {
-      if (route === 'REMOVED') {
-        // ignore
-      } else if (route === 'BOUNDS') {
-        // ignore
-      } else if (route === 'FOCUS') {
-        clearFocusChanged()
-        clearBoundsChanged()
-        return callbacks
-          .onSelectSearchWindow(focused_window_id, RefocusLayout)
-          .finally(() => {
-            shouldRefocusLayout(false)
-            setFocusChanged()
-            setBoundsChanged()
-          })
-      }
+      focusRoute(focused_window_id, route)
     })
   }
 
-  const onFocusChanged = (focused_window_id: number) => {
-    console.log('onFocusChanged')
-    const is_not_control_window = focused_window_id !== control_window_id
-    const is_not_search_window = !isSearchWindow(focused_window_id)
-    const focused_is_not_chrome = focused_window_id === chrome.windows.WINDOW_ID_NONE
+  function isNone(window_id: number): boolean {
+    return window_id === chrome.windows.WINDOW_ID_NONE
+  }
+  function isNotLayout(window_id: number): boolean {
+    const is_not_control_window = window_id !== control_window_id
+    const is_not_search_window = !isSearchWindow(window_id)
 
-    if ((is_not_control_window && is_not_search_window) || focused_is_not_chrome) {
-      shouldRefocusLayout(true)
+    return (is_not_control_window && is_not_search_window) || isNone(window_id)
+  }
+  function isLayout(id: number) {
+    return !isNotLayout(id)
+  }
+
+  type WindowID = number
+  let __timeout__: undefined | NodeJS.Timeout
+  let __receive_history__: Array<WindowID> = []
+  function doubleFocusProtect(focused_window_id: number, callback: (id: number) => void) {
+    __receive_history__.push(focused_window_id)
+    if (__timeout__ !== undefined) {
+      clearTimeout(__timeout__)
+    }
+    __timeout__ = setTimeout(() => {
+      console.log('__receive_history__', __receive_history__)
+      const [first, second] = __receive_history__
+
+      if (__receive_history__.length === 1) {
+        __receive_history__ = []
+        callback(first)
+      } else {
+        __receive_history__ = []
+        if (isNone(first) && isLayout(second)) {
+          callback(second)
+        } else if (isLayout(first) && isNone(second)) {
+          callback(first)
+        } else {
+          // [ None, None ]
+          console.warn('[ None, None ]')
+          callback(chrome.windows.WINDOW_ID_NONE)
+        }
+      }
+    }, cfg.WINDOWS_DOUBLE_FOCUS_WAITING_DURATION)
+  }
+
+  function Context() {
+    const [getRoute, setRoute] = createMemo<SignalType | 'FOCUS'>('FOCUS')
+    return {
+      getRoute,
+      setRoute,
+    } as const
+  }
+
+  let __ctx__: undefined | ReturnType<typeof Context>
+
+  const onFocusChanged = (focused_window_id: number) => {
+    const isWindows = platform.os === 'win'
+    if (isWindows) {
+      if (__ctx__ === undefined) {
+        __ctx__ = Context()
+      }
+      const life = __ctx__
+      doubleFocusProtect(focused_window_id, true_id => {
+        if (isNotLayout(focused_window_id)) {
+          shouldRefocusLayout(true)
+        } else {
+          setTimeout(() => {
+            const route = life.getRoute()
+            console.log('true id', true_id, route)
+            __ctx__ = undefined
+  
+            focusRoute(true_id, route)
+          }, cfg.SEARCH_FOCUS_INTERVAL - cfg.WINDOWS_DOUBLE_FOCUS_WAITING_DURATION)
+        }
+      })
     } else {
-      focusEventDispatch(focused_window_id)
+      console.log('onFocusChanged(not windows)')
+      if (isNotLayout(focused_window_id)) {
+        shouldRefocusLayout(true)
+      } else {
+        focusEventDispatch(focused_window_id)
+      }
     }
   }
 
@@ -120,6 +202,10 @@ export function trustedSearchWindowEvents({
     const bounds_window_id = getWindowId(win)
     if (isSearchWindow(bounds_window_id)) {
       if (isFullscreenOrMaximized(win)) {
+        if (__ctx__ !== undefined) {
+          __ctx__.setRoute('BOUNDS')
+        }
+
         channel(bounds_window_id).trigger('BOUNDS')
         disableWindowsEvent()
         callbacks.onEnterFullscreenOrMaximized(win, RefocusLayout)
