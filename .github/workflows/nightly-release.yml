@@ -16,7 +16,9 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: print latest_commit
-        run: echo ${{ github.sha }}
+        run: |
+          echo ${{ github.sha }}
+          git rev-list --after="24 hours" ${{ github.sha }}
 
       - id: should_run
         continue-on-error: true
