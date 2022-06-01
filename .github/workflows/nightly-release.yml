@@ -1,11 +1,10 @@
 name: 'Nightly Release'
 
 on:
-  push:
-    branches:
-      - master
-#   schedule:
-#     - cron: '0 16 * * *' # run at UTC 16:00:00 (beijing time 00:00)
+  workflow_run:
+    branches: [dev]
+  schedule:
+    - cron: '0 16 * * *' # run at UTC 16:00:00 (beijing time 00:00)
 
 jobs:
   check_date:
@@ -16,22 +15,27 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: print latest_commit
-        run: |
-          echo ${{ github.sha }}
-          git rev-list --after="24 hours" ${{ github.sha }}
+        run: git rev-list --after="24 hours" ${{ github.sha }}
+
+      - name: preset should_run
+        run: echo "::set-output name=should_run::true"
 
       - id: should_run
         continue-on-error: true
         name: check latest commit is less than a day
-#         if: ${{ github.event_name == 'schedule' }}
-        run: |
-          echo "::set-output name=should_run::true"
-          test -z $(git rev-list --after="24 hours" ${{ github.sha }}) && echo "::set-output name=should_run::false"
+        if: ${{ github.event_name == 'schedule' }}
+        run: test -z $(git rev-list --after="24 hours" ${{ github.sha }}) && echo "::set-output name=should_run::false"
+
+      - name: print changes
+        continue-on-error: true
+        env:
+          CHANGES: ${{ toJSON(github.event.commits) }}
+        run: echo $CHANGES
 
   nightly-release:
     needs: check_date
 
-    if: ${{ needs.check_date.outputs.should_run != 'false' && github.ref_name == 'master' }}
+    if: ${{ needs.check_date.outputs.should_run != 'false' }}
 
     runs-on: ubuntu-latest
     name: Nightly Release
@@ -73,14 +77,21 @@ jobs:
           tag_name: latest
           name: Nightly
           body: |
-            此为开发版，并不是 crx 文件，而是 zip 文件，安装方式有点差异：
+            ### ⏬ 安装方式
+
+            并不是 crx 文件，而是 zip 文件，安装方式有点差异：
 
             1. 先打开 Chrome，在地址栏输入 chrome://extensions 后进入扩展程序管理页面
             2. 启用页面右上角的「开发者模式」
             3. 然后解压 poker.zip ，将解压出来的文件夹拖拽到这个页面上，即可完成安装
+            
+            ### ⚠️ 注意
+            
+            此为开发中的每日构建版本。开发中的版本虽然可以体验到最新开发的功能和特性，
+            **但程序可能会有严重的缺陷，以至于出现无法正常使用的情况**，请酌情考虑。
+            
+            建议使用稳定版作为日常使用，⬇️往下查看稳定版。
 
-            最新开发版可以体验到最新开发的功能，**但程序可能会有严重的缺陷，以至于无法正常使用的情况**，请酌情考虑。
-            建议使用稳定版作为日常使用，⬇️往下翻看。
           files: |
             LICENSE
             poker.zip
