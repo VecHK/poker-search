@@ -186,9 +186,8 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
     if (controlWindowId !== null) {
       if (submitedKeyword !== false) {
         if (controll === null) {
-          moveControlWindow(controlWindowId).then(() => {
-            refreshWindows(controlWindowId, submitedKeyword)
-          })
+          moveControlWindow(controlWindowId)
+          refreshWindows(controlWindowId, submitedKeyword)
         }
       }
     }
@@ -247,6 +246,7 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
             setKeyword={setKeyword}
             submitButtonActive={windowIsFocus}
             onSubmit={({ keyword: newSearchKeyword }) => {
+              console.log('onSubmit')
               if (validKeyword(newSearchKeyword)) {
                 controllProcessing(async () => {
                   console.log('onSubmit', newSearchKeyword)
@@ -258,8 +258,11 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
                       await nextTick()
                       await Promise.all(closeAllSearchWindows(controll))
                     } finally {
-                      setControll(null)
-                      submitKeyword(newSearchKeyword)
+                      setControll(() => {
+                        console.warn('setControll func')
+                        submitKeyword(newSearchKeyword)
+                        return null
+                      })
                     }
                   }
                 })

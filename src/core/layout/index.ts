@@ -132,7 +132,7 @@ export async function createSearchLayout({
 
   const exit = () => {
     disableAllEvent()
-    closeWindows([...getRegIds(), control_window_id])
+    return closeWindows([...getRegIds(), control_window_id])
   }
 
   return {
