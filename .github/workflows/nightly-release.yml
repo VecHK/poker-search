@@ -2,6 +2,7 @@ name: 'Nightly Release'
 
 on:
   workflow_run:
+    workflows: ["Nightly Release"]
     branches: [dev]
   schedule:
     - cron: '0 16 * * *' # run at UTC 16:00:00 (beijing time 00:00)
