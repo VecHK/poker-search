@@ -13,7 +13,8 @@
     "tabs",
     "contextMenus",
     "declarativeNetRequestWithHostAccess",
-    "system.display"
+    "system.display",
+    "alarms"
   ],
   "host_permissions": [
     "<all_urls>"

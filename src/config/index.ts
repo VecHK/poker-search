@@ -72,5 +72,5 @@ const cfg = Object.freeze({
       ]
     ]
   },
-})
+} as const)
 export default cfg

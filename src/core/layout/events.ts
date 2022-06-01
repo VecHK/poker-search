@@ -168,23 +168,32 @@ export function trustedSearchWindowEvents({
   let __ctx__: undefined | ReturnType<typeof Context>
 
   const onFocusChanged = (focused_window_id: number) => {
+    console.log('onFocusChanged')
     const isWindows = platform.os === 'win'
     if (isWindows) {
       if (__ctx__ === undefined) {
         __ctx__ = Context()
       }
       const life = __ctx__
+
+      // 之所以没有在 doubleFocusProtect 的回调函数中使用 timeout 是因为
+      // 在那个时期控制窗可能处于后台状况，这时候 setTimeout 的时间
+      // 是较为延迟的. 不过就算这样写也缓解不了太多。
+      // 解决这个问题需要将 reFocusLayout 的操作移动到 events 当中
+      // # ref: #105
+      const total_timeout = timeout(cfg.SEARCH_FOCUS_INTERVAL)
+
       doubleFocusProtect(focused_window_id, true_id => {
         if (isNotLayout(focused_window_id)) {
+          console.log('shouldRefocusLayout(true)')
           shouldRefocusLayout(true)
         } else {
-          setTimeout(() => {
-            const route = life.getRoute()
-            console.log('true id', true_id, route)
-            __ctx__ = undefined
-  
+          const route = life.getRoute()
+          console.log('true id', true_id, route)
+          __ctx__ = undefined
+          total_timeout.then(() => {
             focusRoute(true_id, route)
-          }, cfg.SEARCH_FOCUS_INTERVAL - cfg.WINDOWS_DOUBLE_FOCUS_WAITING_DURATION)
+          })
         }
       })
     } else {
