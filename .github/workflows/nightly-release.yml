@@ -1,9 +1,6 @@
 name: 'Nightly Release'
 
 on:
-  workflow_run:
-    workflows: ["Nightly Release"]
-    branches: [dev]
   schedule:
     - cron: '0 16 * * *' # run at UTC 16:00:00 (beijing time 00:00)
 
@@ -36,7 +33,7 @@ jobs:
   nightly-release:
     needs: check_date
 
-    if: ${{ needs.check_date.outputs.should_run != 'false' }}
+    if: ${{ needs.check_date.outputs.should_run != 'false' && github.ref_name == 'dev' }}
 
     runs-on: ubuntu-latest
     name: Nightly Release
