@@ -25,6 +25,7 @@ const cfg = Object.freeze({
   SEARCH_WINDOW_GAP_HORIZONTAL: 30,
 
   SEARCH_FOCUS_INTERVAL: 300,
+  WINDOWS_DOUBLE_FOCUS_WAITING_DURATION: 100,
 
   ENVIRONMENT_STORAGE_KEY: 'poker-env',
   PREFERENCES_STORAGE_KEY: 'poker-options',
@@ -71,5 +72,5 @@ const cfg = Object.freeze({
       ]
     ]
   },
-})
+} as const)
 export default cfg

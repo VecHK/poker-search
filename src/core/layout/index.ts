@@ -31,6 +31,8 @@ export async function createSearchLayout({
 }) {
   console.log('createSearchLayout')
 
+  const platformP = chrome.runtime.getPlatformInfo()
+
   const { search_matrix } = base
   const [getMatrix, setMatrix] = createMemo(
     await constructSearchWindowsFast(
@@ -57,6 +59,7 @@ export async function createSearchLayout({
     getRegIds,
     control_window_id,
     onRemovedWindow: () => exit(),
+    platform: await platformP,
 
     async onSelectSearchWindow(focused_window_id, [needRefocusingLayout]) {
       console.log('onSelectSearchWindow', focused_window_id)
@@ -129,7 +132,7 @@ export async function createSearchLayout({
 
   const exit = () => {
     disableAllEvent()
-    closeWindows([...getRegIds(), control_window_id])
+    return closeWindows([...getRegIds(), control_window_id])
   }
 
   return {
