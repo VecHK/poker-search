@@ -5,6 +5,8 @@
   --footer-shadow-size: 3px;
   --footer-shadow-color: rgba(0, 0, 0, .1);
 
+  --main-padding-horizontal: 30px;
+
   position: absolute;
   top: 0px;
   bottom: 0px;
@@ -24,7 +26,7 @@
   align-items: center;
   justify-content: center;
   width: 100%;
-  padding: 0 20px;
+  padding: 0 var(--main-padding-horizontal);
   box-sizing: border-box;
 }
 
