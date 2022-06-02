@@ -59,14 +59,24 @@ jobs:
           draft: true
           name: v${{ steps.package-version.outputs.current-version}}
           body: |
+            # 安装方法
+            
             作者目前还没有提交到 Chrome Store 上，所以目前的发布还并不是 crx 文件，而是 zip 文件，安装方式有点差异：
-
+            
             1. 先打开 Chrome，在地址栏输入 chrome://extensions 后进入扩展程序管理页面
-            2. 启用页面右上角的「开发者模式」
-            3. 然后解压 poker.zip ，将解压出来的文件夹拖拽到这个页面上，即可完成安装
+            1. 启用页面右上角的「开发者模式」
+            1. 然后解压 poker.zip ，将解压出来的文件夹拖拽到这个页面上，即可完成安装
+            
+            # 更新点
+            
+            - **修正** AA
+            - **优化** BB
+            - **新增** CC
+            
+            # 已知问题
+            
+            - AA
 
-            最新开发版可以体验到最新开发的功能，**但程序可能会有严重的缺陷，以至于无法正常使用的情况**，请酌情考虑。
-            建议使用稳定版作为日常使用，⬇️往下翻看。
           files: |
             LICENSE
             poker.zip
