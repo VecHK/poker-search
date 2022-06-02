@@ -1,21 +1,49 @@
 .App {
+  --footer-background: rgba(246, 246, 246);
+  --footer-height: 24px;
+  --footer-font-size: 12px;
+  --footer-shadow-size: 3px;
+  --footer-shadow-color: rgba(0, 0, 0, .1);
+
   position: absolute;
   top: 0px;
   bottom: 0px;
   left: 0px;
   right: 0px;
-  text-align: center;
   height: 100%;
-  padding: 10px;
-  background-color: #282c34;
-}
 
-.App-header {
-  height: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: space-between;
+}
+
+.App-main {
+  flex-grow: 2;
+  display: flex;
+  align-items: center;
   justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+  width: 100%;
+  padding: 0 20px;
+  box-sizing: border-box;
+}
+
+.App-footer {
+  font-size: var(--footer-font-size);
+  width: 100%;
+  height: var(--footer-height);
+  line-height: var(--footer-height);
+
+  text-align: center;
+  border-top: solid 1px hsl(240deg 2% 23% / 15%);
+
+  box-shadow:
+    inset 0 var(--footer-shadow-size) var(--footer-shadow-size) calc(-1 * var(--footer-shadow-size)) var(--footer-shadow-color),
+    inset 0 calc(-1 * var(--footer-shadow-size)) var(--footer-shadow-size) calc(-1 * var(--footer-shadow-size)) var(--footer-shadow-color)
+  ;
+  background-color: var(--footer-background);
+}
+a {
+  color: hsl(219deg 59% 46%);
+  text-decoration: none;
 }

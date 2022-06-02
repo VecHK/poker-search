@@ -5,6 +5,7 @@ import cfg from '../../config'
 
 import AddChromeEvent from '../../utils/chrome-event'
 import getQuery from '../../utils/get-query'
+import { validKeyword } from '../../utils/search'
 
 import { Base } from '../../core/base'
 import { Matrix } from '../../core/common'
@@ -12,6 +13,10 @@ import { createSearchLayout } from '../../core/layout'
 import { renderMatrix } from '../../core/layout/render'
 import { closeWindows, SearchWindow } from '../../core/layout/window'
 import { calcControlWindowPos } from '../../core/layout/control-window'
+import CreateSignal from '../../core/layout/signal'
+
+import useCurrentWindowId from '../../hooks/useCurrentWindowId'
+import useWindowFocus from '../../hooks/useWindowFocus'
 
 import Loading from '../../components/Loading'
 import ArrowButtonGroup from './components/ArrowGroup'
@@ -19,26 +24,10 @@ import ArrowButtonGroup from './components/ArrowGroup'
 import SearchForm from './components/SearchForm'
 
 import './Control.css'
-import CreateSignal from '../../core/layout/signal'
 
 type Control = Unpromise<ReturnType<typeof createSearchLayout>>
 
 const controllProcessing = Atomic()
-
-const useWindowFocus = (initFocusValue: boolean) => {
-  const [ focus, setFocus ] = useState(initFocusValue)
-  useEffect(() => {
-    const focusHandler = () => setFocus(true)
-    const blurHandler = () => setFocus(false)
-    window.addEventListener("focus", focusHandler)
-    window.addEventListener("blur", blurHandler)
-    return () => {
-      window.removeEventListener("blur", focusHandler)
-      window.removeEventListener("blur", blurHandler)
-    }
-  }, [])
-  return focus
-}
 
 function useChangeRowShortcutKey(props: {
   onPressUp: () => void
@@ -59,10 +48,6 @@ function useChangeRowShortcutKey(props: {
   }, [props])
 }
 
-function validKeyword(keyword: string): boolean {
-  return Boolean(keyword.trim().length)
-}
-
 const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
   const windowIsFocus = useWindowFocus(true)
   const [isLoading, setLoading] = useState(false)
@@ -70,25 +55,17 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
   const [keyword, setKeyword] = useState('')
   const [submitedKeyword, submitKeyword] = useState<string | false>(false)
 
-  const [controlWindowId, setControlWindowId] = useState<null | number>(null)
-
   const [controll, setControll] = useState<Control | null>(null)
   const [stop_creating_signal] = useState(CreateSignal<void>())
   const [creating_signal] = useState(CreateSignal<void>())
+
+  const controlWindowId = useCurrentWindowId()
 
   const focusControlWindow = useCallback(async () => {
     if (controlWindowId) {
       return chrome.windows.update(controlWindowId, { focused: true })
     }
   }, [controlWindowId])
-
-  useEffect(function setControllWindowId() {
-    chrome.windows.getCurrent().then(({ id }) => {
-      if (id !== undefined) {
-        setControlWindowId(id)
-      }
-    })
-  }, [])
 
   useEffect(function setSearchwordFromURL() {
     const searchWord = getQuery(cfg.CONTROL_QUERY_TEXT)
