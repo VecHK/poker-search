@@ -29,6 +29,12 @@ jobs:
         env:
           CHANGES: ${{ toJSON(github.event.commits) }}
         run: echo $CHANGES
+      
+      - name: print branch name
+        continue-on-error: true
+        run: |
+          echo ${{ github.ref_name }}
+          echo ${{ github.ref }}
 
   nightly-release:
     needs: check_date
