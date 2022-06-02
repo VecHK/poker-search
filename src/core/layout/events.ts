@@ -1,5 +1,7 @@
-import { createMemo, Lock, timeout } from 'vait'
+import { thunkify } from 'ramda'
+import { createMemo, Lock } from 'vait'
 import cfg from '../../config'
+import { alarmSetTimeout, alarmTimeout } from '../../utils/chrome-alarms'
 import { CreateChannel } from './signal'
 import { getWindowId } from './window'
 
@@ -107,7 +109,7 @@ export function trustedSearchWindowEvents({
     // 等待 bounds/removed 的信号，超时时间为 cfg.SEARCH_FOCUS_INTERVAL
     // 超时了，即可认为不是情况2、7 ，也就确保了调用顺序
     channel(focused_window_id).receive(detectingSignalExist)
-    timeout(cfg.SEARCH_FOCUS_INTERVAL).then(() => pass('FOCUS'))
+    alarmTimeout(cfg.SEARCH_FOCUS_INTERVAL).then(() => pass('FOCUS'))
 
     waiting.then(route => {
       focusRoute(focused_window_id, route)
@@ -128,33 +130,47 @@ export function trustedSearchWindowEvents({
   }
 
   type WindowID = number
-  let __timeout__: undefined | NodeJS.Timeout
+  let __clearTimeout__: undefined | (() => Promise<unknown>)
   let __receive_history__: Array<WindowID> = []
-  function doubleFocusProtect(focused_window_id: number, callback: (id: number) => void) {
-    __receive_history__.push(focused_window_id)
-    if (__timeout__ !== undefined) {
-      clearTimeout(__timeout__)
-    }
-    __timeout__ = setTimeout(() => {
-      console.log('__receive_history__', __receive_history__)
-      const [first, second] = __receive_history__
+  let __latestFn__ = (focused_window_id: number, callback: (id: number) => void) => {
+    const [first, second] = __receive_history__
 
-      if (__receive_history__.length === 1) {
-        __receive_history__ = []
+    if (__receive_history__.length === 1) {
+      __receive_history__ = []
+      callback(first)
+    } else {
+      __receive_history__ = []
+      if (isNone(first) && isLayout(second)) {
+        callback(second)
+      } else if (isLayout(first) && isNone(second)) {
         callback(first)
       } else {
-        __receive_history__ = []
-        if (isNone(first) && isLayout(second)) {
-          callback(second)
-        } else if (isLayout(first) && isNone(second)) {
-          callback(first)
-        } else {
-          // [ None, None ]
-          console.warn('[ None, None ]')
-          callback(chrome.windows.WINDOW_ID_NONE)
-        }
+        // [ None, None ]
+        console.warn('[ None, None ]')
+        callback(chrome.windows.WINDOW_ID_NONE)
       }
-    }, cfg.WINDOWS_DOUBLE_FOCUS_WAITING_DURATION)
+    }
+  }
+  let __latest__: (() => void) | undefined = undefined
+  function doubleFocusProtect(
+    focused_window_id: number,
+    callback: (id: number) => void
+  ) {
+    __receive_history__.push(focused_window_id)
+
+    if (__clearTimeout__ === undefined) {
+      __clearTimeout__ = alarmSetTimeout(
+        cfg.WINDOWS_DOUBLE_FOCUS_WAITING_DURATION,
+        () => {
+          console.log('__receive_history__', __receive_history__)
+          __clearTimeout__ = undefined
+          __latest__ && __latest__()
+        }
+      )
+    }
+
+    const latest = thunkify(__latestFn__)(focused_window_id)(callback)
+    __latest__ = latest
   }
 
   function Context() {
@@ -176,13 +192,8 @@ export function trustedSearchWindowEvents({
       }
       const life = __ctx__
 
-      // 之所以没有在 doubleFocusProtect 的回调函数中使用 timeout 是因为
-      // 在那个时期控制窗可能处于后台状况，这时候 setTimeout 的时间
-      // 是较为延迟的. 不过就算这样写也缓解不了太多。
-      // 解决这个问题需要将 reFocusLayout 的操作移动到 events 当中
-      // # ref: #105
-      const total_timeout = timeout(cfg.SEARCH_FOCUS_INTERVAL)
-
+      // 若程序处于背景的话，setTimeout 将会变慢许多
+      // 所以需要使用到 chrome.alarms ref: #105
       doubleFocusProtect(focused_window_id, true_id => {
         if (isNotLayout(focused_window_id)) {
           console.log('shouldRefocusLayout(true)')
@@ -191,7 +202,7 @@ export function trustedSearchWindowEvents({
           const route = life.getRoute()
           console.log('true id', true_id, route)
           __ctx__ = undefined
-          total_timeout.then(() => {
+          alarmSetTimeout(cfg.SEARCH_FOCUS_INTERVAL - cfg.WINDOWS_DOUBLE_FOCUS_WAITING_DURATION, () => {
             focusRoute(true_id, route)
           })
         }
