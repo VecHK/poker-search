@@ -1,20 +1,22 @@
 import { nth } from 'ramda'
 
-type SearchWindowState = 'NORMAL' | 'EMPTY' | 'PLAIN'
+export type WindowID = number
+
+export type SearchWindowState = 'NORMAL' | 'EMPTY' | 'PLAIN'
 export type SearchWindow = Readonly<{
   state: SearchWindowState
-  windowId: number
+  windowId: WindowID
 }>
 export type SearchWindowRow = Array<SearchWindow>
 export type SearchWindowMatrix = Array<SearchWindowRow>
 
-export const closeWindows = (ids: number[]) => {
+export const closeWindows = (ids: WindowID[]) => {
   return ids.map(windowId => {
     return chrome.windows.remove(windowId)
   })
 }
 
-export function getWindowId(win: chrome.windows.Window): number {
+export function getWindowId(win: chrome.windows.Window): WindowID {
   const { id: window_id } = win
 
   if (window_id === undefined) {
@@ -24,7 +26,7 @@ export function getWindowId(win: chrome.windows.Window): number {
   }
 }
 
-export async function getSearchWindowTabId(window_id: number): Promise<number> {
+export async function getSearchWindowTabId(window_id: WindowID): Promise<WindowID> {
   const tabs = await chrome.tabs.query({ windowId: window_id })
   const tab = nth(0, tabs)
   if (tab === undefined) {

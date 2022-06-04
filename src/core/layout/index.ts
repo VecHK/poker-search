@@ -58,7 +58,9 @@ export async function createSearchLayout({
   const { enableWindowsEvent, disableWindowsEvent } = trustedSearchWindowEvents({
     getRegIds,
     control_window_id,
-    onRemovedWindow: () => exit(),
+    onRemovedWindow: async () => {
+      await Promise.all(exit())
+    },
     platform: await platformP,
 
     async onSelectSearchWindow(focused_window_id, [needRefocusingLayout]) {
