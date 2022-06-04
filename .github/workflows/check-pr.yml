@@ -7,38 +7,38 @@ on:
       - dev
 
 jobs:
+  Init:
+    name: Init
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Copy Repo Files
+        uses: actions/checkout@v3
+
+      - name: Use Node.js
+        uses: actions/setup-node@v1
+        with:
+          node-version: '16'
+
+      - name: Install Modules
+        run: yarn
+
   ESlint:
+    needs: Init
+
     name: ESlint
     runs-on: ubuntu-latest
 
     steps:
-    - name: Copy Repo Files
-      uses: actions/checkout@v2
-
-    - name: Use Node.js
-      uses: actions/setup-node@v1
-      with:
-        node-version: '16'
-
-    - name: ESLint
-      run: |
-        yarn
-        yarn lint-strict
+      - name: ESLint
+        run: yarn lint-strict
 
   tsc:
+    needs: Init
+
     name: TSC
     runs-on: ubuntu-latest
 
     steps:
-    - name: Copy Repo Files
-      uses: actions/checkout@v2
-
-    - name: Use Node.js
-      uses: actions/setup-node@v1
-      with:
-        node-version: '16'
-
-    - name: yarn tsc --noEmit
-      run: |
-        yarn
-        yarn tsc --noEmit
+      - name: yarn tsc --noEmit
+        run: yarn tsc --noEmit
