@@ -17,7 +17,7 @@ jobs:
           ref: dev
 
       - name: print latest_commit
-        run: git rev-list --after="24 hours" ${{ github.sha }}
+        run: git rev-list --after="24 hours" HEAD~0
 
       - name: print changes
         continue-on-error: true
@@ -38,7 +38,7 @@ jobs:
         continue-on-error: true
         name: check latest commit is less than a day
         if: ${{ github.event_name == 'schedule' }}
-        run: test -z $(git rev-list --after="24 hours" ${{ github.sha }}) && echo "::set-output name=should_run::false"
+        run: test -z $(git rev-list --after="24 hours" HEAD~0) && echo "::set-output name=should_run::false"
 
   nightly-release:
     needs: check_date
