@@ -11,9 +11,25 @@ jobs:
     outputs:
       should_run: ${{ steps.should_run.outputs.should_run }}
     steps:
-      - uses: actions/checkout@v2
+      - name: Copy dev branch Files
+        uses: actions/checkout@v3
+        with:
+          ref: dev
+
       - name: print latest_commit
         run: git rev-list --after="24 hours" ${{ github.sha }}
+
+      - name: print changes
+        continue-on-error: true
+        env:
+          CHANGES: ${{ toJSON(github.event.commits) }}
+        run: echo $CHANGES
+
+      - name: print branch name
+        continue-on-error: true
+        run: |
+          echo ${{ github.ref_name }}
+          echo ${{ github.ref }}
 
       - name: preset should_run
         run: echo "::set-output name=should_run::true"
@@ -24,29 +40,19 @@ jobs:
         if: ${{ github.event_name == 'schedule' }}
         run: test -z $(git rev-list --after="24 hours" ${{ github.sha }}) && echo "::set-output name=should_run::false"
 
-      - name: print changes
-        continue-on-error: true
-        env:
-          CHANGES: ${{ toJSON(github.event.commits) }}
-        run: echo $CHANGES
-      
-      - name: print branch name
-        continue-on-error: true
-        run: |
-          echo ${{ github.ref_name }}
-          echo ${{ github.ref }}
-
   nightly-release:
     needs: check_date
 
-    if: ${{ needs.check_date.outputs.should_run != 'false' && github.ref_name == 'dev' }}
+    if: ${{ needs.check_date.outputs.should_run != 'false' }}
 
     runs-on: ubuntu-latest
     name: Nightly Release
 
     steps:
-      - name: Copy Repo Files
-        uses: actions/checkout@v2
+      - name: Copy dev branch Files
+        uses: actions/checkout@v3
+        with:
+          ref: dev
 
       - name: Use Node.js
         uses: actions/setup-node@v1
