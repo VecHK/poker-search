@@ -10,6 +10,7 @@ function isFullscreenOrMaximized(win: chrome.windows.Window) {
 }
 
 function InitRefocusLayout() {
+
   return createMemo(false)
 }
 
@@ -95,7 +96,7 @@ function DoubleFocusProtect(
  * removed/focus/bounds 事件调度
  * 作为 onRemovedWindow、onSelectSearchWindow、onEnterFullscreenOrMaximized
  * 的代理。目的是让这三个更专注处理需求而不是关注事件调度
- * 
+ *
  * 关于事件调用，会有这些场景（右边括号的为事件的调用顺序）：
  *   1) 失焦的情况点击标题栏 ( focus )
  *   2) 失焦的情况点击全屏/最大化 ( focus -> bounds )
@@ -106,11 +107,11 @@ function DoubleFocusProtect(
  *   7) 失去焦点的时候点击关闭按钮 ( focus -> removed )
  *   8) 没有失去焦点的时候点击关闭按钮 ( removed )
  *   9) 失焦的情况按住 Command 点击关闭按钮 ( removed )
- * 
+ *
  * 主要的麻烦点在于 2、5、7，他们是先执行 focus 后，才执行真正需要的事件
  * 我们需要保证调用顺序，该是选择窗口，还是最大化全屏，还是关闭，要做到
  * 这三个事件不会重复执行。
- * 
+ *
  * 对于 5，可以利用 isFullscreenOrMaximized 来过滤掉
  * 2 和 7 在下边利用信号触发机制（本质上事件传递、回调函数）来解决
  * 缺点是若 bounds 事件在 cfg.SEARCH_FOCUS_INTERVAL 毫秒后未触发的话
