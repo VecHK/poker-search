@@ -5,7 +5,7 @@ import { selectWindow, updateWindowById } from './window-update'
 import { closeWindows, getSearchWindowTabId, getWindowId, SearchWindow } from './window'
 import { renderCol, renderMatrix } from './render'
 import { selectCol } from '../common'
-import AddChromeEvent from '../../utils/chrome-event'
+import { ApplyChromeEvent } from '../../utils/chrome-event'
 import { Signal } from './signal'
 import { trustedSearchWindowEvents } from './events'
 
@@ -55,7 +55,7 @@ export async function createSearchLayout({
     }
   }
 
-  const { enableWindowsEvent, disableWindowsEvent } = trustedSearchWindowEvents({
+  const { applyAllEvent, cancelAllEvent } = trustedSearchWindowEvents({
     getRegIds,
     control_window_id,
     onRemovedWindow: async () => {
@@ -89,14 +89,14 @@ export async function createSearchLayout({
 
     async onEnterFullscreenOrMaximized(win, [, shouldRefocusLayout]) {
       console.log('onEnterFullscreenOrMaximized', win)
-      disableAllEvent()
+      cancelAllEvent()
 
       const window_id = getWindowId(win)
 
       const tab_id = await getSearchWindowTabId(window_id)
 
       const [__waiting_close__, emitWindowClosed] = Lock()
-      const cancelEvent = AddChromeEvent(chrome.windows.onRemoved, removed_id => {
+      const cancelEvent = ApplyChromeEvent(chrome.windows.onRemoved, removed_id => {
         if (removed_id === window_id) {
           cancelEvent()
           emitWindowClosed()
@@ -129,19 +129,16 @@ export async function createSearchLayout({
     },
   })
 
-  const disableAllEvent = () => disableWindowsEvent()
-  const enableAllEvent = () => enableWindowsEvent()
-
   const exit = () => {
-    disableAllEvent()
+    cancelAllEvent()
     return closeWindows([...getRegIds(), control_window_id])
   }
 
   return {
     getRegIds,
 
-    disableAllEvent,
-    enableAllEvent,
+    applyAllEvent,
+    cancelAllEvent,
 
     refreshLayout,
 

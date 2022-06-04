@@ -3,7 +3,7 @@ import { Atomic, nextTick } from 'vait'
 
 import cfg from '../../config'
 
-import AddChromeEvent from '../../utils/chrome-event'
+import { ApplyChromeEvent } from '../../utils/chrome-event'
 import getQuery from '../../utils/get-query'
 import { validKeyword } from '../../utils/search'
 
@@ -78,14 +78,14 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
   }, [])
 
   useEffect(function handleShortcutKey() {
-    return AddChromeEvent(
+    return ApplyChromeEvent(
       chrome.commands.onCommand,
       (command: string) => {
         if (command === 'focus-layout') {
           if ((controlWindowId !== null) && (controll !== null)) {
-            controll.disableAllEvent()
+            controll.cancelAllEvent()
             controll.refreshLayout([]).finally(() => {
-              controll.enableAllEvent()
+              controll.applyAllEvent()
             })
           } else if (controlWindowId !== null) {
             chrome.windows.update(controlWindowId, { focused: true })
@@ -96,7 +96,7 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
   }, [controlWindowId, controll])
 
   const closeAllSearchWindows = useCallback((con: Control) => {
-    con.disableAllEvent()
+    con.cancelAllEvent()
     return closeWindows(con.getRegIds())
   }, [])
 
@@ -153,8 +153,8 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
 
   useEffect(function controllEventsEffect() {
     if (controll !== null) {
-      controll.enableAllEvent()
-      return () => controll.disableAllEvent()
+      controll.applyAllEvent()
+      return () => controll.cancelAllEvent()
     }
   }, [controll])
 
@@ -177,7 +177,7 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
     }
     controllProcessing(async () => {
       try {
-        controll.disableAllEvent()
+        controll.cancelAllEvent()
 
         const remainMatrix = [...controll.getMatrix()]
         const latestRow = type === 'next' ? remainMatrix.pop() : remainMatrix.shift()
@@ -203,7 +203,7 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
 
         controll.setMatrix(newMatrix)
       } finally {
-        controll.enableAllEvent()
+        controll.applyAllEvent()
       }
     })
   }, [base, controll, focusControlWindow])

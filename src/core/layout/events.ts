@@ -3,6 +3,7 @@ import { Atomic, createMemo } from 'vait'
 import cfg from '../../config'
 import { getWindowId, WindowID } from './window'
 import { alarmSetTimeout, alarmTask } from '../../utils/chrome-alarms'
+import { ChromeEvent } from '../../utils/chrome-event'
 
 function isFullscreenOrMaximized(win: chrome.windows.Window) {
   return win.state === 'fullscreen' || win.state === 'maximized'
@@ -30,8 +31,11 @@ function Flag() {
 // 回避 Windows 的双次触发 focusChanged 事件
 // ref: #101
 function DoubleFocusProtect(
-  isLayout: (id: WindowID) => boolean,
-  isNone: (id: WindowID) => boolean,
+  { isLayout, isNone }: {
+    isLayout: (id: WindowID) => boolean,
+    isNone: (id: WindowID) => boolean,
+  },
+  callback: (true_id: WindowID) => void
 ) {
   type Callback = (id: WindowID) => void
 
@@ -61,9 +65,8 @@ function DoubleFocusProtect(
   }
 
   return (
-    function doubleFocusProtect(
-      focused_window_id: WindowID,
-      callback: Callback
+    function focusChangedHandler(
+      untrusted_focused_window_id: WindowID,
     ) {
       if (alarm_task === undefined) {
         alarm_task = alarmTask(
@@ -72,7 +75,7 @@ function DoubleFocusProtect(
         )
       }
 
-      appendReceived(focused_window_id)
+      appendReceived(untrusted_focused_window_id)
 
       const [insteadTask] = alarm_task
 
@@ -167,41 +170,38 @@ export function trustedSearchWindowEvents({
         })
       }
       else if ((flag === Flags.BOUNDS) && (win !== undefined)) {
-        disableWindowsEvent()
+        cancelAllEvent()
         return callbacks.onEnterFullscreenOrMaximized(win, RefocusLayout)
           .finally(() => {
-            enableWindowsEvent()
+            applyAllEvent()
             initFlag()
           })
       }
       else if (flag === Flags.FOCUS) {
-        clearFocusChanged()
-        clearBoundsChanged()
+        cancelFocusChanged()
+        cancelBoundsChanged()
         return callbacks
           .onSelectSearchWindow(window_id, RefocusLayout)
           .finally(() => {
             shouldRefocusLayout(false)
-            setFocusChanged()
-            setBoundsChanged()
+            applyFocusChanged()
+            applyBoundsChanged()
             initFlag()
           })
       }
     })
   }
 
-  const onRemoved = (removed_window_id: WindowID) => {
+  const removedHandler = (removed_window_id: WindowID) => {
     console.log('onRemoved')
     if (isSearchWindow(removed_window_id)) {
       route(Flags.REMOVED, removed_window_id)
     }
   }
 
-  const doubleFocusProtect = DoubleFocusProtect(isLayout, isNone)
-
-  const onFocusChanged = (untrusted_focused_window_id: WindowID) => {
-    console.log('onFocusChanged')
-
-    doubleFocusProtect(untrusted_focused_window_id, (true_id) => {
+  const focusChangedHandler = DoubleFocusProtect(
+    { isLayout, isNone },
+    (true_id) => {
       if (!isLayout(true_id)) {
         console.log('shouldRefocusLayout(true)')
         shouldRefocusLayout(true)
@@ -216,10 +216,10 @@ export function trustedSearchWindowEvents({
           }
         })
       }
-    })
-  }
+    }
+  )
 
-  const onBoundsChanged = (win: chrome.windows.Window) => {
+  const boundsChangedHandler = (win: chrome.windows.Window) => {
     console.log('onBoundsChanged')
     const bounds_window_id = getWindowId(win)
     if (isSearchWindow(bounds_window_id)) {
@@ -229,29 +229,26 @@ export function trustedSearchWindowEvents({
     }
   }
 
-  const setRemoved = () => chrome.windows.onRemoved.addListener(onRemoved)
-  const clearRemoved = () => chrome.windows.onRemoved.removeListener(onRemoved)
-  const setFocusChanged = () => chrome.windows.onFocusChanged.addListener(onFocusChanged)
-  const clearFocusChanged = () => chrome.windows.onFocusChanged.removeListener(onFocusChanged)
-  const setBoundsChanged = () => chrome.windows.onBoundsChanged.addListener(onBoundsChanged)
-  const clearBoundsChanged = () => chrome.windows.onBoundsChanged.removeListener(onBoundsChanged)
+  const [ applyRemoved, cancelRemoved ] = ChromeEvent(chrome.windows.onRemoved, removedHandler)
+  const [ applyFocusChanged, cancelFocusChanged ] = ChromeEvent(chrome.windows.onFocusChanged, focusChangedHandler)
+  const [ applyBoundsChanged, cancelBoundsChanged ] = ChromeEvent(chrome.windows.onBoundsChanged, boundsChangedHandler)
 
-  const enableWindowsEvent = () => {
-    console.log('enableWindowsEvent')
-    setRemoved()
-    setFocusChanged()
-    setBoundsChanged()
+  const applyAllEvent = () => {
+    console.log('applyWindowsEvent')
+    applyRemoved()
+    applyFocusChanged()
+    applyBoundsChanged()
   }
 
-  const disableWindowsEvent = () => {
-    console.log('disableWindowsEvent')
-    clearRemoved()
-    clearFocusChanged()
-    clearBoundsChanged()
+  const cancelAllEvent = () => {
+    console.log('cancelWindowsEvent')
+    cancelRemoved()
+    cancelFocusChanged()
+    cancelBoundsChanged()
   }
 
   return Object.freeze({
-    enableWindowsEvent,
-    disableWindowsEvent,
+    applyAllEvent,
+    cancelAllEvent,
   })
 }

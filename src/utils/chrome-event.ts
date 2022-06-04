@@ -1,10 +1,18 @@
-export default function AddChromeEvent<Fn extends Function>(
+export const ChromeEvent = <Fn extends Function>(
+  ev: chrome.events.Event<Fn>,
+  processFn: Fn
+) => [
+  () => ev.addListener(processFn),
+  () => ev.removeListener(processFn)
+] as const
+
+export function ApplyChromeEvent<Fn extends Function>(
   ev: chrome.events.Event<Fn>,
   processFn: Fn
 ) {
-  ev.addListener(processFn)
+  const [ applyEvent, cancelEvent ] = ChromeEvent(ev, processFn)
 
-  return function cancelEvent() {
-    ev.removeListener(processFn)
-  }
+  applyEvent()
+
+  return cancelEvent
 }
