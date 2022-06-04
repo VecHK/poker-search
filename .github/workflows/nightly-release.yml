@@ -1,11 +1,8 @@
 name: 'Nightly Release'
 
 on:
-  push:
-    branches:
-      - master
-  # schedule:
-  #   - cron: '0 16 * * *' # run at UTC 16:00:00 (beijing time 00:00)
+  schedule:
+    - cron: '0 16 * * *' # run at UTC 16:00:00 (beijing time 00:00)
 
 jobs:
   check_date:
@@ -40,7 +37,7 @@ jobs:
       - id: should_run
         continue-on-error: true
         name: check latest commit is less than a day
-        # if: ${{ github.event_name == 'schedule' }}
+        if: ${{ github.event_name == 'schedule' }}
         run: test -z $(git rev-list --after="24 hours" HEAD~0) && echo "::set-output name=should_run::false"
 
   nightly-release:
