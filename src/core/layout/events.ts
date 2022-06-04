@@ -1,18 +1,90 @@
-import { thunkify } from 'ramda'
-import { createMemo, Lock } from 'vait'
+import { Atomic, createMemo } from 'vait'
 import cfg from '../../config'
-import { alarmSetTimeout, alarmTimeout } from '../../utils/chrome-alarms'
-import { CreateChannel } from './signal'
-import { getWindowId } from './window'
-
-type SignalType = 'BOUNDS' | 'REMOVED'
+import { getWindowId, WindowID } from './window'
+import { alarmSetTimeout, alarmTask } from '../../utils/chrome-alarms'
 
 function isFullscreenOrMaximized(win: chrome.windows.Window) {
   return win.state === 'fullscreen' || win.state === 'maximized'
 }
 
-function InitRefocusLayout() {
+function initRefocusLayout() {
   return createMemo(false)
+}
+
+enum Flags {
+  REMOVED = 'REMOVED',
+  BOUNDS = 'BOUNDS',
+  FOCUS = 'FOCUS',
+}
+
+function Flag() {
+  const init_value: Flags = Flags.FOCUS
+
+  const [getFlag, setFlag] = createMemo<Flags>(Flags.FOCUS)
+  const initFlag = () => setFlag(init_value)
+
+  return [getFlag, setFlag, initFlag] as const
+}
+
+// 回避 Windows 的双次触发 focusChanged 事件
+// ref: #101
+function DoubleFocusProtect(
+  isLayout: (id: WindowID) => boolean,
+  isNone: (id: WindowID) => boolean,
+) {
+  type Callback = (id: WindowID) => void
+
+  const [getReceived, setReceived] = createMemo<Array<WindowID>>([])
+  const clearReceived = () => setReceived([])
+  const appendReceived = (win_id: WindowID) => setReceived([...getReceived(), win_id])
+
+  let alarm_task: ReturnType<typeof alarmTask> | undefined
+
+  function dispatch(received: Array<WindowID>, callback: Callback) {
+    const [first, second] = received
+    if (received.length === 1) {
+      callback(first)
+    } else {
+      if (isLayout(first) && isNone(second)) {
+        callback(first)
+      }
+      else if (isLayout(second) && isNone(first)) {
+        callback(second)
+      }
+      else {
+        // [ None, None ]
+        console.log('[ None, None ]')
+        callback(chrome.windows.WINDOW_ID_NONE)
+      }
+    }
+  }
+
+  return (
+    function doubleFocusProtect(
+      focused_window_id: WindowID,
+      callback: Callback
+    ) {
+      if (alarm_task === undefined) {
+        alarm_task = alarmTask(
+          cfg.WINDOWS_DOUBLE_FOCUS_WAITING_DURATION,
+          () => {}
+        )
+      }
+
+      appendReceived(focused_window_id)
+
+      const [insteadTask] = alarm_task
+
+      insteadTask(() => {
+        const received = getReceived()
+
+        alarm_task = undefined
+        clearReceived()
+
+        dispatch(received, callback)
+      })
+    }
+  )
 }
 
 /**
@@ -47,174 +119,110 @@ export function trustedSearchWindowEvents({
   platform,
   ...callbacks
 }: {
-  getRegIds(): number[]
-  control_window_id: number
+  getRegIds(): WindowID[]
+  control_window_id: WindowID
   platform: chrome.runtime.PlatformInfo
 
-  onRemovedWindow(removed_window_id: number): void
+  onRemovedWindow(removed_window_id: WindowID): Promise<void>
   onSelectSearchWindow(
-    focused_window_id: number,
-    RefocusLayout: ReturnType<typeof InitRefocusLayout>
+    focused_window_id: WindowID,
+    RefocusLayout: ReturnType<typeof initRefocusLayout>
   ): Promise<void>,
   onEnterFullscreenOrMaximized(
     win: chrome.windows.Window,
-    RefocusLayout: ReturnType<typeof InitRefocusLayout>
+    RefocusLayout: ReturnType<typeof initRefocusLayout>
   ): Promise<void>
 }) {
-  const isSearchWindow = (id: number) => getRegIds().indexOf(id) !== -1
+  const isSearchWindow = (id: WindowID) => getRegIds().indexOf(id) !== -1
 
-  const channel = CreateChannel<number, SignalType>()
-
-  const RefocusLayout = InitRefocusLayout()
-  const [, shouldRefocusLayout] = RefocusLayout
-
-  const onRemoved = (removed_window_id: number) => {
-    console.log('onRemoved')
-    if (isSearchWindow(removed_window_id)) {
-      if (__ctx__ !== undefined) {
-        __ctx__.setRoute('REMOVED')
-      }
-      channel(removed_window_id).trigger('REMOVED')
-      callbacks.onRemovedWindow(removed_window_id)
-    }
-  }
-
-  function focusRoute(
-    focused_window_id: number,
-    route: SignalType | 'FOCUS' | void
-  ) {
-    if (route === 'REMOVED') {
-      // ignore
-    } else if (route === 'BOUNDS') {
-      // ignore
-    } else if (route === 'FOCUS') {
-      clearFocusChanged()
-      clearBoundsChanged()
-      return callbacks
-        .onSelectSearchWindow(focused_window_id, RefocusLayout)
-        .finally(() => {
-          shouldRefocusLayout(false)
-          setFocusChanged()
-          setBoundsChanged()
-        })
-    }
-  }
-
-  function focusEventDispatch(focused_window_id: number) {
-    const [waiting, pass] = Lock<SignalType | 'FOCUS'>()
-    const detectingSignalExist = (sig: SignalType) => {
-      channel(focused_window_id).unReceive(detectingSignalExist)
-      pass(sig)
-    }
-    // 等待 bounds/removed 的信号，超时时间为 cfg.SEARCH_FOCUS_INTERVAL
-    // 超时了，即可认为不是情况2、7 ，也就确保了调用顺序
-    channel(focused_window_id).receive(detectingSignalExist)
-    alarmTimeout(cfg.SEARCH_FOCUS_INTERVAL).then(() => pass('FOCUS'))
-
-    waiting.then(route => {
-      focusRoute(focused_window_id, route)
-    })
-  }
-
-  function isNone(window_id: number): boolean {
+  function isNone(window_id: WindowID): boolean {
     return window_id === chrome.windows.WINDOW_ID_NONE
   }
-  function isNotLayout(window_id: number): boolean {
+  function isNotLayout(window_id: WindowID): boolean {
     const is_not_control_window = window_id !== control_window_id
     const is_not_search_window = !isSearchWindow(window_id)
 
     return (is_not_control_window && is_not_search_window) || isNone(window_id)
   }
-  function isLayout(id: number) {
+  function isLayout(id: WindowID) {
     return !isNotLayout(id)
   }
 
-  type WindowID = number
-  let __clearTimeout__: undefined | (() => Promise<unknown>)
-  let __receive_history__: Array<WindowID> = []
-  let __latestFn__ = (focused_window_id: number, callback: (id: number) => void) => {
-    const [first, second] = __receive_history__
+  const [getFlag, setFlag, initFlag] = Flag()
 
-    if (__receive_history__.length === 1) {
-      __receive_history__ = []
-      callback(first)
-    } else {
-      __receive_history__ = []
-      if (isNone(first) && isLayout(second)) {
-        callback(second)
-      } else if (isLayout(first) && isNone(second)) {
-        callback(first)
-      } else {
-        // [ None, None ]
-        console.warn('[ None, None ]')
-        callback(chrome.windows.WINDOW_ID_NONE)
+  const RefocusLayout = initRefocusLayout()
+  const [, shouldRefocusLayout] = RefocusLayout
+
+  const routeProcessing = Atomic()
+  type Route = {
+    (route: Flags.BOUNDS, id: WindowID, win: chrome.windows.Window): void
+    (route: Flags.REMOVED, id: WindowID): void
+    (route: Flags.FOCUS, id: WindowID): void
+  }
+  const route: Route = (
+    flag: Flags,
+    window_id: WindowID,
+    win?: chrome.windows.Window
+  ) => {
+    setFlag(flag)
+
+    routeProcessing(async () => {
+      if (flag === Flags.REMOVED) {
+        return callbacks.onRemovedWindow(window_id).finally(() => {
+          initFlag()
+        })
       }
-    }
-  }
-  let __latest__: (() => void) | undefined = undefined
-  function doubleFocusProtect(
-    focused_window_id: number,
-    callback: (id: number) => void
-  ) {
-    __receive_history__.push(focused_window_id)
-
-    if (__clearTimeout__ === undefined) {
-      __clearTimeout__ = alarmSetTimeout(
-        cfg.WINDOWS_DOUBLE_FOCUS_WAITING_DURATION,
-        () => {
-          console.log('__receive_history__', __receive_history__)
-          __clearTimeout__ = undefined
-          __latest__ && __latest__()
-        }
-      )
-    }
-
-    const latest = thunkify(__latestFn__)(focused_window_id)(callback)
-    __latest__ = latest
-  }
-
-  function Context() {
-    const [getRoute, setRoute] = createMemo<SignalType | 'FOCUS'>('FOCUS')
-    return {
-      getRoute,
-      setRoute,
-    } as const
-  }
-
-  let __ctx__: undefined | ReturnType<typeof Context>
-
-  const onFocusChanged = (focused_window_id: number) => {
-    console.log('onFocusChanged')
-    const isWindows = platform.os === 'win'
-    if (isWindows) {
-      if (__ctx__ === undefined) {
-        __ctx__ = Context()
-      }
-      const life = __ctx__
-
-      // 若程序处于背景的话，setTimeout 将会变慢许多
-      // 所以需要使用到 chrome.alarms ref: #105
-      doubleFocusProtect(focused_window_id, true_id => {
-        if (isNotLayout(focused_window_id)) {
-          console.log('shouldRefocusLayout(true)')
-          shouldRefocusLayout(true)
-        } else {
-          const route = life.getRoute()
-          console.log('true id', true_id, route)
-          __ctx__ = undefined
-          alarmSetTimeout(cfg.SEARCH_FOCUS_INTERVAL - cfg.WINDOWS_DOUBLE_FOCUS_WAITING_DURATION, () => {
-            focusRoute(true_id, route)
+      else if ((flag === Flags.BOUNDS) && (win !== undefined)) {
+        disableWindowsEvent()
+        return callbacks.onEnterFullscreenOrMaximized(win, RefocusLayout)
+          .finally(() => {
+            enableWindowsEvent()
+            initFlag()
           })
-        }
-      })
-    } else {
-      console.log('onFocusChanged(not windows)')
+      }
+      else if (flag === Flags.FOCUS) {
+        clearFocusChanged()
+        clearBoundsChanged()
+        return callbacks
+          .onSelectSearchWindow(window_id, RefocusLayout)
+          .finally(() => {
+            shouldRefocusLayout(false)
+            setFocusChanged()
+            setBoundsChanged()
+            initFlag()
+          })
+      }
+    })
+  }
+
+  const onRemoved = (removed_window_id: WindowID) => {
+    console.log('onRemoved')
+    if (isSearchWindow(removed_window_id)) {
+      route(Flags.REMOVED, removed_window_id)
+    }
+  }
+
+  const doubleFocusProtect = DoubleFocusProtect(isLayout, isNone)
+
+  const onFocusChanged = (focused_window_id: WindowID) => {
+    console.log('onFocusChanged')
+
+    doubleFocusProtect(focused_window_id, (true_id) => {
       if (isNotLayout(focused_window_id)) {
+        console.log('shouldRefocusLayout(true)')
         shouldRefocusLayout(true)
       } else {
-        focusEventDispatch(focused_window_id)
+        const flag = getFlag()
+
+        console.log('doubleFocusProtect callback', true_id, flag)
+
+        alarmSetTimeout(cfg.SEARCH_FOCUS_INTERVAL - cfg.WINDOWS_DOUBLE_FOCUS_WAITING_DURATION, () => {
+          if (flag === Flags.FOCUS) {
+            route(flag, true_id)
+          }
+        })
       }
-    }
+    })
   }
 
   const onBoundsChanged = (win: chrome.windows.Window) => {
@@ -222,16 +230,7 @@ export function trustedSearchWindowEvents({
     const bounds_window_id = getWindowId(win)
     if (isSearchWindow(bounds_window_id)) {
       if (isFullscreenOrMaximized(win)) {
-        if (__ctx__ !== undefined) {
-          __ctx__.setRoute('BOUNDS')
-        }
-
-        channel(bounds_window_id).trigger('BOUNDS')
-        disableWindowsEvent()
-        callbacks.onEnterFullscreenOrMaximized(win, RefocusLayout)
-          .finally(() => {
-            enableWindowsEvent()
-          })
+        route(Flags.BOUNDS, bounds_window_id, win)
       }
     }
   }
