@@ -1,3 +1,4 @@
+import { equals } from 'ramda'
 import { Atomic, createMemo } from 'vait'
 import cfg from '../../config'
 import { getWindowId, WindowID } from './window'
@@ -133,19 +134,12 @@ export function trustedSearchWindowEvents({
     RefocusLayout: ReturnType<typeof initRefocusLayout>
   ): Promise<void>
 }) {
+  const isNone = equals<WindowID>(chrome.windows.WINDOW_ID_NONE)
+  const isControlWindow = equals(control_window_id)
   const isSearchWindow = (id: WindowID) => getRegIds().indexOf(id) !== -1
 
-  function isNone(window_id: WindowID): boolean {
-    return window_id === chrome.windows.WINDOW_ID_NONE
-  }
-  function isNotLayout(window_id: WindowID): boolean {
-    const is_not_control_window = window_id !== control_window_id
-    const is_not_search_window = !isSearchWindow(window_id)
-
-    return (is_not_control_window && is_not_search_window) || isNone(window_id)
-  }
   function isLayout(id: WindowID) {
-    return !isNotLayout(id)
+    return (isControlWindow(id) || isSearchWindow(id)) && !isNone(id)
   }
 
   const [getFlag, setFlag, initFlag] = Flag()
@@ -204,11 +198,11 @@ export function trustedSearchWindowEvents({
 
   const doubleFocusProtect = DoubleFocusProtect(isLayout, isNone)
 
-  const onFocusChanged = (focused_window_id: WindowID) => {
+  const onFocusChanged = (untrusted_focused_window_id: WindowID) => {
     console.log('onFocusChanged')
 
-    doubleFocusProtect(focused_window_id, (true_id) => {
-      if (isNotLayout(focused_window_id)) {
+    doubleFocusProtect(untrusted_focused_window_id, (true_id) => {
+      if (!isLayout(true_id)) {
         console.log('shouldRefocusLayout(true)')
         shouldRefocusLayout(true)
       } else {
