@@ -20,8 +20,7 @@ import useWindowFocus from '../../hooks/useWindowFocus'
 
 import Loading from '../../components/Loading'
 import ArrowButtonGroup from './components/ArrowGroup'
-
-import SearchForm from './components/SearchForm'
+import SearchForm from '../../components/SearchForm'
 
 import './Control.css'
 
