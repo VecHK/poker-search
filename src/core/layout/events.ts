@@ -9,7 +9,7 @@ function isFullscreenOrMaximized(win: chrome.windows.Window) {
   return win.state === 'fullscreen' || win.state === 'maximized'
 }
 
-function initRefocusLayout() {
+function InitRefocusLayout() {
   return createMemo(false)
 }
 
@@ -130,11 +130,11 @@ export function trustedSearchWindowEvents({
   onRemovedWindow(removed_window_id: WindowID): Promise<void>
   onSelectSearchWindow(
     focused_window_id: WindowID,
-    RefocusLayout: ReturnType<typeof initRefocusLayout>
+    RefocusLayout: ReturnType<typeof InitRefocusLayout>
   ): Promise<void>,
   onEnterFullscreenOrMaximized(
     win: chrome.windows.Window,
-    RefocusLayout: ReturnType<typeof initRefocusLayout>
+    RefocusLayout: ReturnType<typeof InitRefocusLayout>
   ): Promise<void>
 }) {
   const isNone = equals<WindowID>(chrome.windows.WINDOW_ID_NONE)
@@ -147,7 +147,7 @@ export function trustedSearchWindowEvents({
 
   const [getFlag, setFlag, initFlag] = Flag()
 
-  const RefocusLayout = initRefocusLayout()
+  const RefocusLayout = InitRefocusLayout()
   const [, shouldRefocusLayout] = RefocusLayout
 
   const routeProcessing = Atomic()
