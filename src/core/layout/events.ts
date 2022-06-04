@@ -117,7 +117,7 @@ function DoubleFocusProtect(
  * 就无法成功获得预期的效果。现在的计算机响应都够快，所以这种缺点还算是
  * 能够接受的。
  */
-export function trustedSearchWindowEvents({
+export default function TrustedEvents({
   getRegIds,
   control_window_id,
   platform,
@@ -247,8 +247,5 @@ export function trustedSearchWindowEvents({
     cancelBoundsChanged()
   }
 
-  return Object.freeze({
-    applyAllEvent,
-    cancelAllEvent,
-  })
+  return [ applyAllEvent, cancelAllEvent ] as const
 }
