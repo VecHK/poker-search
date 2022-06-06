@@ -1,20 +1,7 @@
 import React from 'react'
 import { ChromeLink } from '../../../../components/ChromeLink'
-import Key from '../../../../components/Key'
+import ShortcutsKey from '../../../../components/Shortcut'
 import SettingItem from '../SettingItem'
-
-const CommonShortkey = () => (
-  <>
-    <Key ch="Ctrl" /> + <Key ch="Shift" /> + <Key ch="1" />
-  </>
-)
-
-const MacShortkey = () => (
-  <>
-    <Key ch="⌘" /> + <Key ch="⇧" /> + <Key ch="1" />
-  </>
-)
-
 
 export default function Help() {
   return (
@@ -22,7 +9,7 @@ export default function Help() {
       <section>
         <h1>快捷键</h1>
         <p>
-          可使用 <CommonShortkey />（ mac 的是 <MacShortkey /> ）直接启动 Poker。
+          可使用 <ShortcutsKey keys={['Ctrl', 'Shift', '1']} />（ mac 的是 <ShortcutsKey keys={['⌘', '⇧', '1']} /> ）直接启动 Poker。
         </p>
         <p>
           由于浏览器的限制，修改快捷键的键位需要去 <ChromeLink url="chrome://extensions/shortcuts/">Chrome 提供的快捷键设置页面</ChromeLink> 中调整。
