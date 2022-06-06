@@ -7,6 +7,10 @@
     "type": "git",
     "url": "https://github.com/VecHK/poker-search/"
   },
+  "bugs": {
+    "url": "https://github.com/VecHK/poker-search/issues"
+  },
+  "private": true,
   "scripts": {
     "build": "rm -rf ./build/ && node utils/build.js",
     "start": "rm -rf ./build/ && node utils/webserver.js",
