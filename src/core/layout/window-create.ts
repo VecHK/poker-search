@@ -166,7 +166,7 @@ export async function constructSearchWindowsFast(
         const [win, p] = CreateWindow(create.url, {
           ...create.window_data
         })
-  
+
         await p
         const windowId = win.getWindowId()
         ids.push(windowId)

@@ -68,7 +68,7 @@ export function CreateChannel<C extends ChannelID, Payload extends unknown>() {
       channels.delete(channel)
     })
   }
-  
+
   const findChannel = (find_channel: C): Signal<Payload> => {
     const signal = channels.get(find_channel)
     clearChannel()

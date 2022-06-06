@@ -157,7 +157,7 @@ export default function OptionsPage() {
                       />
                     </SettingItem> */}
 
-                    <SettingItem title="使用方法介绍">
+                    <SettingItem title="使用方法">
                       <p>
                         直接拖拽右边已经录入网站的方框，能进行发牌的顺序调换。<br />
                         点击 + 号能添加新的网站。
