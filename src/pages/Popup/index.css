@@ -17,7 +17,7 @@ body {
 
   --popup-width: 380px;
   --popup-height: 120px;
-  
+
   min-width: var(--popup-width);
   max-width: var(--popup-width);
   width: var(--popup-width);
