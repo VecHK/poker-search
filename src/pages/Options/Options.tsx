@@ -153,7 +153,14 @@ export default function OptionsPage() {
                   <SettingHeader version={pkg.version} />
                 </header>
                 <div className={s.OptionsCols}>
-                  <div className={s.OptionsCol} style={{ minWidth: '590px' }}>
+                  <div
+                    className={s.OptionsCol}
+                    style={{
+                      minWidth: '590px',
+                      maxWidth: '590px',
+                      width: '590px',
+                    }}
+                  >
                     <Help />
 
                     <SettingItem>
