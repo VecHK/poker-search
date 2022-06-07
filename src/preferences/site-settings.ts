@@ -35,3 +35,17 @@ export function addMobileIdentifier(url: string) {
 
   return `${u.origin}${u.pathname}${search}${u.hash}`
 }
+
+export function clearMobileIdentifier(url: string) {
+  const u = new URL(url)
+  const usp = new URLSearchParams(u.search)
+
+  usp.delete('MOBILE_PAGE_IDENTIFIER')
+
+  const url_params = usp.toString()
+  if (url_params.length) {
+    return `${u.origin}${u.pathname}?${url_params}${u.hash}`
+  } else {
+    return `${u.origin}${u.pathname}${u.hash}`
+  }
+}

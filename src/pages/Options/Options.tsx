@@ -17,6 +17,8 @@ import s from './Options.module.css'
 
 import Help from './Component/Help'
 import About from './Component/About'
+import SettingItem from './Component/SettingItem'
+import SettingSwitch from './Component/SettingSwitch'
 
 const [getAdjustTask, setAdjustTask] = createMemo<NodeJS.Timeout | null>(null)
 
@@ -153,6 +155,13 @@ export default function OptionsPage() {
                 <div className={s.OptionsCols}>
                   <div className={s.OptionsCol} style={{ minWidth: '590px' }}>
                     <Help />
+
+                    <SettingItem>
+                      <SettingSwitch
+                        title="使用最小化按钮作为「转为普通窗口」"
+                        description="macOS 中，点击搜索窗的全屏按钮会将搜索窗转为带 Tab 栏的普通窗口，但这样会显得有点奇怪。这个设置将会覆盖原本的最小化处理，变成点击最小化即转为普通窗口。"
+                      />
+                    </SettingItem>
 
                     <About />
                   </div>
