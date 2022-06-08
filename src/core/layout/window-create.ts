@@ -194,14 +194,16 @@ export async function constructSearchWindowsFast(
     }
   }
 
+  new_matrix = [...new_matrix].reverse()
+
+  const waitting_render = renderMatrix(base, new_matrix, true, false)
+  await waitting_render
+
+  // 要在 renderMatrix 之后才取消 stop_creating_signal 的监听
   stop_creating_signal.unReceive(stopCreatingHandler)
   handler_list.forEach((fn) => {
     chrome.windows.onRemoved.removeListener(fn)
   })
-
-  new_matrix = [...new_matrix].reverse()
-
-  await renderMatrix(base, new_matrix, true, false)
 
   return new_matrix
 }

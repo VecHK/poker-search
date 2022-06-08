@@ -133,6 +133,9 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
       keyword,
       stop_creating_signal,
       creating_signal,
+      async onRemovedWindow() {
+        window.close()
+      },
     }).then(newControll => {
       setControll(newControll)
     }).catch(err => {
