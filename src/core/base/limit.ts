@@ -1,5 +1,12 @@
-export type Limit = Unpromise<ReturnType<typeof getCurrentDisplayLimit>>
-export async function getCurrentDisplayLimit() {
+import cfg from "../../config"
+
+export type Limit = Readonly<
+  Record<
+    'minX' | 'minY' | 'maxX' | 'maxY' | 'width' | 'height',
+    number
+  >
+>
+export async function getCurrentDisplayLimit(): Promise<Limit> {
   const displayInfoList = await chrome.system.display.getInfo()
   const displayInfo = displayInfoList[0]
 
@@ -10,7 +17,7 @@ export async function getCurrentDisplayLimit() {
     height
   } = displayInfo.workArea
 
-  return Object.freeze({
+  const returnValue = Object.freeze({
     minX,
     minY,
     maxX: minX + width,
@@ -18,4 +25,19 @@ export async function getCurrentDisplayLimit() {
     width,
     height,
   })
+
+  if (process.env.DEBUG === 'ENABLE') {
+    return debugLimit(returnValue)
+  } else {
+    return returnValue
+  }
+}
+
+function debugLimit(limit: Limit): Limit {
+  const newLimit = {
+    ...limit,
+    width: limit.width - cfg.DEBUG_DEV_TOOLS_WIDTH,
+  }
+
+  return newLimit
 }

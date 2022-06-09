@@ -238,7 +238,6 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
                       await Promise.all(closeAllSearchWindows(controll))
                     } finally {
                       setControll(() => {
-                        console.warn('setControll func')
                         submitKeyword(newSearchKeyword)
                         return null
                       })

@@ -14,6 +14,7 @@
   "scripts": {
     "build": "rm -rf ./build/ && node utils/build.js",
     "start": "rm -rf ./build/ && node utils/webserver.js",
+    "start-debug": "rm -rf ./build/ && DEBUG=ENABLE node utils/webserver.js",
     "prettier": "prettier --write '**/*.{js,jsx,ts,tsx,json,css,scss,md}'",
     "lint": "yarn eslint . --ext .js,.jsx,.ts,.tsx",
     "lint-strict": "yarn lint --max-warnings 0"

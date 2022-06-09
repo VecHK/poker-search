@@ -1,6 +1,8 @@
 const { id: chrome_id } = chrome.runtime
 
 const cfg = Object.freeze({
+  DEBUG_DEV_TOOLS_WIDTH: 640,
+
   DEFAULT_TITLE_BAR_HEIGHT: 30,
 
   INSTALLED_WINDOW_WIDTH: 640,
