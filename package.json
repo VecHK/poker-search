@@ -14,7 +14,10 @@
   "scripts": {
     "build": "rm -rf ./build/ && node utils/build.js",
     "start": "rm -rf ./build/ && node utils/webserver.js",
-    "start-debug": "rm -rf ./build/ && DEBUG=ENABLE node utils/webserver.js",
+    "debug": "rm -rf ./build/ && cross-env DEBUG=ENABLE node utils/webserver.js",
+    "windows-build": "del build /Q && node utils/build.js",
+    "windows-start": "del build /Q && node utils/webserver.js",
+    "windows-debug": "del build /Q && cross-env DEBUG=ENABLE node utils/webserver.js",
     "prettier": "prettier --write '**/*.{js,jsx,ts,tsx,json,css,scss,md}'",
     "lint": "yarn eslint . --ext .js,.jsx,.ts,.tsx",
     "lint-strict": "yarn lint --max-warnings 0"
@@ -46,6 +49,7 @@
     "babel-preset-react-app": "^10.0.1",
     "clean-webpack-plugin": "^4.0.0",
     "copy-webpack-plugin": "^7.0.0",
+    "cross-env": "^7.0.3",
     "css-loader": "^6.6.0",
     "eslint": "^8.8.0",
     "eslint-config-react-app": "^7.0.0",
