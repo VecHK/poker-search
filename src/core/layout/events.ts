@@ -5,6 +5,72 @@ import { getWindowId, WindowID } from './window'
 import { alarmSetTimeout, alarmTask } from '../../utils/chrome-alarms'
 import { ChromeEvent } from '../../utils/chrome-event'
 import CreateSignal, { Signal } from './signal'
+import { FocusChanged, MessageEvent } from '../../message'
+
+function InitContextMenu({
+  isSearchWindow,
+  onClickedContextMenuInSearchWindow
+}: {
+  isSearchWindow: (id: WindowID) => boolean,
+  onClickedContextMenuInSearchWindow: (window_id: WindowID) => void
+}) {
+  const [ applyEvent, cancelEvent ] = ChromeEvent(
+    chrome.contextMenus.onClicked,
+    (info, tab) => {
+      console.log('contextMenu clicked', info, tab)
+
+      if (tab) {
+        if (isSearchWindow(tab.windowId)) {
+          onClickedContextMenuInSearchWindow(tab.windowId)
+        }
+      }
+    }
+  )
+
+  const [isCreated, setCreated] = createMemo(false)
+
+  return [
+    function appendContenxtMenu() {
+      if (isCreated() !== true) {
+        chrome.contextMenus.create({
+          enabled: true,
+          id: cfg.SEARCH_WINDOW_MENU_REVERT,
+          contexts: ['all'],
+          title: '打开新窗口',
+        })
+        setCreated(true)
+        applyEvent()
+      }
+    },
+
+    function removeContextMenu() {
+      if (isCreated() === true) {
+        chrome.contextMenus.remove(cfg.SEARCH_WINDOW_MENU_REVERT)
+        cancelEvent()
+        setCreated(false)
+      }
+    }
+  ] as const
+}
+
+function InitPokerFocusEvent({
+  isLayout
+}: {
+  isLayout: (id: WindowID) => boolean
+}) {
+  return MessageEvent((msg, sender) => {
+    console.warn('message event', msg, sender)
+
+    if (msg.type === 'focus-changed') {
+      const window_id = sender.tab?.windowId
+      if (window_id !== undefined) {
+        if (isLayout(window_id)) {
+          console.log('search window focus changed', msg.payload)
+        }
+      }
+    }
+  })
+}
 
 function isFullscreenOrMaximized(win: chrome.windows.Window) {
   return win.state === 'fullscreen' || win.state === 'maximized'
@@ -14,7 +80,7 @@ function InitRefocusLayout() {
   return createMemo(false)
 }
 
-type Route = 'REMOVED' | 'BOUNDS' | 'FOCUS'
+type Route = 'REMOVED' | 'BOUNDS' | 'FOCUS' | 'REVERT'
 
 // 回避 Windows 的双次触发 focusChanged 事件
 // ref: #101
@@ -135,7 +201,11 @@ export default function TrustedEvents({
   onSelectSearchWindow(
     focused_window_id: WindowID,
     RefocusLayout: ReturnType<typeof InitRefocusLayout>
-  ): Promise<void>,
+    ): Promise<void>,
+  onClickedRevert(
+    window_id: WindowID,
+    RefocusLayout: ReturnType<typeof InitRefocusLayout>
+  ): Promise<void>
   onEnterFullscreenOrMaximized(
     win: chrome.windows.Window,
     RefocusLayout: ReturnType<typeof InitRefocusLayout>
@@ -149,6 +219,20 @@ export default function TrustedEvents({
     return (isControlWindow(id) || isSearchWindow(id)) && !isNone(id)
   }
 
+  const [appendMenu, removeMenu] = InitContextMenu({
+    isSearchWindow,
+    onClickedContextMenuInSearchWindow(id) {
+      callEvent('REVERT', id)
+    }
+  })
+
+  const [
+    applyPokerFocusEvent,
+    cancelPokerFocusEvent,
+  ] = InitPokerFocusEvent({
+    isLayout
+  })
+
   const signal = CreateSignal<Route>()
 
   const RefocusLayout = InitRefocusLayout()
@@ -157,6 +241,7 @@ export default function TrustedEvents({
   const routeProcessing = Atomic()
   type CallEvent = {
     (route: 'BOUNDS', id: WindowID, win: chrome.windows.Window): void
+    (route: 'REVERT', id: WindowID): void
     (route: 'REMOVED', id: WindowID): void
     (route: 'FOCUS', id: WindowID): void
   }
@@ -168,7 +253,16 @@ export default function TrustedEvents({
     signal.trigger(route)
 
     routeProcessing(async () => {
-      if (route === 'REMOVED') {
+      if (route === 'REVERT') {
+        cancelAllEvent()
+        return (
+          callbacks.onClickedRevert(window_id, RefocusLayout)
+            .finally(() => {
+              applyAllEvent()
+            })
+        )
+      }
+      else if (route === 'REMOVED') {
         return (
           callbacks.onRemovedWindow(window_id)
         )
@@ -239,6 +333,8 @@ export default function TrustedEvents({
 
   const applyAllEvent = () => {
     console.log('applyWindowsEvent')
+    appendMenu()
+    applyPokerFocusEvent()
     applyRemoved()
     applyFocusChanged()
     applyBoundsChanged()
@@ -246,6 +342,8 @@ export default function TrustedEvents({
 
   const cancelAllEvent = () => {
     console.log('cancelWindowsEvent')
+    removeMenu()
+    cancelPokerFocusEvent()
     cancelRemoved()
     cancelFocusChanged()
     cancelBoundsChanged()

@@ -7,8 +7,6 @@ declare module '*.css' {
   export default classes
 }
 
-type Unpromise<T extends Promise<any>> = T extends Promise<infer U> ? U : never;
-
 declare module 'whatwg-mimetype' {
   class MIMETypeParameters {}
 
@@ -26,3 +24,5 @@ declare module 'whatwg-mimetype' {
   }
   export default MIMEType
 }
+
+type Unpromise<T extends Promise<any>> = T extends Promise<infer U> ? U : never;
