@@ -13,7 +13,7 @@ import { createSearchLayout } from '../../core/layout'
 import { renderMatrix } from '../../core/layout/render'
 import { closeWindows, SearchWindow } from '../../core/layout/window'
 import { calcControlWindowPos } from '../../core/layout/control-window'
-import CreateSignal from '../../core/layout/signal'
+import CreateSignal from '../../utils/signal'
 
 import useCurrentWindowId from '../../hooks/useCurrentWindowId'
 import useWindowFocus from '../../hooks/useWindowFocus'

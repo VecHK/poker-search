@@ -4,7 +4,7 @@ import { SearchMatrix } from '../base/search-matrix'
 import { calcRealPos } from './pos'
 import { isCurrentRow } from './matrix'
 import { renderMatrix } from './render'
-import { Signal } from './signal'
+import { Signal } from '../../utils/signal'
 
 type PlainUnit = null
 type Unit = PlainUnit | {
