@@ -48,8 +48,11 @@ export default function CreateSignal<A>(): Signal<A> {
 }
 
 type ChannelID = string | number
-
-export function CreateChannel<C extends ChannelID, Payload extends unknown>() {
+type Channel<C extends ChannelID, Payload> = (findChannel: C) => Signal<Payload>
+export function CreateChannel<
+  C extends ChannelID,
+  Payload extends unknown
+>(): Channel<C, Payload> {
   const channels = new Map<C, Signal<Payload>>()
 
   function collectEmptyChannel() {
@@ -69,16 +72,16 @@ export function CreateChannel<C extends ChannelID, Payload extends unknown>() {
     })
   }
 
-  const findChannel = (find_channel: C): Signal<Payload> => {
-    const signal = channels.get(find_channel)
-    clearChannel()
-    if (signal === undefined) {
-      channels.set(find_channel, CreateSignal<Payload>())
-      return findChannel(find_channel)
-    } else {
-      return signal
+  return (
+    function findChannel(find_channel: C): Signal<Payload> {
+      const signal = channels.get(find_channel)
+      clearChannel()
+      if (signal === undefined) {
+        channels.set(find_channel, CreateSignal<Payload>())
+        return findChannel(find_channel)
+      } else {
+        return signal
+      }
     }
-  }
-
-  return findChannel
+  )
 }
