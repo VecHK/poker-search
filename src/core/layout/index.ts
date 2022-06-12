@@ -1,4 +1,4 @@
-import { createMemo } from 'vait'
+import { createMemo, Lock } from 'vait'
 import { Base } from '../base'
 import { constructSearchWindowsFast } from './window-create'
 import { selectWindow } from './window-update'
@@ -9,6 +9,7 @@ import { ApplyChromeEvent } from '../../utils/chrome-event'
 import { Signal } from './signal'
 import TrustedEvents from './events'
 import { clearMobileIdentifier } from '../../preferences/site-settings'
+import { alarmSetTimeout } from '../../utils/chrome-alarms'
 
 export type LayoutInfo = {
   width: number
@@ -131,69 +132,69 @@ export async function createSearchLayout({
 
     async onEnterFullscreenOrMaximized(win, [, shouldRefocusLayout]) {
       console.log('onEnterFullscreenOrMaximized', win)
-      // cancelAllEvent()
+      cancelAllEvent()
 
-      // const window_id = getWindowId(win)
+      const window_id = getWindowId(win)
 
-      // const url_P = getSearchWindowTabURL(window_id)
+      const url_P = getSearchWindowTabURL(window_id)
 
-      // const [__waiting_bounds_changed__, emitWindowBoundsChanged] = Lock()
-      // const cancelEvent = ApplyChromeEvent(chrome.windows.onBoundsChanged, (win) => {
-      //   const bounds_window_id = getWindowId(win)
-      //   if (bounds_window_id === window_id) {
-      //     cancelEvent()
+      const [__waiting_bounds_changed__, emitWindowBoundsChanged] = Lock()
+      const cancelEvent = ApplyChromeEvent(chrome.windows.onBoundsChanged, (win) => {
+        const bounds_window_id = getWindowId(win)
+        if (bounds_window_id === window_id) {
+          cancelEvent()
 
-      //     const clearTimer = alarmSetTimeout(1000, () => {
-      //       clearTimer()
-      //       const r_id = getRevertContainerId()
-      //       if (r_id !== undefined) {
-      //         chrome.windows.update(r_id, { focused: true })
-      //           .finally(emitWindowBoundsChanged)
-      //       } else {
-      //         throw Error('r_id is undefined')
-      //       }
-      //     })
-      //   }
-      // })
+          const clearTimer = alarmSetTimeout(1000, () => {
+            clearTimer()
+            const r_id = getRevertContainerId()
+            if (r_id !== undefined) {
+              chrome.windows.update(r_id, { focused: true })
+                .finally(emitWindowBoundsChanged)
+            } else {
+              throw Error('r_id is undefined')
+            }
+          })
+        }
+      })
 
-      // const { getRevertContainerId, setRevertContainerId } = base
-      // const revert_container_id = getRevertContainerId()
-      // if (revert_container_id !== undefined) {
-      //   await Promise.all([
-      //     chrome.windows.update(window_id, {
-      //       state: 'normal'
-      //     }),
-      //     chrome.tabs.create({
-      //       url: clearMobileIdentifier(await url_P),
-      //       windowId: revert_container_id
-      //     }),
-      //     chrome.windows.update(revert_container_id, { focused: true })
-      //   ])
-      // } else {
-      //   const new_window = await chrome.windows.create({
-      //     url: clearMobileIdentifier(await url_P),
-      //     state: 'normal',
-      //     focused: true,
-      //   })
+      const { getRevertContainerId, setRevertContainerId } = base
+      const revert_container_id = getRevertContainerId()
+      if (revert_container_id !== undefined) {
+        await Promise.all([
+          chrome.windows.update(window_id, {
+            state: 'normal'
+          }),
+          chrome.tabs.create({
+            url: clearMobileIdentifier(await url_P),
+            windowId: revert_container_id
+          }),
+          chrome.windows.update(revert_container_id, { focused: true })
+        ])
+      } else {
+        const new_window = await chrome.windows.create({
+          url: clearMobileIdentifier(await url_P),
+          state: 'normal',
+          focused: true,
+        })
 
-      //   await chrome.windows.update(window_id, {
-      //     state: 'normal',
-      //     focused: false,
-      //   })
+        await chrome.windows.update(window_id, {
+          state: 'normal',
+          focused: false,
+        })
 
-      //   const new_window_id = getWindowId(new_window)
-      //   setRevertContainerId(new_window_id)
-      //   const cancelEvent = ApplyChromeEvent(chrome.windows.onRemoved, closed_id => {
-      //     if (closed_id === new_window_id) {
-      //       cancelEvent()
-      //       setRevertContainerId(undefined)
-      //     }
-      //   })
-      // }
+        const new_window_id = getWindowId(new_window)
+        setRevertContainerId(new_window_id)
+        const cancelEvent = ApplyChromeEvent(chrome.windows.onRemoved, closed_id => {
+          if (closed_id === new_window_id) {
+            cancelEvent()
+            setRevertContainerId(undefined)
+          }
+        })
+      }
 
-      // await __waiting_bounds_changed__
+      await __waiting_bounds_changed__
 
-      // shouldRefocusLayout(true)
+      shouldRefocusLayout(true)
     },
   })
 

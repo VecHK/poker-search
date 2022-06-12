@@ -5,7 +5,6 @@ import { getWindowId, WindowID } from './window'
 import { alarmSetTimeout, alarmTask } from '../../utils/chrome-alarms'
 import { ChromeEvent } from '../../utils/chrome-event'
 import CreateSignal, { Signal } from './signal'
-import { FocusChanged, MessageEvent } from '../../message'
 
 function InitContextMenu({
   isSearchWindow,
@@ -53,25 +52,6 @@ function InitContextMenu({
   ] as const
 }
 
-function InitPokerFocusEvent({
-  isLayout
-}: {
-  isLayout: (id: WindowID) => boolean
-}) {
-  return MessageEvent((msg, sender) => {
-    console.warn('message event', msg, sender)
-
-    if (msg.type === 'focus-changed') {
-      const window_id = sender.tab?.windowId
-      if (window_id !== undefined) {
-        if (isLayout(window_id)) {
-          console.log('search window focus changed', msg.payload)
-        }
-      }
-    }
-  })
-}
-
 function isFullscreenOrMaximized(win: chrome.windows.Window) {
   return win.state === 'fullscreen' || win.state === 'maximized'
 }
@@ -83,7 +63,7 @@ function InitRefocusLayout() {
 type Route = 'REMOVED' | 'BOUNDS' | 'FOCUS' | 'REVERT'
 
 // 回避 Windows 的双次触发 focusChanged 事件
-// ref: #101
+// refs: #101 #109 #115
 function DoubleFocusProtect(
   { isLayout, isNone, signal }: {
     isLayout: (id: WindowID) => boolean,
@@ -215,6 +195,9 @@ export default function TrustedEvents({
   const isControlWindow = equals(control_window_id)
   const isSearchWindow = (id: WindowID) => getRegIds().indexOf(id) !== -1
 
+  const isWindowsOS = () => platform.os === 'win'
+  const isMacOS = () => platform.os === 'mac'
+
   function isLayout(id: WindowID) {
     return (isControlWindow(id) || isSearchWindow(id)) && !isNone(id)
   }
@@ -224,13 +207,6 @@ export default function TrustedEvents({
     onClickedContextMenuInSearchWindow(id) {
       callEvent('REVERT', id)
     }
-  })
-
-  const [
-    applyPokerFocusEvent,
-    cancelPokerFocusEvent,
-  ] = InitPokerFocusEvent({
-    isLayout
   })
 
   const signal = CreateSignal<Route>()
@@ -303,10 +279,14 @@ export default function TrustedEvents({
     (true_id) => {
       if (!isLayout(true_id)) {
         console.log('shouldRefocusLayout(true)')
-        shouldRefocusLayout(true)
+        if (!isWindowsOS()) {
+          // 因为 Windows 存在不会触发 focusChanged 事件的问题 #109
+          // 需要另一套方法来处理 #115
+          // 故不需要调用 shouldRefocusLayout
+          shouldRefocusLayout(true)
+        }
       } else {
         console.log('doubleFocusProtect callback', true_id)
-
         alarmSetTimeout(
           cfg.SEARCH_FOCUS_INTERVAL - cfg.WINDOWS_DOUBLE_FOCUS_WAITING_DURATION,
           () => {
@@ -333,8 +313,11 @@ export default function TrustedEvents({
 
   const applyAllEvent = () => {
     console.log('applyWindowsEvent')
-    appendMenu()
-    applyPokerFocusEvent()
+    if (isMacOS()) {
+      // macOS 才需要右键菜单还原窗口的功能 #86
+      appendMenu()
+    }
+
     applyRemoved()
     applyFocusChanged()
     applyBoundsChanged()
@@ -342,8 +325,11 @@ export default function TrustedEvents({
 
   const cancelAllEvent = () => {
     console.log('cancelWindowsEvent')
-    removeMenu()
-    cancelPokerFocusEvent()
+    if (isMacOS()) {
+      // macOS 才需要右键菜单还原窗口的功能 #86
+      removeMenu()
+    }
+
     cancelRemoved()
     cancelFocusChanged()
     cancelBoundsChanged()
