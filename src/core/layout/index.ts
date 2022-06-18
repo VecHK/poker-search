@@ -2,7 +2,7 @@ import { createMemo, Lock } from 'vait'
 import { Base } from '../base'
 import { constructSearchWindowsFast } from './window-create'
 import { selectWindow } from './window-update'
-import { closeWindows, getSearchWindowTabURL, getWindowId, SearchWindow } from './window'
+import { getSearchWindowTabURL, getWindowId, SearchWindow } from './window'
 import { renderCol, renderMatrix } from './render'
 import { selectCol } from '../common'
 import { ApplyChromeEvent } from '../../utils/chrome-event'
@@ -25,6 +25,7 @@ export async function createSearchLayout({
   creating_signal,
   stop_creating_signal,
   onRemovedWindow,
+  onRefocusLayoutClose,
 }: {
   control_window_id: number,
   base: Base
@@ -32,6 +33,7 @@ export async function createSearchLayout({
   creating_signal: Signal<void>
   stop_creating_signal: Signal<void>
   onRemovedWindow: () => Promise<void>
+  onRefocusLayoutClose: () => Promise<void>
 }) {
   console.log('createSearchLayout')
 
@@ -46,8 +48,6 @@ export async function createSearchLayout({
     }
   }
 
-  const platformP = chrome.runtime.getPlatformInfo()
-
   const { search_matrix } = base
   const [getMatrix, setMatrix] = createMemo(
     await constructSearchWindowsFast(
@@ -59,11 +59,25 @@ export async function createSearchLayout({
     )
   )
 
-  const [ applyAllEvent, cancelAllEvent ] = TrustedEvents({
+  const {
+    applyAllEvent,
+    cancelAllEvent,
+    refocus_window_id,
+  } = await TrustedEvents({
     getRegIds,
     control_window_id,
+
+    limit: base.limit,
+    platform: base.platform,
+
     onRemovedWindow,
-    platform: await platformP,
+
+    onRefocusLayoutClose,
+
+    async onRefocusLayout() {
+      await refreshLayout([])
+      await chrome.windows.update(control_window_id, { focused: true })
+    },
 
     async onSelectSearchWindow(focused_window_id, [needRefocusingLayout]) {
       console.log('onSelectSearchWindow', focused_window_id)
@@ -198,11 +212,6 @@ export async function createSearchLayout({
     },
   })
 
-  const exit = () => {
-    cancelAllEvent()
-    return closeWindows([...getRegIds(), control_window_id])
-  }
-
   return {
     getRegIds,
 
@@ -211,7 +220,7 @@ export async function createSearchLayout({
 
     refreshLayout,
 
-    exit,
+    refocus_window_id,
 
     getMatrix,
     setMatrix,

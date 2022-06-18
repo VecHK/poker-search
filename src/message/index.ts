@@ -1,27 +1,31 @@
 import { ChromeEvent } from '../utils/chrome-event'
 
-type RuntimeMessage<T extends string, P extends unknown> = {
+type Types = 'FocusChanged' | 'Refocus' | 'RefocusLayoutClose'
+
+type RuntimeMessage<T extends Types, P extends unknown> = {
   type: T,
   payload: P
 }
 
-export type FocusChanged = RuntimeMessage<'focus-changed', boolean>
-
-type Messages =
-FocusChanged
+export type Messages = {
+  FocusChanged: RuntimeMessage<'FocusChanged', boolean>
+  Refocus: RuntimeMessage<'Refocus', null>
+  RefocusWindowClose: RuntimeMessage<'RefocusLayoutClose', null>
+}
 
 export function sendMessage<
-  M extends Messages
->(msg: M) {
+  T extends keyof Messages,
+>(type: T, payload: Messages[T]['payload']) {
   return chrome.runtime.sendMessage(
     chrome.runtime.id,
-    msg
+    { type, payload }
   )
 }
 
-export function MessageEvent<M extends Messages>(
+export function MessageEvent<T extends keyof Messages>(
+  type: T,
   onReceiveMessage: (
-    msg: M,
+    msg: Messages[T],
     sender: chrome.runtime.MessageSender,
     sendRes: (response?: any) => void
   ) => void
@@ -29,7 +33,9 @@ export function MessageEvent<M extends Messages>(
   const [ applyReceive, cancelReceive ] = ChromeEvent(
     chrome.runtime.onMessage,
     (msg, sender, sendRes) => {
-      if (onReceiveMessage !== undefined) {
+      console.log('receive message', msg)
+
+      if (type === msg.type) {
         onReceiveMessage(msg, sender, sendRes)
       }
     }

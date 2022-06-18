@@ -1,4 +1,4 @@
-import { equals } from 'ramda'
+import { compose, equals, not } from 'ramda'
 import { Atomic, createMemo } from 'vait'
 import cfg from '../../../config'
 import { getWindowId, WindowID } from './../window'
@@ -6,13 +6,11 @@ import { alarmSetTimeout, alarmTask } from '../../../utils/chrome-alarms'
 import { ChromeEvent } from '../../../utils/chrome-event'
 import CreateSignal, { Signal } from '../../../utils/signal'
 import InitContextMenu from './revert-contentmenu'
+import { InitRefocusEvent, InitRefocusLayout } from './refocus'
+import { Limit } from '../../base/limit'
 
 function isFullscreenOrMaximized(win: chrome.windows.Window) {
   return win.state === 'fullscreen' || win.state === 'maximized'
-}
-
-function InitRefocusLayout() {
-  return createMemo(false)
 }
 
 type Route = 'REMOVED' | 'BOUNDS' | 'FOCUS' | 'REVERT'
@@ -122,14 +120,16 @@ function DoubleFocusProtect(
  * 就无法成功获得预期的效果。现在的计算机响应都够快，所以这种缺点还算是
  * 能够接受的。
  */
-export default function TrustedEvents({
+export default async function TrustedEvents({
   getRegIds,
   control_window_id,
+  limit,
   platform,
   ...callbacks
 }: {
   getRegIds(): WindowID[]
   control_window_id: WindowID
+  limit: Limit,
   platform: chrome.runtime.PlatformInfo
 
   onRemovedWindow(removed_window_id: WindowID): Promise<void>
@@ -145,6 +145,9 @@ export default function TrustedEvents({
     win: chrome.windows.Window,
     RefocusLayout: ReturnType<typeof InitRefocusLayout>
   ): Promise<void>
+
+  onRefocusLayout(): Promise<void>
+  onRefocusLayoutClose(): Promise<void>
 }) {
   const isNone = equals<WindowID>(chrome.windows.WINDOW_ID_NONE)
   const isControlWindow = equals(control_window_id)
@@ -164,10 +167,31 @@ export default function TrustedEvents({
     }
   })
 
-  const signal = CreateSignal<Route>()
+  const {
+    apply: applyRefocusEvent,
+    cancel: cancelRefocusEvent,
+    refocus_window_id,
+  } = await InitRefocusEvent(
+    isWindowsOS,
+    limit,
+    {
+      close() {
+        console.log('refocus layout close')
+        cancelAllEvent()
+        callbacks.onRefocusLayoutClose().finally(applyAllEvent)
+      },
+      refocus() {
+        console.log('refocus Event')
+        cancelAllEvent()
+        callbacks.onRefocusLayout().finally(applyAllEvent)
+      }
+    }
+  )
 
-  const RefocusLayout = InitRefocusLayout()
+  const RefocusLayout = InitRefocusLayout( compose(not, isWindowsOS) )
   const [, shouldRefocusLayout] = RefocusLayout
+
+  const signal = CreateSignal<Route>()
 
   const routeProcessing = Atomic()
   type CallEvent = {
@@ -267,11 +291,14 @@ export default function TrustedEvents({
   const [ applyBoundsChanged, cancelBoundsChanged ] = ChromeEvent(chrome.windows.onBoundsChanged, boundsChangedHandler)
 
   const applyAllEvent = () => {
-    console.log('applyWindowsEvent')
+    console.log('applyAllEvent')
     if (isMacOS()) {
       // macOS 才需要右键菜单还原窗口的功能 #86
       appendMenu()
     }
+
+    // Windows 系统需要还原窗口 #115
+    applyRefocusEvent()
 
     applyRemoved()
     applyFocusChanged()
@@ -279,16 +306,19 @@ export default function TrustedEvents({
   }
 
   const cancelAllEvent = () => {
-    console.log('cancelWindowsEvent')
+    console.log('cancelAllEvent')
     if (isMacOS()) {
       // macOS 才需要右键菜单还原窗口的功能 #86
       removeMenu()
     }
+
+    // Windows 系统需要还原窗口 #115
+    cancelRefocusEvent()
 
     cancelRemoved()
     cancelFocusChanged()
     cancelBoundsChanged()
   }
 
-  return [ applyAllEvent, cancelAllEvent ] as const
+  return { applyAllEvent, cancelAllEvent, refocus_window_id } as const
 }

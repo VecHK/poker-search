@@ -45,6 +45,7 @@ var options = {
     devtools: path.join(__dirname, 'src', 'pages', 'Devtools', 'index.ts'),
     panel: path.join(__dirname, 'src', 'pages', 'Panel', 'index.ts'),
     control: path.join(__dirname, 'src', 'pages', 'Control', 'index.ts'),
+    refocusLayout: path.join(__dirname, 'src', 'pages', 'RefocusLayout', 'index.ts'),
   },
   chromeExtensionBoilerplate: {
     notHotReload: ['background', 'contentScript', 'devtools'],
@@ -217,6 +218,12 @@ var options = {
       template: path.join(__dirname, 'src', 'pages', 'Control', 'index.html'),
       filename: 'control.html',
       chunks: ['control'],
+      cache: false,
+    }),
+    new HtmlWebpackPlugin({
+      template: path.join(__dirname, 'src', 'pages', 'RefocusLayout', 'index.html'),
+      filename: 'refocusLayout.html',
+      chunks: ['refocusLayout'],
       cache: false,
     }),
   ],

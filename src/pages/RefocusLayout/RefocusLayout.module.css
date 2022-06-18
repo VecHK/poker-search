@@ -1,0 +1,40 @@
+.App {
+  --layout-background: rgba(246, 246, 246);
+  --layout-font-size: 12px;
+  --layout-shadow-size: 3px;
+  --layout-shadow-color: rgba(0, 0, 0, .1);
+
+  --main-padding-horizontal: 0px;
+}
+
+.AppMain {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: var(--layout-font-size);
+  width: 100vw;
+  height: 100vh;
+
+  text-align: center;
+  border-top: solid 1px hsl(240deg 2% 23% / 15%);
+
+  box-shadow:
+    inset 0 var(--layout-shadow-size) var(--layout-shadow-size) calc(-1 * var(--layout-shadow-size)) var(--layout-shadow-color),
+    inset 0 calc(-1 * var(--layout-shadow-size)) var(--layout-shadow-size) calc(-1 * var(--layout-shadow-size)) var(--layout-shadow-color)
+  ;
+  background-color: var(--layout-background);
+}
+
+.Button:active {
+  color: hsl(0deg 89% 46%);
+  text-decoration: none;
+}
+
+.Button {
+  background-color: transparent;
+  border: 0;
+  color: hsl(219deg 59% 46%);
+  text-decoration: underline;
+  cursor: pointer;
+}
