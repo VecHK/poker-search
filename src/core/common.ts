@@ -19,10 +19,10 @@ export function mapMatrix<NU extends unknown, U extends unknown>(
   matrix: Matrix<U>,
   fn: (unit: U, line: number, index: number) => NU
 ): Matrix<NU> {
-  const newMatrix = []
+  let newMatrix = []
   for (let l = 0; l < matrix.length; ++l) {
     const line = matrix[l]
-    const newLine: Array<NU> = []
+    let newLine: Array<NU> = []
     newMatrix.push(newLine)
     for (let i = 0; i < line.length; ++i) {
       const newUnit = fn(line[i], l, i)

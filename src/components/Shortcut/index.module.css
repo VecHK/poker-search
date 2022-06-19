@@ -1,0 +1,20 @@
+.Key {
+  display: inline-block;
+  vertical-align: middle;
+  font-family: arial, sans-serif;
+  color: #656565;
+  border-radius: 2px;
+  box-shadow:
+    0 0 0px 1px #bbb,
+    0 3px 2px -2px rgb(0 0 0 / 40%)
+  ;
+  font-size: 0.75em;
+  line-height: 2em;
+  height: 2em;
+  background-color: white;
+  padding: 0 0.5em;
+  box-sizing: border-box;
+  min-width: 2em;
+  text-align: center;
+  font-weight: bold;
+}

@@ -4,7 +4,7 @@ import { SearchMatrix } from '../base/search-matrix'
 import { calcRealPos } from './pos'
 import { isCurrentRow } from './matrix'
 import { renderMatrix } from './render'
-import { Signal } from './signal'
+import { Signal } from '../../utils/signal'
 
 type PlainUnit = null
 type Unit = PlainUnit | {
@@ -166,7 +166,7 @@ export async function constructSearchWindowsFast(
         const [win, p] = CreateWindow(create.url, {
           ...create.window_data
         })
-  
+
         await p
         const windowId = win.getWindowId()
         ids.push(windowId)
@@ -194,14 +194,16 @@ export async function constructSearchWindowsFast(
     }
   }
 
+  new_matrix = [...new_matrix].reverse()
+
+  const waitting_render = renderMatrix(base, new_matrix, true, false)
+  await waitting_render
+
+  // 要在 renderMatrix 之后才取消 stop_creating_signal 的监听
   stop_creating_signal.unReceive(stopCreatingHandler)
   handler_list.forEach((fn) => {
     chrome.windows.onRemoved.removeListener(fn)
   })
-
-  new_matrix = [...new_matrix].reverse()
-
-  await renderMatrix(base, new_matrix, true, false)
 
   return new_matrix
 }

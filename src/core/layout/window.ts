@@ -26,14 +26,30 @@ export function getWindowId(win: chrome.windows.Window): WindowID {
   }
 }
 
-export async function getSearchWindowTabId(window_id: WindowID): Promise<WindowID> {
+export async function getSearchWindowTab(window_id: WindowID): Promise<chrome.tabs.Tab> {
   const tabs = await chrome.tabs.query({ windowId: window_id })
   const tab = nth(0, tabs)
   if (tab === undefined) {
     throw Error(`tab of SearchWindow(${window_id}) is not found`)
-  } else if (tab.id === undefined) {
-    throw Error(`tab.id is not found`)
+  } else {
+    return tab
+  }
+}
+
+export async function getSearchWindowTabId(window_id: WindowID): Promise<WindowID> {
+  const tab = await getSearchWindowTab(window_id)
+  if (tab.id === undefined) {
+    throw Error(`tab.id is undefined`)
   } else {
     return tab.id
+  }
+}
+
+export async function getSearchWindowTabURL(window_id: WindowID): Promise<string> {
+  const { url } = await getSearchWindowTab(window_id)
+  if (url === undefined) {
+    throw Error(`tab.url is undefined`)
+  } else {
+    return url
   }
 }

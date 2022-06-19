@@ -4,6 +4,7 @@ code {
 }
 html, body {
   margin: 0;
+  overflow: hidden;
 }
 
 body {
@@ -14,15 +15,4 @@ body {
 -moz-osx-font-smoothing: grayscale;
 
   position: relative;
-
-  --popup-width: 380px;
-  --popup-height: 120px;
-
-  min-width: var(--popup-width);
-  max-width: var(--popup-width);
-  width: var(--popup-width);
-
-  min-height: var(--popup-height);
-  max-height: var(--popup-height);
-  height: var(--popup-height);
 }

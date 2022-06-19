@@ -1,47 +1,35 @@
-import { equals } from 'ramda'
+import { compose, equals, not } from 'ramda'
 import { Atomic, createMemo } from 'vait'
-import cfg from '../../config'
-import { getWindowId, WindowID } from './window'
-import { alarmSetTimeout, alarmTask } from '../../utils/chrome-alarms'
-import { ChromeEvent } from '../../utils/chrome-event'
+import cfg from '../../../config'
+import { getWindowId, WindowID } from './../window'
+import { alarmSetTimeout, alarmTask } from '../../../utils/chrome-alarms'
+import { ChromeEvent } from '../../../utils/chrome-event'
+import CreateSignal, { Signal } from '../../../utils/signal'
+import InitContextMenu from './revert-contentmenu'
+import { InitRefocusEvent, InitRefocusLayout } from './refocus'
+import { Limit } from '../../base/limit'
 
 function isFullscreenOrMaximized(win: chrome.windows.Window) {
   return win.state === 'fullscreen' || win.state === 'maximized'
 }
 
-function InitRefocusLayout() {
-  return createMemo(false)
-}
-
-enum Flags {
-  REMOVED = 'REMOVED',
-  BOUNDS = 'BOUNDS',
-  FOCUS = 'FOCUS',
-}
-
-function Flag() {
-  const init_value: Flags = Flags.FOCUS
-
-  const [getFlag, setFlag] = createMemo<Flags>(Flags.FOCUS)
-  const initFlag = () => setFlag(init_value)
-
-  return [getFlag, setFlag, initFlag] as const
-}
+type Route = 'REMOVED' | 'BOUNDS' | 'FOCUS' | 'REVERT'
 
 // 回避 Windows 的双次触发 focusChanged 事件
-// ref: #101
+// refs: #101 #109 #115
 function DoubleFocusProtect(
-  { isLayout, isNone }: {
+  { isLayout, isNone, signal }: {
     isLayout: (id: WindowID) => boolean,
     isNone: (id: WindowID) => boolean,
+    signal: Signal<Route>
   },
   callback: (true_id: WindowID) => void
 ) {
   type Callback = (id: WindowID) => void
 
-  const [getReceived, setReceived] = createMemo<Array<WindowID>>([])
-  const clearReceived = () => setReceived([])
-  const appendReceived = (win_id: WindowID) => setReceived([...getReceived(), win_id])
+  const [getReceivedId, setReceivedId] = createMemo<Array<WindowID>>([])
+  const clearReceivedId = () => setReceivedId([])
+  const appendReceivedId = (win_id: WindowID) => setReceivedId([...getReceivedId(), win_id])
 
   let alarm_task: ReturnType<typeof alarmTask> | undefined
 
@@ -75,17 +63,32 @@ function DoubleFocusProtect(
         )
       }
 
-      appendReceived(untrusted_focused_window_id)
+      let stop = false
+      const handler = (route: Route) => {
+        signal.unReceive(handler)
+        if (route !== 'FOCUS') {
+          stop = true
+        }
+      }
+      if (signal.isEmpty()) {
+        signal.receive(handler)
+      }
+
+      appendReceivedId(untrusted_focused_window_id)
 
       const [insteadTask] = alarm_task
 
       insteadTask(() => {
-        const received = getReceived()
+        signal.unReceive(handler)
 
-        alarm_task = undefined
-        clearReceived()
+        if (stop !== true) {
+          const received = getReceivedId()
 
-        dispatch(received, callback)
+          alarm_task = undefined
+          clearReceivedId()
+
+          dispatch(received, callback)
+        }
       })
     }
   )
@@ -95,7 +98,7 @@ function DoubleFocusProtect(
  * removed/focus/bounds 事件调度
  * 作为 onRemovedWindow、onSelectSearchWindow、onEnterFullscreenOrMaximized
  * 的代理。目的是让这三个更专注处理需求而不是关注事件调度
- * 
+ *
  * 关于事件调用，会有这些场景（右边括号的为事件的调用顺序）：
  *   1) 失焦的情况点击标题栏 ( focus )
  *   2) 失焦的情况点击全屏/最大化 ( focus -> bounds )
@@ -106,88 +109,139 @@ function DoubleFocusProtect(
  *   7) 失去焦点的时候点击关闭按钮 ( focus -> removed )
  *   8) 没有失去焦点的时候点击关闭按钮 ( removed )
  *   9) 失焦的情况按住 Command 点击关闭按钮 ( removed )
- * 
+ *
  * 主要的麻烦点在于 2、5、7，他们是先执行 focus 后，才执行真正需要的事件
  * 我们需要保证调用顺序，该是选择窗口，还是最大化全屏，还是关闭，要做到
  * 这三个事件不会重复执行。
- * 
+ *
  * 对于 5，可以利用 isFullscreenOrMaximized 来过滤掉
  * 2 和 7 在下边利用信号触发机制（本质上事件传递、回调函数）来解决
  * 缺点是若 bounds 事件在 cfg.SEARCH_FOCUS_INTERVAL 毫秒后未触发的话
  * 就无法成功获得预期的效果。现在的计算机响应都够快，所以这种缺点还算是
  * 能够接受的。
  */
-export default function TrustedEvents({
+export default async function TrustedEvents({
   getRegIds,
   control_window_id,
+  limit,
   platform,
   ...callbacks
 }: {
   getRegIds(): WindowID[]
   control_window_id: WindowID
+  limit: Limit,
   platform: chrome.runtime.PlatformInfo
 
   onRemovedWindow(removed_window_id: WindowID): Promise<void>
   onSelectSearchWindow(
     focused_window_id: WindowID,
     RefocusLayout: ReturnType<typeof InitRefocusLayout>
-  ): Promise<void>,
+    ): Promise<void>,
+  onClickedRevert(
+    window_id: WindowID,
+    RefocusLayout: ReturnType<typeof InitRefocusLayout>
+  ): Promise<void>
   onEnterFullscreenOrMaximized(
     win: chrome.windows.Window,
     RefocusLayout: ReturnType<typeof InitRefocusLayout>
   ): Promise<void>
+
+  onRefocusLayout(): Promise<void>
+  onRefocusLayoutClose(): Promise<void>
 }) {
   const isNone = equals<WindowID>(chrome.windows.WINDOW_ID_NONE)
   const isControlWindow = equals(control_window_id)
   const isSearchWindow = (id: WindowID) => getRegIds().indexOf(id) !== -1
 
+  const isWindowsOS = () => platform.os === 'win'
+  const isMacOS = () => platform.os === 'mac'
+
   function isLayout(id: WindowID) {
     return (isControlWindow(id) || isSearchWindow(id)) && !isNone(id)
   }
 
-  const [getFlag, setFlag, initFlag] = Flag()
+  const [appendMenu, removeMenu] = InitContextMenu({
+    isSearchWindow,
+    onClickedContextMenuInSearchWindow(id) {
+      callEvent('REVERT', id)
+    }
+  })
 
-  const RefocusLayout = InitRefocusLayout()
+  const {
+    apply: applyRefocusEvent,
+    cancel: cancelRefocusEvent,
+    refocus_window_id,
+  } = await InitRefocusEvent(
+    isWindowsOS,
+    limit,
+    {
+      close() {
+        console.log('refocus layout close')
+        cancelAllEvent()
+        callbacks.onRefocusLayoutClose().finally(applyAllEvent)
+      },
+      refocus() {
+        console.log('refocus Event')
+        cancelAllEvent()
+        callbacks.onRefocusLayout().finally(applyAllEvent)
+      }
+    }
+  )
+
+  const RefocusLayout = InitRefocusLayout( compose(not, isWindowsOS) )
   const [, shouldRefocusLayout] = RefocusLayout
 
+  const signal = CreateSignal<Route>()
+
   const routeProcessing = Atomic()
-  type Route = {
-    (route: Flags.BOUNDS, id: WindowID, win: chrome.windows.Window): void
-    (route: Flags.REMOVED, id: WindowID): void
-    (route: Flags.FOCUS, id: WindowID): void
+  type CallEvent = {
+    (route: 'BOUNDS', id: WindowID, win: chrome.windows.Window): void
+    (route: 'REVERT', id: WindowID): void
+    (route: 'REMOVED', id: WindowID): void
+    (route: 'FOCUS', id: WindowID): void
   }
-  const route: Route = (
-    flag: Flags,
+  const callEvent: CallEvent = (
+    route: Route,
     window_id: WindowID,
     win?: chrome.windows.Window
   ) => {
-    setFlag(flag)
+    signal.trigger(route)
 
     routeProcessing(async () => {
-      if (flag === Flags.REMOVED) {
-        return callbacks.onRemovedWindow(window_id).finally(() => {
-          initFlag()
-        })
-      }
-      else if ((flag === Flags.BOUNDS) && (win !== undefined)) {
+      if (route === 'REVERT') {
         cancelAllEvent()
-        return callbacks.onEnterFullscreenOrMaximized(win, RefocusLayout)
-          .finally(() => {
-            applyAllEvent()
-            initFlag()
-          })
+        return (
+          callbacks.onClickedRevert(window_id, RefocusLayout)
+            .finally(() => {
+              applyAllEvent()
+            })
+        )
       }
-      else if (flag === Flags.FOCUS) {
+      else if (route === 'REMOVED') {
+        return (
+          callbacks.onRemovedWindow(window_id)
+        )
+      }
+      else if ((route === 'BOUNDS') && (win !== undefined)) {
+        cancelAllEvent()
+        return (
+          callbacks.onEnterFullscreenOrMaximized(win, RefocusLayout)
+            .finally(() => {
+              applyAllEvent()
+            })
+        )
+      }
+      else if (route === 'FOCUS') {
         cancelFocusChanged()
         cancelBoundsChanged()
-        return callbacks
-          .onSelectSearchWindow(window_id, RefocusLayout)
-          .finally(() => {
-            shouldRefocusLayout(false)
-            applyFocusChanged()
-            applyBoundsChanged()
-            initFlag()
-          })
+        return (
+          callbacks.onSelectSearchWindow(window_id, RefocusLayout)
+            .finally(() => {
+              shouldRefocusLayout(false)
+              applyFocusChanged()
+              applyBoundsChanged()
+            })
+        )
       }
     })
   }
@@ -195,26 +249,29 @@ export default function TrustedEvents({
   const removedHandler = (removed_window_id: WindowID) => {
     console.log('onRemoved')
     if (isSearchWindow(removed_window_id)) {
-      route(Flags.REMOVED, removed_window_id)
+      callEvent('REMOVED', removed_window_id)
     }
   }
 
   const focusChangedHandler = DoubleFocusProtect(
-    { isLayout, isNone },
+    { isLayout, isNone, signal },
     (true_id) => {
       if (!isLayout(true_id)) {
         console.log('shouldRefocusLayout(true)')
-        shouldRefocusLayout(true)
+        if (!isWindowsOS()) {
+          // 因为 Windows 存在不会触发 focusChanged 事件的问题 #109
+          // 需要另一套方法来处理 #115
+          // 故不需要调用 shouldRefocusLayout
+          shouldRefocusLayout(true)
+        }
       } else {
-        const flag = getFlag()
-
-        console.log('doubleFocusProtect callback', true_id, flag)
-
-        alarmSetTimeout(cfg.SEARCH_FOCUS_INTERVAL - cfg.WINDOWS_DOUBLE_FOCUS_WAITING_DURATION, () => {
-          if (flag === Flags.FOCUS) {
-            route(flag, true_id)
+        console.log('doubleFocusProtect callback', true_id)
+        alarmSetTimeout(
+          cfg.SEARCH_FOCUS_INTERVAL - cfg.WINDOWS_DOUBLE_FOCUS_WAITING_DURATION,
+          () => {
+            callEvent('FOCUS', true_id)
           }
-        })
+        )
       }
     }
   )
@@ -224,7 +281,7 @@ export default function TrustedEvents({
     const bounds_window_id = getWindowId(win)
     if (isSearchWindow(bounds_window_id)) {
       if (isFullscreenOrMaximized(win)) {
-        route(Flags.BOUNDS, bounds_window_id, win)
+        callEvent('BOUNDS', bounds_window_id, win)
       }
     }
   }
@@ -234,18 +291,34 @@ export default function TrustedEvents({
   const [ applyBoundsChanged, cancelBoundsChanged ] = ChromeEvent(chrome.windows.onBoundsChanged, boundsChangedHandler)
 
   const applyAllEvent = () => {
-    console.log('applyWindowsEvent')
+    console.log('applyAllEvent')
+    if (isMacOS()) {
+      // macOS 才需要右键菜单还原窗口的功能 #86
+      appendMenu()
+    }
+
+    // Windows 系统需要还原窗口 #115
+    applyRefocusEvent()
+
     applyRemoved()
     applyFocusChanged()
     applyBoundsChanged()
   }
 
   const cancelAllEvent = () => {
-    console.log('cancelWindowsEvent')
+    console.log('cancelAllEvent')
+    if (isMacOS()) {
+      // macOS 才需要右键菜单还原窗口的功能 #86
+      removeMenu()
+    }
+
+    // Windows 系统需要还原窗口 #115
+    cancelRefocusEvent()
+
     cancelRemoved()
     cancelFocusChanged()
     cancelBoundsChanged()
   }
 
-  return [ applyAllEvent, cancelAllEvent ] as const
+  return { applyAllEvent, cancelAllEvent, refocus_window_id } as const
 }

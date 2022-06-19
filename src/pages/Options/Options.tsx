@@ -1,4 +1,5 @@
 import pkg from '../../../package.json'
+import { createMemo } from 'vait'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { findIndex, map, propEq, update } from 'ramda'
 
@@ -7,14 +8,17 @@ import { SiteSettings } from '../../preferences/site-settings'
 import { getCurrentDisplayLimit, Limit } from '../../core/base/limit'
 
 import SettingHeader from './Component/SettingHeader'
-import SettingItem from './Component/SettingItem'
 import SiteSettingsManager from './Component/SiteSettingsManager'
 import Loading from '../../components/Loading'
 import Failure from './Component/Failure'
 import ImportExport from './Component/ImportExport'
 
 import s from './Options.module.css'
-import { createMemo } from 'vait'
+
+import Help from './Component/Help'
+import About from './Component/About'
+import SettingItem from './Component/SettingItem'
+import SettingSwitch from './Component/SettingSwitch'
 
 const [getAdjustTask, setAdjustTask] = createMemo<NodeJS.Timeout | null>(null)
 
@@ -149,42 +153,24 @@ export default function OptionsPage() {
                   <SettingHeader version={pkg.version} />
                 </header>
                 <div className={s.OptionsCols}>
-                  <div className={s.OptionsCol} style={{ minWidth: '590px' }}>
-                    {/* <SettingItem>
+                  <div
+                    className={s.OptionsCol}
+                    style={{
+                      minWidth: '590px',
+                      maxWidth: '590px',
+                      width: '590px',
+                    }}
+                  >
+                    <Help />
+
+                    <SettingItem>
                       <SettingSwitch
-                        title="使用 Poker 关键字启动搜索"
-                        description="在搜索栏中输入「Poker + 空格 + 想要搜索的内容」才使用发牌手"
+                        title="使用最小化按钮作为「转为普通窗口」"
+                        description="macOS 中，点击搜索窗的全屏按钮会将搜索窗转为带 Tab 栏的普通窗口，但这样会显得有点奇怪。这个设置将会覆盖原本的最小化处理，变成点击最小化即转为普通窗口。"
                       />
-                    </SettingItem> */}
-
-                    <SettingItem title="使用方法介绍">
-                      <p>
-                        直接拖拽右边已经录入网站的方框，能进行发牌的顺序调换。<br />
-                        点击 + 号能添加新的网站。
-                      </p>
-
-                      <p></p>
-                      <p>
-                        添加新网站时，在 URL 中把想要搜索的关键字替换为 <b style={{ color: '#d22a44' }}>%poker%</b><br />
-                        例：<br />
-                        https://www.google.com/search?q=<b style={{ color: '#d22a44' }}>%poker%</b><br />
-                        https://www.youtube.com/results?search_query=<b style={{ color: '#d22a44' }}>%poker%</b><br />
-                        https://github.com/search?q=<b style={{ color: '#d22a44' }}>%poker%</b><br />
-                      </p>
                     </SettingItem>
 
-                    <SettingItem title="关于">
-                      <p>
-                        遇到了麻烦/故障？请上 <a href="https://github.com/vechk/poker/issues" target="_blank" rel="noreferrer">GitHub issues</a> 反馈
-                      </p>
-                      <p>
-                        Inspiried by <a href="https://www.smartisan.com/tnt/os" target="_blank" rel="noreferrer">Smartisian TNT</a> Poker Dealer<br />
-                        Made by <a href="http://vec.moe" target="_blank" rel="noreferrer">Vec</a><br />
-                        Designed by <a href="https://t.me/nt_cubic" target="_blank" rel="noreferrer">NT³</a>
-                      </p>
-                      <p></p>
-                      <p></p>
-                    </SettingItem>
+                    <About />
                   </div>
                   <div className={s.OptionsCol}>
                     <SiteSettingsManager

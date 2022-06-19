@@ -8,7 +8,7 @@ import useWindowFocus from '../../hooks/useWindowFocus'
 
 import { validKeyword } from '../../utils/search'
 
-import SearchForm from '../Control/components/SearchForm'
+import SearchForm from '../../components/SearchForm'
 import './Popup.css'
 
 const processing = Atomic()

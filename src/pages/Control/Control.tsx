@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react'
-import { Atomic, nextTick } from 'vait'
+import { Atomic, Lock, nextTick } from 'vait'
 
 import cfg from '../../config'
 
@@ -13,15 +13,14 @@ import { createSearchLayout } from '../../core/layout'
 import { renderMatrix } from '../../core/layout/render'
 import { closeWindows, SearchWindow } from '../../core/layout/window'
 import { calcControlWindowPos } from '../../core/layout/control-window'
-import CreateSignal from '../../core/layout/signal'
+import CreateSignal from '../../utils/signal'
 
 import useCurrentWindowId from '../../hooks/useCurrentWindowId'
 import useWindowFocus from '../../hooks/useWindowFocus'
 
 import Loading from '../../components/Loading'
 import ArrowButtonGroup from './components/ArrowGroup'
-
-import SearchForm from './components/SearchForm'
+import SearchForm from '../../components/SearchForm'
 
 import './Control.css'
 
@@ -95,23 +94,28 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
     )
   }, [controlWindowId, controll])
 
-  const closeAllSearchWindows = useCallback((con: Control) => {
+  const clearControl = useCallback(async (con: Control) => {
     con.cancelAllEvent()
-    return closeWindows(con.getRegIds())
+
+    await Promise.all(closeWindows(con.getRegIds()))
+
+    if (con.refocus_window_id !== undefined) {
+      await Promise.all(closeWindows([con.refocus_window_id]))
+    }
   }, [])
 
   useEffect(function closeAllWindowBeforeExit() {
     const handler = () => {
       stop_creating_signal.trigger()
       if (controll !== null) {
-        closeAllSearchWindows(controll)
+        clearControl(controll)
       }
     }
     window.addEventListener('beforeunload', handler)
     return () => {
       window.removeEventListener('beforeunload', handler)
     }
-  }, [closeAllSearchWindows, controll, stop_creating_signal])
+  }, [clearControl, controll, stop_creating_signal])
 
   const moveControlWindow = useCallback(async (id: number) => {
     const [ top, left ] = calcControlWindowPos(base.layout_height, base.limit)
@@ -134,6 +138,16 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
       keyword,
       stop_creating_signal,
       creating_signal,
+      onRefocusLayoutClose() {
+        window.close()
+        const [neverResolve] = Lock<void>()
+        return neverResolve
+      },
+      onRemovedWindow() {
+        window.close()
+        const [neverResolve] = Lock<void>()
+        return neverResolve
+      },
     }).then(newControll => {
       setControll(newControll)
     }).catch(err => {
@@ -233,10 +247,9 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
                     try {
                       setLoading(true)
                       await nextTick()
-                      await Promise.all(closeAllSearchWindows(controll))
+                      await clearControl(controll)
                     } finally {
                       setControll(() => {
-                        console.warn('setControll func')
                         submitKeyword(newSearchKeyword)
                         return null
                       })
