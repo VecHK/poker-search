@@ -3,7 +3,7 @@ import { ApplyChromeEvent } from '../utils/chrome-event'
 import GlobalCommand from './gloal-command'
 import { regRules } from './moble-access'
 import Omnibox from './omnibox'
-import SelectionContextMenu from './selection-contentmenu'
+import SelectionContextMenu, { initContentMenu } from './selection-contentmenu'
 
 console.log('Poker Background')
 
@@ -13,20 +13,12 @@ Object.assign(global, {
 
 const [ applyGlobalCommand, cancelGlobalCommand ] = GlobalCommand()
 const [ applyOmnibox, cancelOmnibox ] = Omnibox()
-const [ applyContextMenu, cancelContextMenu ] = SelectionContextMenu()
+const [ applyContextMenuClick, cancelContextMenuClick ] = SelectionContextMenu()
 
 async function __hot_reload_before__(): Promise<void> {
   cancelGlobalCommand()
   cancelOmnibox()
-  cancelContextMenu()
-}
-
-function __launch_background__() {
-  regRules()
-
-  applyGlobalCommand()
-  applyOmnibox()
-  applyContextMenu()
+  cancelContextMenuClick()
 }
 
 function createInstalledWindow(is_update: boolean) {
@@ -48,12 +40,21 @@ ApplyChromeEvent(
   (details) => {
     console.log('chrome.runtime.onInstalled', details)
 
+    initContentMenu()
+
     if (details.reason === 'install') {
       createInstalledWindow(false)
-      __launch_background__()
     } else if (details.reason === 'update') {
       createInstalledWindow(true)
-      __launch_background__()
     }
   }
 )
+
+function runBackground() {
+  regRules()
+
+  applyGlobalCommand()
+  applyOmnibox()
+  applyContextMenuClick()
+}
+runBackground()

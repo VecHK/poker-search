@@ -1,6 +1,6 @@
 import { ChromeEvent } from './chrome-event'
 
-export default function ChromeContextMenus(
+export function ChromeContextMenus(
   opts: Readonly<{
     id: string
     contexts: chrome.contextMenus.ContextType[],
@@ -18,8 +18,8 @@ export default function ChromeContextMenus(
     },
   )
 
-  return [
-    function appendContenxtMenu() {
+  return {
+    setContextMenu() {
       chrome.contextMenus.create({
         enabled: true,
         id: opts.id,
@@ -30,15 +30,44 @@ export default function ChromeContextMenus(
           console.error('chrome.contextMenus.create Error', chrome.runtime.lastError)
         }
       })
-      applyClickedEvent()
     },
 
-    function removeContextMenu() {
+    removeContextMenu() {
       chrome.contextMenus.remove(opts.id, () => {
         if (chrome.runtime.lastError) {
           console.error('chrome.contextMenus.remove Error', chrome.runtime.lastError)
         }
       })
+    },
+
+    applyClickedEvent,
+    cancelClickedEvent,
+  } as const
+}
+
+export function ApplyChromeContextMenus(
+  opts: Readonly<{
+    id: string
+    contexts: chrome.contextMenus.ContextType[],
+    title: string
+  }>,
+  callback: (d: chrome.contextMenus.OnClickData, t: chrome.tabs.Tab | undefined) => void
+) {
+  const {
+    setContextMenu,
+    removeContextMenu,
+    applyClickedEvent,
+    cancelClickedEvent,
+  } = ChromeContextMenus(opts, callback)
+
+  return [
+    function apply() {
+      setContextMenu()
+      applyClickedEvent()
+    },
+
+    function cancel() {
+      removeContextMenu()
       cancelClickedEvent()
     }
   ] as const

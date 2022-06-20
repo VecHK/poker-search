@@ -1,5 +1,5 @@
 import cfg from '../../../config'
-import ChromeContextMenus from '../../../utils/chrome-contetxmenu'
+import { ApplyChromeContextMenus } from '../../../utils/chrome-contetxmenu'
 import { WindowID } from '../window'
 
 export default function InitRevertContextMenu({
@@ -10,7 +10,7 @@ export default function InitRevertContextMenu({
   onClickedContextMenuInSearchWindow: (window_id: WindowID) => void
 }) {
   return (
-    ChromeContextMenus({
+    ApplyChromeContextMenus({
       id: cfg.SEARCH_WINDOW_MENU_REVERT,
       contexts: ['all'],
       title: '打开新窗口',
