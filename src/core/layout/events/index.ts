@@ -1,10 +1,10 @@
 import { compose, equals, not } from 'ramda'
-import { Atomic, Memo } from 'vait'
+import { Atomic, Memo, Signal } from 'vait'
 import cfg from '../../../config'
 import { getWindowId, WindowID } from './../window'
 import { alarmSetTimeout, alarmTask } from '../../../utils/chrome-alarms'
 import { ChromeEvent } from '../../../utils/chrome-event'
-import CreateSignal, { Signal } from '../../../utils/signal'
+
 import InitContextMenu from './revert-contentmenu'
 import { InitRefocusEvent, InitRefocusLayout } from './refocus'
 import { Limit } from '../../base/limit'
@@ -191,7 +191,7 @@ export default async function TrustedEvents({
   const RefocusLayout = InitRefocusLayout( compose(not, isWindowsOS) )
   const [, shouldRefocusLayout] = RefocusLayout
 
-  const signal = CreateSignal<Route>()
+  const signal = Signal<Route>()
 
   const routeProcessing = Atomic()
   type CallEvent = {

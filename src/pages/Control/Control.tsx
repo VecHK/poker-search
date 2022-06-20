@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react'
-import { Atomic, Lock, nextTick } from 'vait'
+import { Atomic, Lock, nextTick, Signal } from 'vait'
 
 import cfg from '../../config'
 
@@ -13,7 +13,6 @@ import { createSearchLayout } from '../../core/layout'
 import { renderMatrix } from '../../core/layout/render'
 import { closeWindows, SearchWindow } from '../../core/layout/window'
 import { calcControlWindowPos } from '../../core/layout/control-window'
-import CreateSignal from '../../utils/signal'
 
 import useCurrentWindowId from '../../hooks/useCurrentWindowId'
 import useWindowFocus from '../../hooks/useWindowFocus'
@@ -55,8 +54,8 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
   const [submitedKeyword, submitKeyword] = useState<string | false>(false)
 
   const [controll, setControll] = useState<Control | null>(null)
-  const [stop_creating_signal] = useState(CreateSignal<void>())
-  const [creating_signal] = useState(CreateSignal<void>())
+  const [stop_creating_signal] = useState(Signal<void>())
+  const [creating_signal] = useState(Signal<void>())
 
   const controlWindowId = useCurrentWindowId()
 

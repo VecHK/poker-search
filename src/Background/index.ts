@@ -32,7 +32,7 @@ function __launch_background__() {
 function createInstalledWindow(is_update: boolean) {
   const append_params = is_update ? '?update=1' : ''
 
-  chrome.windows.create({
+  return chrome.windows.create({
     focused: false,
     type: 'popup',
     width: cfg.INSTALLED_WINDOW_WIDTH,
