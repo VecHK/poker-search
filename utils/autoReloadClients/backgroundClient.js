@@ -7,6 +7,8 @@ const logger = (msg) => {
 logger('background client up.');
 
 logger('connecting to SSE service...');
+
+// eslint-disable-next-line
 const port = querystring.parse(__resourceQuery.slice(1)).port;
 const es = new EventSource(`http://localhost:${port}/__server_sent_events__`);
 
