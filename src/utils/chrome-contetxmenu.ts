@@ -10,7 +10,12 @@ export default function ChromeContextMenus(
 ) {
   const [ applyClickedEvent, cancelClickedEvent ] = ChromeEvent(
     chrome.contextMenus.onClicked,
-    callback,
+    (clickData, tab) => {
+      console.log('ContentMenu clicked:', clickData.menuItemId)
+      if (opts.id === clickData.menuItemId) {
+        callback(clickData, tab)
+      }
+    },
   )
 
   return [

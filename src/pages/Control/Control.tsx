@@ -22,6 +22,7 @@ import ArrowButtonGroup from './components/ArrowGroup'
 import SearchForm from '../../components/SearchForm'
 
 import './Control.css'
+import { MessageEvent } from '../../message'
 
 type Control = Unpromise<ReturnType<typeof createSearchLayout>>
 
@@ -226,6 +227,39 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
     onPressDown: () => changeRow('next'),
   })
 
+  const handleSubmit = useCallback((newSearchKeyword: string) => {
+    console.log('onSubmit')
+    if (validKeyword(newSearchKeyword)) {
+      controllProcessing(async () => {
+        console.log('onSubmit', newSearchKeyword)
+        if (controll === null) {
+          submitKeyword(newSearchKeyword)
+        } else {
+          try {
+            setLoading(true)
+            await nextTick()
+            await clearControl(controll)
+          } finally {
+            setControll(() => {
+              submitKeyword(newSearchKeyword)
+              return null
+            })
+          }
+        }
+      })
+    }
+  }, [clearControl, controll])
+
+  useEffect(function receiveChangeSearchMessage() {
+    const [ applyReceive, cancelReceive ] = MessageEvent('ChangeSearch', msg => {
+      const new_keyword = msg.payload
+      handleSubmit(new_keyword)
+    })
+    applyReceive()
+
+    return cancelReceive
+  }, [handleSubmit])
+
   return (
     <div className="container">
       {isLoading ? <Loading /> : (
@@ -235,27 +269,8 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
             keywordPlaceholder="请输入搜索词"
             setKeyword={setKeyword}
             submitButtonActive={windowIsFocus}
-            onSubmit={({ keyword: newSearchKeyword }) => {
-              console.log('onSubmit')
-              if (validKeyword(newSearchKeyword)) {
-                controllProcessing(async () => {
-                  console.log('onSubmit', newSearchKeyword)
-                  if (controll === null) {
-                    submitKeyword(newSearchKeyword)
-                  } else {
-                    try {
-                      setLoading(true)
-                      await nextTick()
-                      await clearControl(controll)
-                    } finally {
-                      setControll(() => {
-                        submitKeyword(newSearchKeyword)
-                        return null
-                      })
-                    }
-                  }
-                })
-              }
+            onSubmit={({ keyword }) => {
+              handleSubmit(keyword)
             }}
           />
           <ArrowButtonGroup onClick={changeRow} />

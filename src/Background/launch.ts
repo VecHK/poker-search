@@ -1,6 +1,8 @@
+import { WatchMemo } from 'vait'
 import cfg from '../config'
 import { createBase, RevertContainerID } from '../core/base'
 import { calcControlWindowPos } from '../core/layout/control-window'
+import { ApplyChromeEvent } from '../utils/chrome-event'
 
 function detectUrl({ text, revert_container_id }: {
   text?: string
@@ -29,22 +31,42 @@ async function getControlPos() {
   return [ top, left ] as const
 }
 
+export const controlWindowMemo = WatchMemo(false)
+
 export default async function launchControlWindow({ text, revert_container_id }: {
   text: string | undefined
   revert_container_id: RevertContainerID
 }) {
-  const [ top, left ] = await getControlPos()
-  const controlWindow = await chrome.windows.create({
-    type: 'popup',
-    width: Math.round(cfg.CONTROL_WINDOW_WIDTH),
-    height: Math.round(cfg.CONTROL_WINDOW_HEIGHT),
-    left: Math.round(left),
-    top: Math.round(top),
-    url: detectUrl({ text, revert_container_id }),
-    focused: true,
-  })
+  const [ isLaunched, setLaunch ] = controlWindowMemo
 
-  return {
-    controlWindow
+  if (isLaunched()) {
+    throw Error('control window is Launched')
+  } else {
+    const [ top, left ] = await getControlPos()
+    const controlWindow = await chrome.windows.create({
+      type: 'popup',
+      width: Math.round(cfg.CONTROL_WINDOW_WIDTH),
+      height: Math.round(cfg.CONTROL_WINDOW_HEIGHT),
+      left: Math.round(left),
+      top: Math.round(top),
+      url: detectUrl({ text, revert_container_id }),
+      focused: true,
+    })
+
+    setLaunch(true)
+
+    const cancelRemoveEvent = ApplyChromeEvent(
+      chrome.windows.onRemoved,
+      (id) => {
+        if (id === controlWindow.id) {
+          cancelRemoveEvent()
+          setLaunch(false)
+        }
+      }
+    )
+
+    return {
+      controlWindow
+    }
   }
 }

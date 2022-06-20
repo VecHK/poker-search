@@ -1,8 +1,11 @@
+import { sendMessage } from '../message'
 import ChromeContextMenus from '../utils/chrome-contetxmenu'
-import launchControlWindow from './launch'
+import launchControlWindow, { controlWindowMemo } from './launch'
 
 export default function SelectionContextMenu() {
   console.log('InitSelectionContextMenu')
+
+  const [ isLaunched ] = controlWindowMemo
 
   return ChromeContextMenus(
     {
@@ -17,10 +20,14 @@ export default function SelectionContextMenu() {
         const { selectionText } = info
         const { windowId } = tab
         if (selectionText !== undefined) {
-          launchControlWindow({
-            text: selectionText,
-            revert_container_id: windowId
-          })
+          if (isLaunched()) {
+            sendMessage('ChangeSearch', selectionText)
+          } else {
+            launchControlWindow({
+              text: selectionText,
+              revert_container_id: windowId
+            })
+          }
         }
       }
     }
