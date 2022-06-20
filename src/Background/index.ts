@@ -1,10 +1,9 @@
 import cfg from '../config'
 import launchControlWindow from './launch'
 import { regRules } from './moble-access'
+import InitSelectionContextMenu from './selection-contentmenu'
 
 console.log('Poker Background')
-
-regRules()
 
 // 未启动Poker的控制窗时候，快捷键 focus-layout 为启动 Poker 控制窗
 // 在启动控制窗后，快捷键 focus-layout 就不再是 Poker 控制窗了，
@@ -41,6 +40,19 @@ chrome.omnibox.onInputEntered.addListener((text) => {
   })
 })
 
+// 右键选中字符，再点击「使用 Poker 搜索」
+try {
+  const [ applyContextMenu, ] = InitSelectionContextMenu((keyword, window_id) => {
+    launchControlWindow({
+      text: keyword,
+      revert_container_id: window_id
+    })
+  })
+  applyContextMenu()
+} catch (err) {
+  console.error('applyContextMenu', err)
+}
+
 chrome.omnibox.onInputChanged.addListener((text, suggest) => {
   chrome.omnibox.setDefaultSuggestion({
     // content: 'content',
@@ -73,3 +85,5 @@ chrome.runtime.onInstalled.addListener((details) => {
     })
   }
 })
+
+regRules()
