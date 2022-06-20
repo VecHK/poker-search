@@ -47,8 +47,10 @@ var options = {
     control: path.join(__dirname, 'src', 'pages', 'Control', 'index.ts'),
     refocusLayout: path.join(__dirname, 'src', 'pages', 'RefocusLayout', 'index.ts'),
   },
-  chromeExtensionBoilerplate: {
-    notHotReload: ['background', 'contentScript', 'devtools'],
+  custom: {
+    notHMR: ['background', 'contentScript', 'devtools'],
+    enableBackgroundAutoReload: true, // always true when "enableContentScriptsAutoReload" is set true
+    enableContentScriptsAutoReload: true,
   },
   output: {
     filename: '[name].bundle.js',
