@@ -1,4 +1,4 @@
-import { createMemo } from 'vait'
+import { Memo } from 'vait'
 
 type QueueFn<P> = (payload: P) => void
 type Queue<P> = Array< QueueFn<P> >
@@ -22,7 +22,7 @@ export type Signal<A> = Readonly<{
 }>
 
 export default function CreateSignal<A>(): Signal<A> {
-  const [getQueue, setQueue] = createMemo<Queue<A>>([])
+  const [getQueue, setQueue] = Memo<Queue<A>>([])
 
   return {
     isEmpty() {

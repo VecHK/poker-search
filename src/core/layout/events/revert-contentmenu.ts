@@ -1,4 +1,4 @@
-import { createMemo } from 'vait'
+import { Memo } from 'vait'
 import cfg from '../../../config'
 import { ChromeEvent } from '../../../utils/chrome-event'
 import { WindowID } from '../window'
@@ -23,7 +23,7 @@ export default function InitContextMenu({
     }
   )
 
-  const [isCreated, setCreated] = createMemo(false)
+  const [isCreated, setCreated] = Memo(false)
 
   return [
     function appendContenxtMenu() {

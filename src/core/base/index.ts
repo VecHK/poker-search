@@ -1,10 +1,10 @@
+import { Memo } from 'vait'
 import cfg from '../../config'
 import { load as loadEnvironment, Environment } from '../../environment'
 import { load as loadPreferences, Preferences } from '../../preferences'
 import { getCurrentDisplayLimit, Limit } from './limit'
 import { autoAdjustHeight, autoAdjustWidth } from './auto-adjust'
 import { initSearchMatrix, SearchMatrix } from './search-matrix'
-import { createMemo } from 'vait'
 
 export type RevertContainerID = number | undefined
 type BaseInfo = {
@@ -22,7 +22,7 @@ export type Base = Readonly<{
   layout_width: number
   layout_height: number
 
-  getRevertContainerId: () => RevertContainerID 
+  getRevertContainerId: () => RevertContainerID
   setRevertContainerId: (r: RevertContainerID) => void
 }>
 
@@ -53,7 +53,7 @@ async function initBase(
     limit.height
   )
 
-  const [getRevertContainerId, setRevertContainerId] = createMemo(revert_container_id)
+  const [getRevertContainerId, setRevertContainerId] = Memo(revert_container_id)
 
   return Object.freeze({
     limit,

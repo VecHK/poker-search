@@ -1,4 +1,4 @@
-import { createMemo, Lock } from 'vait'
+import { Memo, Lock } from 'vait'
 import { Base } from '../base'
 import { constructSearchWindowsFast } from './window-create'
 import { selectWindow } from './window-update'
@@ -49,7 +49,7 @@ export async function createSearchLayout({
   }
 
   const { search_matrix } = base
-  const [getMatrix, setMatrix] = createMemo(
+  const [getMatrix, setMatrix] = Memo(
     await constructSearchWindowsFast(
       base,
       search_matrix,

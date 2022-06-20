@@ -1,5 +1,5 @@
 import { compose, equals, not } from 'ramda'
-import { Atomic, createMemo } from 'vait'
+import { Atomic, Memo } from 'vait'
 import cfg from '../../../config'
 import { getWindowId, WindowID } from './../window'
 import { alarmSetTimeout, alarmTask } from '../../../utils/chrome-alarms'
@@ -27,7 +27,7 @@ function DoubleFocusProtect(
 ) {
   type Callback = (id: WindowID) => void
 
-  const [getReceivedId, setReceivedId] = createMemo<Array<WindowID>>([])
+  const [getReceivedId, setReceivedId] = Memo<Array<WindowID>>([])
   const clearReceivedId = () => setReceivedId([])
   const appendReceivedId = (win_id: WindowID) => setReceivedId([...getReceivedId(), win_id])
 

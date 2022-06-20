@@ -1,4 +1,4 @@
-import { createMemo } from 'vait'
+import { Memo } from 'vait'
 import cfg from '../../../config'
 import { MessageEvent } from '../../../message'
 import { ChromeEvent } from '../../../utils/chrome-event'
@@ -71,7 +71,7 @@ export function InitRefocusLayout(enableCond: () => boolean): Readonly<[
   () => boolean, (v: boolean) => void
 ]> {
   if (enableCond()) {
-    return createMemo<boolean>(false)
+    return Memo<boolean>(false)
   } else {
     return [() => false, () => undefined] as const
   }

@@ -1,5 +1,5 @@
 import pkg from '../../../package.json'
-import { createMemo } from 'vait'
+import { Memo } from 'vait'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { findIndex, map, propEq, update } from 'ramda'
 
@@ -20,7 +20,7 @@ import About from './Component/About'
 import SettingItem from './Component/SettingItem'
 import SettingSwitch from './Component/SettingSwitch'
 
-const [getAdjustTask, setAdjustTask] = createMemo<NodeJS.Timeout | null>(null)
+const [getAdjustTask, setAdjustTask] = Memo<NodeJS.Timeout | null>(null)
 
 function useAdjustMarginCenter(enable: boolean) {
   const ref = useRef<HTMLDivElement>(null)
