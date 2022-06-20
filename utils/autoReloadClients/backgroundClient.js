@@ -32,10 +32,21 @@ es.addEventListener(
   false
 );
 
+function reload() {
+  if (!global.__hot_reload_before__) {
+    console.error('none global.__hot_reload_before__')
+  } else {
+    global.__hot_reload_before__().then(() => {
+      chrome.runtime.reload(); // reload extension to reload background.
+    })
+  }
+}
+
 es.addEventListener('background-updated', () => {
   logger("received 'background-updated' event from SSE service.");
   logger('extension will reload to reload background...');
-  chrome.runtime.reload(); // reload extension to reload background.
+
+  reload();
 });
 
 es.addEventListener(
@@ -57,7 +68,7 @@ es.addEventListener(
             if (from === 'contentScriptClient' && action === 'yes-sir') {
               es.close();
               logger('extension will reload to update content scripts...');
-              chrome.runtime.reload();
+              reload();
             }
           }
         );
