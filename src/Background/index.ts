@@ -1,5 +1,7 @@
 import cfg from '../config'
+import { MessageEvent, sendMessage } from '../message'
 import { ApplyChromeEvent } from '../utils/chrome-event'
+import { controlIsLaunched, initControlWindowLaunched } from '../x-state/control-window-launched'
 import GlobalCommand from './gloal-command'
 import { regRules } from './moble-access'
 import Omnibox from './omnibox'
@@ -37,10 +39,12 @@ function createInstalledWindow(is_update: boolean) {
 
 ApplyChromeEvent(
   chrome.runtime.onInstalled,
-  (details) => {
+  async (details) => {
     console.log('chrome.runtime.onInstalled', details)
 
     initContentMenu()
+
+    await initControlWindowLaunched()
 
     if (details.reason === 'install') {
       createInstalledWindow(false)
@@ -56,5 +60,14 @@ function runBackground() {
   applyGlobalCommand()
   applyOmnibox()
   applyContextMenuClick()
+
+  const [ applyReceive ] = MessageEvent('ChangeSearch', msg => {
+    controlIsLaunched().then(is_launched => {
+      if (is_launched) {
+        sendMessage('ChangeSearch', msg.payload)
+      }
+    })
+  })
+  applyReceive()
 }
 runBackground()

@@ -1,6 +1,7 @@
 import { sendMessage } from '../message'
 import { ChromeContextMenus } from '../utils/chrome-contetxmenu'
-import launchControlWindow, { controlWindowMemo } from './launch'
+import { controlIsLaunched } from '../x-state/control-window-launched'
+import launchControlWindow from './launch'
 
 const contentMenu = () => (
   ChromeContextMenus(
@@ -9,16 +10,14 @@ const contentMenu = () => (
       contexts: ['selection'],
       title: '使用Poker搜索'
     },
-    (info, tab) => {
-      const [ isLaunched ] = controlWindowMemo
-
+    async (info, tab) => {
       console.log('contextMenu clicked', info, tab)
 
       if (tab) {
         const { selectionText } = info
         const { windowId } = tab
         if (selectionText !== undefined) {
-          if (isLaunched()) {
+          if (await controlIsLaunched()) {
             sendMessage('ChangeSearch', selectionText)
           } else {
             launchControlWindow({

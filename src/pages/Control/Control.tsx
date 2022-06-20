@@ -23,6 +23,7 @@ import SearchForm from '../../components/SearchForm'
 
 import './Control.css'
 import { MessageEvent } from '../../message'
+import { setControlLaunch } from '../../x-state/control-window-launched'
 
 type Control = Unpromise<ReturnType<typeof createSearchLayout>>
 
@@ -110,6 +111,8 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
       if (controll !== null) {
         clearControl(controll)
       }
+
+      setControlLaunch(false)
     }
     window.addEventListener('beforeunload', handler)
     return () => {
@@ -252,13 +255,19 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
 
   useEffect(function receiveChangeSearchMessage() {
     const [ applyReceive, cancelReceive ] = MessageEvent('ChangeSearch', msg => {
-      const new_keyword = msg.payload
-      handleSubmit(new_keyword)
+      controll?.cancelAllEvent()
+
+      if (controlWindowId !== null) {
+        chrome.windows.update(controlWindowId, { focused: true }).then(() => {
+          const new_keyword = msg.payload
+          handleSubmit(new_keyword)
+        })
+      }
     })
     applyReceive()
 
     return cancelReceive
-  }, [handleSubmit])
+  }, [controlWindowId, controll, handleSubmit])
 
   return (
     <div className="container">

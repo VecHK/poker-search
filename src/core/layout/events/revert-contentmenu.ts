@@ -12,7 +12,7 @@ export default function InitRevertContextMenu({
   return (
     ApplyChromeContextMenus({
       id: cfg.SEARCH_WINDOW_MENU_REVERT,
-      contexts: ['all'],
+      contexts: ['page'],
       title: '打开新窗口',
     }, (info, tab) => {
       console.log('contextMenu clicked', info, tab)
