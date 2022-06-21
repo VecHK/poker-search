@@ -15,6 +15,7 @@ export default function getDefaultPreferences(
   return {
     __is_poker__: true,
     version: 3,
+    launch_poker_contextmenu: true,
     site_settings: getDefaultSiteSettings(),
     ...append,
   }

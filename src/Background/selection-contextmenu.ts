@@ -1,21 +1,24 @@
+import { sendMessage } from '../message'
 import { ChromeContextMenus } from '../utils/chrome-contetxmenu'
 import { controlIsLaunched } from '../x-state/control-window-launched'
 import launchControlWindow from './launch'
 
-const contentMenu = () => (
+const contextMenu = () => (
   ChromeContextMenus(
     {
-      id: 'POKER-LAUNCH',
-      contexts: ['page'],
-      title: '启动Poker'
+      id: 'POKER-SELECTION',
+      contexts: ['selection'],
+      title: '使用Poker搜索'
     },
     async (info, tab) => {
+      console.log('contextMenu clicked', info, tab)
+
       if (tab) {
         const { selectionText } = info
         const { windowId } = tab
         if (selectionText !== undefined) {
           if (await controlIsLaunched()) {
-            console.error('poker control window is launched')
+            sendMessage('ChangeSearch', selectionText)
           } else {
             launchControlWindow({
               text: selectionText,
@@ -28,11 +31,10 @@ const contentMenu = () => (
   )
 )
 
-export const presetLaunchContentMenu = () => contentMenu().presetContextMenu()
-export const removeLaunchContentMenu = () => contentMenu().removeContextMenu()
+export const presetSelectionContextMenu = () => contextMenu().presetContextMenu()
 
-export default function LaunchContextMenu() {
-  const { applyClickedEvent, cancelClickedEvent } = contentMenu()
+export default function SelectionContextMenu() {
+  const { applyClickedEvent, cancelClickedEvent } = contextMenu()
 
   return [
     applyClickedEvent,

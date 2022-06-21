@@ -14,8 +14,7 @@
     "contextMenus",
     "declarativeNetRequestWithHostAccess",
     "system.display",
-    "alarms",
-    "contextMenus"
+    "alarms"
   ],
   "host_permissions": [
     "<all_urls>"

@@ -3,10 +3,12 @@ import { MessageEvent, sendMessage } from '../message'
 import { ApplyChromeEvent } from '../utils/chrome-event'
 import { controlIsLaunched, initControlWindowLaunched } from '../x-state/control-window-launched'
 import GlobalCommand from './gloal-command'
-import { presetLaunchContentMenu } from './launch-contentmenu'
 import { regRules } from './moble-access'
 import Omnibox from './omnibox'
-import SelectionContextMenu, { presetSelectionContentMenu } from './selection-contentmenu'
+import LaunchContextMenu, { presetLaunchContextMenu, removeLaunchContextMenu } from './launch-contextmenu'
+import SelectionContextMenu, { presetSelectionContextMenu } from './selection-contextmenu'
+
+import { load as loadPreferences } from '../preferences'
 
 console.log('Poker Background')
 
@@ -16,12 +18,13 @@ Object.assign(global, {
 
 const [ applyGlobalCommand, cancelGlobalCommand ] = GlobalCommand()
 const [ applyOmnibox, cancelOmnibox ] = Omnibox()
-const [ applyContextMenuClick, cancelContextMenuClick ] = SelectionContextMenu()
+const [ applySelectionContextMenuClick, cancelSelectionContextMenuClick ] = SelectionContextMenu()
+const [ applyLaunchContextMenuClick ] = LaunchContextMenu()
 
 async function __hot_reload_before__(): Promise<void> {
   cancelGlobalCommand()
   cancelOmnibox()
-  cancelContextMenuClick()
+  cancelSelectionContextMenuClick()
 }
 
 function createInstalledWindow(is_update: boolean) {
@@ -43,8 +46,15 @@ ApplyChromeEvent(
   async (details) => {
     console.log('chrome.runtime.onInstalled', details)
 
-    presetSelectionContentMenu()
-    presetLaunchContentMenu()
+    presetSelectionContextMenu()
+
+    loadPreferences().then(preferences => {
+      if (preferences.launch_poker_contextmenu) {
+        presetLaunchContextMenu()
+      } else {
+        removeLaunchContextMenu()
+      }
+    })
 
     await initControlWindowLaunched()
 
@@ -61,7 +71,8 @@ function runBackground() {
 
   applyGlobalCommand()
   applyOmnibox()
-  applyContextMenuClick()
+  applySelectionContextMenuClick()
+  applyLaunchContextMenuClick()
 
   const [ applyReceive ] = MessageEvent('ChangeSearch', msg => {
     controlIsLaunched().then(is_launched => {

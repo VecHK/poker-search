@@ -16,5 +16,6 @@ export type SiteSettings = Array<SiteSettingsRow>
 export type PreferencesV3 = Readonly<{
   __is_poker__: true,
   version: 3
+  launch_poker_contextmenu: boolean
   site_settings: SiteSettings
 }>

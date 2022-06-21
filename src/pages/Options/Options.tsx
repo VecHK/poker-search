@@ -19,6 +19,8 @@ import Help from './Component/Help'
 import About from './Component/About'
 import SettingItem from './Component/SettingItem'
 import SettingSwitch from './Component/SettingSwitch'
+import LaunchContextMenu, { presetLaunchContextMenu, removeLaunchContextMenu } from '../../Background/launch-contextmenu'
+import { controlIsLaunched } from '../../x-state/control-window-launched'
 
 const [getAdjustTask, setAdjustTask] = Memo<NodeJS.Timeout | null>(null)
 
@@ -165,8 +167,31 @@ export default function OptionsPage() {
 
                     <SettingItem>
                       <SettingSwitch
-                        title="使用最小化按钮作为「转为普通窗口」"
-                        description="macOS 中，点击搜索窗的全屏按钮会将搜索窗转为带 Tab 栏的普通窗口，但这样会显得有点奇怪。这个设置将会覆盖原本的最小化处理，变成点击最小化即转为普通窗口。"
+                        title="「启动Poker」右键菜单栏"
+                        value={Boolean(preferences.launch_poker_contextmenu)}
+                        onChange={async (newValue) => {
+                          console.log('preferences.launch_poker_contextmenu change', newValue)
+                          if (await controlIsLaunched()) {
+                            alert('这个设置需要先关闭 Poker 控制窗')
+                          } else {
+                            if (newValue) {
+                              presetLaunchContextMenu()
+                            } else {
+                              removeLaunchContextMenu()
+                            }
+                            setPreferences((latestPreferences) => {
+                              if (!latestPreferences) {
+                                return undefined
+                              } else {
+                                return {
+                                  ...latestPreferences,
+                                  launch_poker_contextmenu: newValue
+                                }
+                              }
+                            })
+                          }
+                        }}
+                        description="在网页空白处点击右键，将会有「启动Poker」菜单项"
                       />
                     </SettingItem>
 
