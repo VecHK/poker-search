@@ -35,8 +35,6 @@ export default async function launchControlWindow({ text, revert_container_id }:
   text: string | undefined
   revert_container_id: RevertContainerID
 }) {
-  // const [ isLaunched, setLaunch ] = controlWindowMemo
-
   if (await controlIsLaunched()) {
     throw Error('control window is Launched')
   } else {

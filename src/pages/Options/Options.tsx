@@ -19,7 +19,7 @@ import Help from './Component/Help'
 import About from './Component/About'
 import SettingItem from './Component/SettingItem'
 import SettingSwitch from './Component/SettingSwitch'
-import { controlIsLaunched, getControlWindowId } from '../../x-state/control-window-launched'
+import { getControlWindowId } from '../../x-state/control-window-launched'
 import { sendMessage } from '../../message'
 
 const [getAdjustTask, setAdjustTask] = Memo<NodeJS.Timeout | null>(null)
