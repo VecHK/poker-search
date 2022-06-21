@@ -1,75 +1,75 @@
 import cfg from '../config'
-import launchControlWindow from './launch'
+import { MessageEvent, sendMessage } from '../message'
+import { ApplyChromeEvent } from '../utils/chrome-event'
+import { controlIsLaunched, initControlWindowLaunched } from '../x-state/control-window-launched'
+import GlobalCommand from './gloal-command'
+import { presetLaunchContentMenu } from './launch-contentmenu'
 import { regRules } from './moble-access'
+import Omnibox from './omnibox'
+import SelectionContextMenu, { presetSelectionContentMenu } from './selection-contentmenu'
 
 console.log('Poker Background')
 
-regRules()
+Object.assign(global, {
+  __hot_reload_before__,
+})
 
-// 未启动Poker的控制窗时候，快捷键 focus-layout 为启动 Poker 控制窗
-// 在启动控制窗后，快捷键 focus-layout 就不再是 Poker 控制窗了，
-// 而是原本的切换到搜索窗和控制窗的快捷键
-// 在控制窗关闭后，快捷键 focus-layout 又会激活为启动 Poker 控制窗
-const commandHandler = (command: string) => {
-  if (command === 'focus-layout') {
-    chrome.commands.onCommand.removeListener(commandHandler)
-    launchControlWindow({
-      text: undefined,
-      revert_container_id: undefined
-    }).then(({ controlWindow }) => {
-      if (controlWindow.id !== undefined) {
-        const evHandler = (id: number) => {
-          if (id === controlWindow.id) {
-            chrome.windows.onRemoved.removeListener(evHandler)
-            chrome.commands.onCommand.addListener(commandHandler)
-          }
-        }
-        chrome.windows.onRemoved.addListener(evHandler)
-      }
-    })
-  }
+const [ applyGlobalCommand, cancelGlobalCommand ] = GlobalCommand()
+const [ applyOmnibox, cancelOmnibox ] = Omnibox()
+const [ applyContextMenuClick, cancelContextMenuClick ] = SelectionContextMenu()
+
+async function __hot_reload_before__(): Promise<void> {
+  cancelGlobalCommand()
+  cancelOmnibox()
+  cancelContextMenuClick()
 }
-chrome.commands.onCommand.addListener(commandHandler)
 
-// omnibox 提交
-chrome.omnibox.onInputEntered.addListener((text) => {
-  chrome.windows.getCurrent(({ id }) => {
-    launchControlWindow({
-      text,
-      revert_container_id: id
-    })
-  })
-})
+function createInstalledWindow(is_update: boolean) {
+  const append_params = is_update ? '?update=1' : ''
 
-chrome.omnibox.onInputChanged.addListener((text, suggest) => {
-  chrome.omnibox.setDefaultSuggestion({
-    // content: 'content',
-    description: `Poker搜索: ${text}`,
-  })
-
-  // suggest([{
-  //   content: 'content',
-  //   description: "description",
-  // }])
-})
-
-chrome.runtime.onInstalled.addListener((details) => {
-  const common: chrome.windows.CreateData = {
+  return chrome.windows.create({
+    focused: false,
     type: 'popup',
     width: cfg.INSTALLED_WINDOW_WIDTH,
     height: cfg.INSTALLED_WINDOW_HEIGHT,
     left: 0,
     top: 0,
+    url: chrome.runtime.getURL(`/installed.html${append_params}`)
+  })
+}
+
+ApplyChromeEvent(
+  chrome.runtime.onInstalled,
+  async (details) => {
+    console.log('chrome.runtime.onInstalled', details)
+
+    presetSelectionContentMenu()
+    presetLaunchContentMenu()
+
+    await initControlWindowLaunched()
+
+    if (details.reason === 'install') {
+      createInstalledWindow(false)
+    } else if (details.reason === 'update') {
+      createInstalledWindow(true)
+    }
   }
-  if (details.reason === 'install') {
-    chrome.windows.create({
-      ...common,
-      url: chrome.runtime.getURL(`/installed.html`)
+)
+
+function runBackground() {
+  regRules()
+
+  applyGlobalCommand()
+  applyOmnibox()
+  applyContextMenuClick()
+
+  const [ applyReceive ] = MessageEvent('ChangeSearch', msg => {
+    controlIsLaunched().then(is_launched => {
+      if (is_launched) {
+        sendMessage('ChangeSearch', msg.payload)
+      }
     })
-  } else if (details.reason === 'update') {
-    chrome.windows.create({
-      ...common,
-      url: chrome.runtime.getURL(`/installed.html?update=1`)
-    })
-  }
-})
+  })
+  applyReceive()
+}
+runBackground()

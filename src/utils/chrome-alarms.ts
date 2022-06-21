@@ -1,4 +1,4 @@
-import { createMemo, Lock } from 'vait'
+import { Memo, Lock } from 'vait'
 import generateId from './generate-id'
 
 export function alarmTimeout(timing: number) {
@@ -30,7 +30,7 @@ export function alarmTask(
   timing: number,
   firstTask: () => void
 ) {
-  const [getTask, instead] = createMemo(firstTask)
+  const [getTask, instead] = Memo(firstTask)
   const discard = alarmSetTimeout(timing, () => {
     getTask()()
   })

@@ -4,7 +4,7 @@ import { SearchMatrix } from '../base/search-matrix'
 import { calcRealPos } from './pos'
 import { isCurrentRow } from './matrix'
 import { renderMatrix } from './render'
-import { Signal } from '../../utils/signal'
+import { Signal } from 'vait'
 
 type PlainUnit = null
 type Unit = PlainUnit | {

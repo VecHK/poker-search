@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react'
-import { Atomic, Lock, nextTick } from 'vait'
+import { Atomic, Lock, nextTick, Signal } from 'vait'
 
 import cfg from '../../config'
 
@@ -13,7 +13,9 @@ import { createSearchLayout } from '../../core/layout'
 import { renderMatrix } from '../../core/layout/render'
 import { closeWindows, SearchWindow } from '../../core/layout/window'
 import { calcControlWindowPos } from '../../core/layout/control-window'
-import CreateSignal from '../../utils/signal'
+import { MessageEvent } from '../../message'
+import { setControlLaunch } from '../../x-state/control-window-launched'
+import { presetLaunchContentMenu, removeLaunchContentMenu } from '../../Background/launch-contentmenu'
 
 import useCurrentWindowId from '../../hooks/useCurrentWindowId'
 import useWindowFocus from '../../hooks/useWindowFocus'
@@ -55,8 +57,8 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
   const [submitedKeyword, submitKeyword] = useState<string | false>(false)
 
   const [controll, setControll] = useState<Control | null>(null)
-  const [stop_creating_signal] = useState(CreateSignal<void>())
-  const [creating_signal] = useState(CreateSignal<void>())
+  const [stop_creating_signal] = useState(Signal<void>())
+  const [creating_signal] = useState(Signal<void>())
 
   const controlWindowId = useCurrentWindowId()
 
@@ -110,6 +112,8 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
       if (controll !== null) {
         clearControl(controll)
       }
+
+      setControlLaunch(false)
     }
     window.addEventListener('beforeunload', handler)
     return () => {
@@ -227,6 +231,54 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
     onPressDown: () => changeRow('next'),
   })
 
+  const handleSubmit = useCallback((newSearchKeyword: string) => {
+    console.log('onSubmit')
+    if (validKeyword(newSearchKeyword)) {
+      controllProcessing(async () => {
+        console.log('onSubmit', newSearchKeyword)
+        if (controll === null) {
+          submitKeyword(newSearchKeyword)
+        } else {
+          try {
+            setLoading(true)
+            await nextTick()
+            await clearControl(controll)
+          } finally {
+            setControll(() => {
+              submitKeyword(newSearchKeyword)
+              return null
+            })
+          }
+        }
+      })
+    }
+  }, [clearControl, controll])
+
+  useEffect(function receiveChangeSearchMessage() {
+    const [ applyReceive, cancelReceive ] = MessageEvent('ChangeSearch', msg => {
+      controll?.cancelAllEvent()
+
+      if (controlWindowId !== null) {
+        chrome.windows.update(controlWindowId, { focused: true }).then(() => {
+          const new_keyword = msg.payload
+          handleSubmit(new_keyword)
+        })
+      }
+    })
+    applyReceive()
+
+    return cancelReceive
+  }, [controlWindowId, controll, handleSubmit])
+
+  useEffect(() => {
+    removeLaunchContentMenu()
+  }, [])
+
+  useEffect(function initLaunchContentMenuBeforeExit() {
+    window.addEventListener('beforeunload', presetLaunchContentMenu)
+    return () => window.removeEventListener('beforeunload', presetLaunchContentMenu)
+  }, [])
+
   return (
     <div className="container">
       {isLoading ? <Loading /> : (
@@ -236,27 +288,8 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
             keywordPlaceholder="请输入搜索词"
             setKeyword={setKeyword}
             submitButtonActive={windowIsFocus}
-            onSubmit={({ keyword: newSearchKeyword }) => {
-              console.log('onSubmit')
-              if (validKeyword(newSearchKeyword)) {
-                controllProcessing(async () => {
-                  console.log('onSubmit', newSearchKeyword)
-                  if (controll === null) {
-                    submitKeyword(newSearchKeyword)
-                  } else {
-                    try {
-                      setLoading(true)
-                      await nextTick()
-                      await clearControl(controll)
-                    } finally {
-                      setControll(() => {
-                        submitKeyword(newSearchKeyword)
-                        return null
-                      })
-                    }
-                  }
-                })
-              }
+            onSubmit={({ keyword }) => {
+              handleSubmit(keyword)
             }}
           />
           <ArrowButtonGroup onClick={changeRow} />

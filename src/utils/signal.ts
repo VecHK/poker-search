@@ -1,51 +1,4 @@
-import { createMemo } from 'vait'
-
-type QueueFn<P> = (payload: P) => void
-type Queue<P> = Array< QueueFn<P> >
-
-function fetchQueue<P>(queue: Queue<P>, arg: P): void {
-  if (queue.length !== 0) {
-    const [fn, ...remaing_queue] = queue
-    try {
-      fn(arg)
-    } finally {
-      fetchQueue(remaing_queue, arg)
-    }
-  }
-}
-
-export type Signal<A> = Readonly<{
-  isEmpty(): boolean
-  trigger(payload: A): void
-  receive(fn: QueueFn<A>): void
-  unReceive(fn: QueueFn<A>): void
-}>
-
-export default function CreateSignal<A>(): Signal<A> {
-  const [getQueue, setQueue] = createMemo<Queue<A>>([])
-
-  return {
-    isEmpty() {
-      return Boolean(getQueue().length)
-    },
-
-    trigger(payload) {
-      fetchQueue(getQueue(), payload)
-    },
-
-    receive(fn) {
-      setQueue([...getQueue(), fn])
-    },
-
-    unReceive(removeFn) {
-      setQueue(
-        getQueue().filter((fn) => {
-          return fn !== removeFn
-        })
-      )
-    },
-  } as const
-}
+import { Signal } from 'vait'
 
 type ChannelID = string | number
 type Channel<C extends ChannelID, Payload> = (findChannel: C) => Signal<Payload>
@@ -77,7 +30,7 @@ export function CreateChannel<
       const signal = channels.get(find_channel)
       clearChannel()
       if (signal === undefined) {
-        channels.set(find_channel, CreateSignal<Payload>())
+        channels.set(find_channel, Signal<Payload>())
         return findChannel(find_channel)
       } else {
         return signal
