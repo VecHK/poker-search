@@ -115,7 +115,7 @@ export default function useControl(base: Base) {
 
 function useChangeRow(base: Base, control: Control | null) {
   return (
-    useCallback((type: 'previus' | 'next') => {
+    useCallback(async (type: 'previus' | 'next') => {
       console.log('changeRow', type, control)
       if (control === null) {
         return

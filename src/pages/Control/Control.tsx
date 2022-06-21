@@ -56,7 +56,7 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
     control,
     setControl,
     refreshWindows,
-    changeRow,
+    changeRow: controlChangeRow,
     controlProcessing,
   } = useControl(base)
 
@@ -71,15 +71,13 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
     await chrome.windows.update(id, { top, left })
   }, [base.layout_height, base.limit])
 
-  useEffect(function setSearchwordFromURL() {
-    const searchWord = getQuery(cfg.CONTROL_QUERY_TEXT)
-    if (searchWord !== null) {
-      if (validKeyword(searchWord)) {
-        submitKeyword(searchWord)
-        setKeyword(searchWord)
-      }
-    }
-  }, [])
+  function changeRow(act: 'previus' | 'next') {
+    controlChangeRow(act).then(focusControlWindow)
+  }
+  useChangeRowShortcutKey({
+    onPressUp: () => changeRow('previus'),
+    onPressDown: () => changeRow('next')
+  })
 
   useEffect(function openSearchWindows() {
     console.log('openSearchWindows', controlWindowId, submitedKeyword)
@@ -95,10 +93,19 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
     }
   }, [control, controlWindowId, focusControlWindow, moveControlWindow, refreshWindows, submitedKeyword])
 
-  useChangeRowShortcutKey({
-    onPressUp: () => changeRow('previus')?.then(focusControlWindow),
-    onPressDown: () => changeRow('next')?.then(focusControlWindow),
-  })
+  useEffect(function focusControlWindowAfterLoad() {
+    focusControlWindow()
+  }, [focusControlWindow])
+
+  useEffect(function setSearchwordFromURL() {
+    const searchWord = getQuery(cfg.CONTROL_QUERY_TEXT)
+    if (searchWord !== null) {
+      if (validKeyword(searchWord)) {
+        submitKeyword(searchWord)
+        setKeyword(searchWord)
+      }
+    }
+  }, [])
 
   const handleSubmit = useCallback((newSearchKeyword: string) => {
     console.log('onSubmit')
