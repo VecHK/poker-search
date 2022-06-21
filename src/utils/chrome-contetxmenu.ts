@@ -19,7 +19,7 @@ export function ChromeContextMenus(
   )
 
   return {
-    setContextMenu() {
+    presetContextMenu() {
       chrome.contextMenus.create({
         enabled: true,
         id: opts.id,
@@ -54,7 +54,7 @@ export function ApplyChromeContextMenus(
   callback: (d: chrome.contextMenus.OnClickData, t: chrome.tabs.Tab | undefined) => void
 ) {
   const {
-    setContextMenu,
+    presetContextMenu,
     removeContextMenu,
     applyClickedEvent,
     cancelClickedEvent,
@@ -62,7 +62,7 @@ export function ApplyChromeContextMenus(
 
   return [
     function apply() {
-      setContextMenu()
+      presetContextMenu()
       applyClickedEvent()
     },
 

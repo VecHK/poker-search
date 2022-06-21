@@ -32,7 +32,7 @@ const contentMenu = () => (
 )
 
 export const initContentMenu = () => {
-  contentMenu().setContextMenu()
+  contentMenu().presetContextMenu()
 }
 
 export default function SelectionContextMenu() {

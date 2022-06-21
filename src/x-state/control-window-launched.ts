@@ -1,6 +1,6 @@
 import Storage from '../utils/storage'
 
-const [ getStorage, setStorage ] = Storage<boolean>('Sync-ControlWindowLaunched')
+const [ getStorage, setStorage ] = Storage<boolean>('X-ControlWindowLaunched')
 
 export function initControlWindowLaunched() {
   return setControlLaunch(false)
