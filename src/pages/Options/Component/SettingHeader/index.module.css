@@ -3,6 +3,10 @@
   justify-content: space-between;
   align-items: center;
   padding: 30px 0;
+
+  cursor: default;
+  user-select: none;
+  color: #3a3a45;
 }
 
 .Left {
@@ -16,6 +20,8 @@
   height: var(--logo-size);
   min-width: var(--logo-size);
   min-height: var(--logo-size);
+
+  transform: translateY(18px);
 }
 
 .Right {

@@ -1,0 +1,11 @@
+.Title {
+  font-size: 18px;
+  line-height: 1em;
+  padding: 0 .5em;
+  margin-bottom: .382em;
+  box-sizing: border-box;
+  color: rgba(0, 0, 0, 0.6);
+
+  cursor: default;
+  user-select: none;
+}

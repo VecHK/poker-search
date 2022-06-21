@@ -21,6 +21,7 @@ import SettingItem from './Component/SettingItem'
 import SettingSwitch from './Component/SettingSwitch'
 import { getControlWindowId } from '../../x-state/control-window-launched'
 import { sendMessage } from '../../message'
+import SettingItemTitle from './Component/SettingItem/SettingItemTitle'
 
 const [getAdjustTask, setAdjustTask] = Memo<NodeJS.Timeout | null>(null)
 
@@ -167,13 +168,13 @@ export default function OptionsPage() {
 
                     <SettingItem>
                       <SettingSwitch
-                        title="「启动Poker」右键菜单栏"
+                        title="右键菜单栏「启动Poker」"
                         value={Boolean(preferences.launch_poker_contextmenu)}
                         onChange={async (newValue) => {
                           console.log('preferences.launch_poker_contextmenu change', newValue)
                           const control_window_id = await getControlWindowId()
                           if (control_window_id !== null) {
-                            alert('这个设置需要先关闭 Poker 控制窗')
+                            alert('修改这个设置项需要先关闭 Poker 控制窗')
                             chrome.windows.update(control_window_id, { focused: true })
                           } else {
                             sendMessage('ChangeLaunchContextMenu', newValue)
@@ -196,6 +197,7 @@ export default function OptionsPage() {
                     <About />
                   </div>
                   <div className={s.OptionsCol}>
+                    <SettingItemTitle>站点配置</SettingItemTitle>
                     <SiteSettingsManager
                       key={managerKey}
                       limit={limit}

@@ -27,7 +27,7 @@ export function ChromeContextMenus(
         title: opts.title
       }, () => {
         if (chrome.runtime.lastError) {
-          console.error('chrome.contextMenus.create Error', chrome.runtime.lastError)
+          console.error(`chrome.contextMenus.create[${opts.id}] Error`, chrome.runtime.lastError.message)
         }
       })
     },
@@ -35,7 +35,7 @@ export function ChromeContextMenus(
     removeContextMenu() {
       chrome.contextMenus.remove(opts.id, () => {
         if (chrome.runtime.lastError) {
-          console.error('chrome.contextMenus.remove Error', chrome.runtime.lastError)
+          console.error(`chrome.contextMenus.remove[${opts.id}] Error`, chrome.runtime.lastError.message)
         }
       })
     },
