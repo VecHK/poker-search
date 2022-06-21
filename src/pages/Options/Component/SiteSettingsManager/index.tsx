@@ -140,8 +140,8 @@ export default function SiteSettingsManager({
 
   function submitChange(manageSettings: SiteSettings) {
     const [new_row, ...remain_manage_settings] = manageSettings
-    let realSettings = [...remain_manage_settings].reverse()
-    emitChange(clearEmptyRow(realSettings))
+    let realSettings = reverse(remain_manage_settings)
+    emitChange(clearEmptyRow(reverse(manageSettings)))
     setInnerSettings([...realSettings, new_row])
 
     const adjustTimeout = needAdjustWidth({
