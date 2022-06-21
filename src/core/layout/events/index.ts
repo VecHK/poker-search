@@ -5,7 +5,7 @@ import { getWindowId, WindowID } from './../window'
 import { alarmSetTimeout, alarmTask } from '../../../utils/chrome-alarms'
 import { ChromeEvent } from '../../../utils/chrome-event'
 
-import InitContextMenu from './revert-contextmenu'
+import InitRevertContextMenu from './revert-contextmenu'
 import { InitRefocusEvent, InitRefocusLayout } from './refocus'
 import { Limit } from '../../base/limit'
 
@@ -160,7 +160,7 @@ export default async function TrustedEvents({
     return (isControlWindow(id) || isSearchWindow(id)) && !isNone(id)
   }
 
-  const [appendMenu, removeMenu] = InitContextMenu({
+  const [appendMenu, removeMenu] = InitRevertContextMenu({
     isSearchWindow,
     onClickedContextMenuInSearchWindow(id) {
       callEvent('REVERT', id)
