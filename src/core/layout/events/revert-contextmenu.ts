@@ -1,5 +1,5 @@
 import cfg from '../../../config'
-import { ApplyChromeContextMenus } from '../../../utils/chrome-contetxmenu'
+import { ApplyChromeContextMenus } from '../../../utils/chrome-contextmenu'
 import { WindowID } from '../window'
 
 export default function InitRevertContextMenu({

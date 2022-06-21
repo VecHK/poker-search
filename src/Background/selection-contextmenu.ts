@@ -1,5 +1,5 @@
 import { sendMessage } from '../message'
-import { ChromeContextMenus } from '../utils/chrome-contetxmenu'
+import { ChromeContextMenus } from '../utils/chrome-contextmenu'
 import { controlIsLaunched } from '../x-state/control-window-launched'
 import launchControlWindow from './launch'
 
