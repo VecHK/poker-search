@@ -16,7 +16,7 @@ import { calcControlWindowPos } from '../../core/layout/control-window'
 import { MessageEvent } from '../../message'
 import { cleanControlLaunch } from '../../x-state/control-window-launched'
 
-import useCurrentWindowId from '../../hooks/useCurrentWindowId'
+import useCurrentWindow from '../../hooks/useCurrentWindow'
 import useWindowFocus from '../../hooks/useWindowFocus'
 import useLaunchContextMenu from '../../hooks/useLaunchContextMenu'
 
@@ -60,7 +60,7 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
   const [stop_creating_signal] = useState(Signal<void>())
   const [creating_signal] = useState(Signal<void>())
 
-  const controlWindowId = useCurrentWindowId()
+  const controlWindowId = useCurrentWindow()?.windowId
 
   const focusControlWindow = useCallback(async () => {
     if (controlWindowId) {
@@ -83,12 +83,12 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
       chrome.commands.onCommand,
       (command: string) => {
         if (command === 'focus-layout') {
-          if ((controlWindowId !== null) && (controll !== null)) {
+          if ((controlWindowId !== undefined) && (controll !== null)) {
             controll.cancelAllEvent()
             controll.refreshLayout([]).finally(() => {
               controll.applyAllEvent()
             })
-          } else if (controlWindowId !== null) {
+          } else if (controlWindowId !== undefined) {
             chrome.windows.update(controlWindowId, { focused: true })
           }
         }
@@ -178,7 +178,7 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
 
   useEffect(function openSearchWindows() {
     console.log('openSearchWindows', controlWindowId, submitedKeyword)
-    if (controlWindowId !== null) {
+    if (controlWindowId !== undefined) {
       if (submitedKeyword !== false) {
         if (controll === null) {
           moveControlWindow(controlWindowId)
@@ -258,7 +258,7 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
     const [ applyReceive, cancelReceive ] = MessageEvent('ChangeSearch', (new_keyword) => {
       controll?.cancelAllEvent()
 
-      if (controlWindowId !== null) {
+      if (controlWindowId !== undefined) {
         chrome.windows.update(controlWindowId, { focused: true }).then(() => {
           handleSubmit(new_keyword)
         })
@@ -277,7 +277,7 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
         <>
           <SearchForm
             keyword={keyword}
-            keywordPlaceholder="请输入搜索词"
+            keywordPlaceholder={`请输入搜索词`}
             setKeyword={setKeyword}
             submitButtonActive={windowIsFocus}
             onSubmit={({ keyword }) => {
