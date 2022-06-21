@@ -28,7 +28,7 @@ import './Control.css'
 
 type Control = Unpromise<ReturnType<typeof createSearchLayout>>
 
-const controllProcessing = Atomic()
+const controlProcessing = Atomic()
 
 function useChangeRowShortcutKey(props: {
   onPressUp: () => void
@@ -56,7 +56,7 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
   const [keyword, setKeyword] = useState('')
   const [submitedKeyword, submitKeyword] = useState<string | false>(false)
 
-  const [controll, setControll] = useState<Control | null>(null)
+  const [control, setControl] = useState<Control | null>(null)
   const [stop_creating_signal] = useState(Signal<void>())
   const [creating_signal] = useState(Signal<void>())
 
@@ -83,10 +83,10 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
       chrome.commands.onCommand,
       (command: string) => {
         if (command === 'focus-layout') {
-          if ((controlWindowId !== undefined) && (controll !== null)) {
-            controll.cancelAllEvent()
-            controll.refreshLayout([]).finally(() => {
-              controll.applyAllEvent()
+          if ((controlWindowId !== undefined) && (control !== null)) {
+            control.cancelAllEvent()
+            control.refreshLayout([]).finally(() => {
+              control.applyAllEvent()
             })
           } else if (controlWindowId !== undefined) {
             chrome.windows.update(controlWindowId, { focused: true })
@@ -94,9 +94,9 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
         }
       }
     )
-  }, [controlWindowId, controll])
+  }, [controlWindowId, control])
 
-  const clearControl = useCallback(async (con: Control) => {
+  const cleanControl = useCallback(async (con: Control) => {
     con.cancelAllEvent()
 
     await Promise.all(closeWindows(con.getRegIds()))
@@ -109,8 +109,8 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
   useEffect(function closeAllWindowBeforeExit() {
     const handler = () => {
       stop_creating_signal.trigger()
-      if (controll !== null) {
-        clearControl(controll)
+      if (control !== null) {
+        cleanControl(control)
       }
 
       cleanControlLaunch()
@@ -119,7 +119,7 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
     return () => {
       window.removeEventListener('beforeunload', handler)
     }
-  }, [clearControl, controll, stop_creating_signal])
+  }, [cleanControl, control, stop_creating_signal])
 
   const moveControlWindow = useCallback(async (id: number) => {
     const [ top, left ] = calcControlWindowPos(base.layout_height, base.limit)
@@ -152,8 +152,8 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
         const [neverResolve] = Lock<void>()
         return neverResolve
       },
-    }).then(newControll => {
-      setControll(newControll)
+    }).then(newControl => {
+      setControl(newControl)
     }).catch(err => {
       if (err.cancel) {
         // 提前取消
@@ -169,35 +169,35 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
     })
   }, [base, creating_signal, focusControlWindow, stop_creating_signal])
 
-  useEffect(function controllEventsEffect() {
-    if (controll !== null) {
-      controll.applyAllEvent()
-      return () => controll.cancelAllEvent()
+  useEffect(function controlEventsEffect() {
+    if (control !== null) {
+      control.applyAllEvent()
+      return () => control.cancelAllEvent()
     }
-  }, [controll])
+  }, [control])
 
   useEffect(function openSearchWindows() {
     console.log('openSearchWindows', controlWindowId, submitedKeyword)
     if (controlWindowId !== undefined) {
       if (submitedKeyword !== false) {
-        if (controll === null) {
+        if (control === null) {
           moveControlWindow(controlWindowId)
           refreshWindows(controlWindowId, submitedKeyword)
         }
       }
     }
-  }, [controlWindowId, controll, moveControlWindow, refreshWindows, submitedKeyword])
+  }, [controlWindowId, control, moveControlWindow, refreshWindows, submitedKeyword])
 
   const changeRow = useCallback((type: 'previus' | 'next') => {
-    console.log('changeRow', type, controll)
-    if (!controll) {
+    console.log('changeRow', type, control)
+    if (!control) {
       return
     }
-    controllProcessing(async () => {
+    controlProcessing(async () => {
       try {
-        controll.cancelAllEvent()
+        control.cancelAllEvent()
 
-        const remainMatrix = [...controll.getMatrix()]
+        const remainMatrix = [...control.getMatrix()]
         const latestRow = type === 'next' ? remainMatrix.pop() : remainMatrix.shift()
 
         let newMatrix: Matrix<SearchWindow>
@@ -219,12 +219,12 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
 
         await focusControlWindow()
 
-        controll.setMatrix(newMatrix)
+        control.setMatrix(newMatrix)
       } finally {
-        controll.applyAllEvent()
+        control.applyAllEvent()
       }
     })
-  }, [base, controll, focusControlWindow])
+  }, [base, control, focusControlWindow])
 
   useChangeRowShortcutKey({
     onPressUp: () => changeRow('previus'),
@@ -234,17 +234,17 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
   const handleSubmit = useCallback((newSearchKeyword: string) => {
     console.log('onSubmit')
     if (validKeyword(newSearchKeyword)) {
-      controllProcessing(async () => {
+      controlProcessing(async () => {
         console.log('onSubmit', newSearchKeyword)
-        if (controll === null) {
+        if (control === null) {
           submitKeyword(newSearchKeyword)
         } else {
           try {
             setLoading(true)
             await nextTick()
-            await clearControl(controll)
+            await cleanControl(control)
           } finally {
-            setControll(() => {
+            setControl(() => {
               submitKeyword(newSearchKeyword)
               return null
             })
@@ -252,11 +252,11 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
         }
       })
     }
-  }, [clearControl, controll])
+  }, [cleanControl, control])
 
   useEffect(function receiveChangeSearchMessage() {
     const [ applyReceive, cancelReceive ] = MessageEvent('ChangeSearch', (new_keyword) => {
-      controll?.cancelAllEvent()
+      control?.cancelAllEvent()
 
       if (controlWindowId !== undefined) {
         chrome.windows.update(controlWindowId, { focused: true }).then(() => {
@@ -267,7 +267,7 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
     applyReceive()
 
     return cancelReceive
-  }, [controlWindowId, controll, handleSubmit])
+  }, [controlWindowId, control, handleSubmit])
 
   useLaunchContextMenu(base.preferences)
 
