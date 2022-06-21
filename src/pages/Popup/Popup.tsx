@@ -5,7 +5,7 @@ import { controlIsLaunched } from '../../x-state/control-window-launched'
 import { sendMessage } from '../../message'
 import launchControlWindow from '../../Background/launch'
 
-import useCurrentWindowId from '../../hooks/useCurrentWindowId'
+import useCurrentWindow from '../../hooks/useCurrentWindow'
 import useWindowFocus from '../../hooks/useWindowFocus'
 
 import { validKeyword } from '../../utils/search'
@@ -26,7 +26,7 @@ const Popup = () => {
 
 function AppMain() {
   const [input, setInput] = useState('')
-  const current_window_id = useCurrentWindowId()
+  const current_window_id = useCurrentWindow()?.windowId
   const windowIsFocus = useWindowFocus(true)
 
   return (
@@ -39,7 +39,7 @@ function AppMain() {
         onSubmit={({ keyword: newSearchKeyword }) => {
           console.log('onSubmit', newSearchKeyword)
           if (validKeyword(newSearchKeyword)) {
-            if (current_window_id !== null) {
+            if (current_window_id !== undefined) {
               processing(async () => {
                 if (await controlIsLaunched()) {
                   console.log('send ChangeSearch message')
