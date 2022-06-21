@@ -53,7 +53,7 @@ function calcMaxColumn(siteSettings: SiteSettings) {
 
 function hasEmptyRow(siteSettingsRows: SiteSettings) {
   return !siteSettingsRows.every(r => r.row.length)
-} 
+}
 
 function needAdjustWidth({
   oldSettings,
@@ -82,7 +82,7 @@ function needAdjustWidth({
   const isBig =
     (newCol > max_window_per_line) ||
     (oldCol > max_window_per_line)
-  
+
   if (!isShowOrHideAddIcon || isBig) {
     if (hasEmptyRow(newSettings) || isAddNewRow) {
       return 1000

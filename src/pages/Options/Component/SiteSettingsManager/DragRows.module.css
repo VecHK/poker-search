@@ -77,8 +77,16 @@
 }
 
 .TransitionItem {
-  /* display: initial; */
   --timing: 382ms;
+  --inner-height: 160px;
+  --padding-vertical: 15px;
+  --margin-bottom: 12px;
+
+  --total-height: calc(
+    var(--inner-height) +
+    (var(--padding-vertical) * 2) +
+    var(--margin-bottom)
+  );
 }
 .TransitionItemEnter {
   transition: opacity var(--timing), height var(--timing);
@@ -86,7 +94,7 @@
   opacity: 0;
 }
 .TransitionItemEnterActive {
-  height: calc(180px + 12px);
+  height: var(--total-height);
   opacity: 1;
 }
 .TransitionItemEnterDone {
@@ -95,7 +103,7 @@
 }
 .TransitionItemExit {
   transition: opacity var(--timing), height var(--timing);
-  height: calc(180px + 12px);
+  height: var(--total-height);
 }
 .TransitionItemExitActive {
   opacity: 0;
