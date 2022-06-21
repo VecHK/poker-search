@@ -29,21 +29,20 @@ export function sendMessage<
   )
 }
 
-export function MessageEvent<T extends keyof Messages>(
+export function MessageEvent<T extends keyof Messages, Msg extends  Messages[T]>(
   type: T,
   onReceiveMessage: (
-    msg: Messages[T],
+    payload: Msg['payload'],
     sender: chrome.runtime.MessageSender,
     sendRes: (response?: any) => void
   ) => void
 ) {
   const [ applyReceive, cancelReceive ] = ChromeEvent(
     chrome.runtime.onMessage,
-    (msg, sender, sendRes) => {
-      console.log('receive message', msg)
-
+    (msg: Msg, sender, sendRes) => {
       if (type === msg.type) {
-        onReceiveMessage(msg, sender, sendRes)
+        console.log(`received ${msg.type} message:`, msg.payload)
+        onReceiveMessage(msg.payload, sender, sendRes)
       }
     }
   )

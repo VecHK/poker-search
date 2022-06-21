@@ -78,16 +78,16 @@ function runBackground() {
   applySelectionContextMenuClick()
   applyLaunchContextMenuClick()
 
-  const [ applyReceive ] = MessageEvent('ChangeSearch', msg => {
+  const [ applyReceive ] = MessageEvent('ChangeSearch', (search_keyword) => {
     controlIsLaunched().then(is_launched => {
       if (is_launched) {
-        sendMessage('ChangeSearch', msg.payload)
+        sendMessage('ChangeSearch', search_keyword)
       }
     })
   })
   applyReceive()
 
-  const [ applyLaunchContextMenuChange ] = MessageEvent('ChangeLaunchContextMenu', ({ payload: launch_poker_contextmenu}) => {
+  const [ applyLaunchContextMenuChange ] = MessageEvent('ChangeLaunchContextMenu', (launch_poker_contextmenu) => {
     if (launch_poker_contextmenu) {
       presetLaunchContextMenu()
     } else {

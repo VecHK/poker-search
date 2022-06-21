@@ -255,12 +255,11 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
   }, [clearControl, controll])
 
   useEffect(function receiveChangeSearchMessage() {
-    const [ applyReceive, cancelReceive ] = MessageEvent('ChangeSearch', msg => {
+    const [ applyReceive, cancelReceive ] = MessageEvent('ChangeSearch', (new_keyword) => {
       controll?.cancelAllEvent()
 
       if (controlWindowId !== null) {
         chrome.windows.update(controlWindowId, { focused: true }).then(() => {
-          const new_keyword = msg.payload
           handleSubmit(new_keyword)
         })
       }
