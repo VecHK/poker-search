@@ -13,6 +13,8 @@ import { createSearchLayout } from '../../core/layout'
 import { renderMatrix } from '../../core/layout/render'
 import { closeWindows, SearchWindow } from '../../core/layout/window'
 import { calcControlWindowPos } from '../../core/layout/control-window'
+import { MessageEvent } from '../../message'
+import { setControlLaunch } from '../../x-state/control-window-launched'
 
 import useCurrentWindowId from '../../hooks/useCurrentWindowId'
 import useWindowFocus from '../../hooks/useWindowFocus'
@@ -22,8 +24,6 @@ import ArrowButtonGroup from './components/ArrowGroup'
 import SearchForm from '../../components/SearchForm'
 
 import './Control.css'
-import { MessageEvent } from '../../message'
-import { setControlLaunch } from '../../x-state/control-window-launched'
 
 type Control = Unpromise<ReturnType<typeof createSearchLayout>>
 

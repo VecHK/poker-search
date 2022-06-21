@@ -1,4 +1,6 @@
+import { sendMessage } from '../message'
 import { ChromeEvent } from '../utils/chrome-event'
+import { controlIsLaunched } from '../x-state/control-window-launched'
 import launchControlWindow from './launch'
 
 export default function OmniboxEvent() {
@@ -6,11 +8,15 @@ export default function OmniboxEvent() {
   const [ applyOmniBoxInputEntered, cancelOmniBoxInputEntered ] = ChromeEvent(
     chrome.omnibox.onInputEntered,
     (text) => {
-      chrome.windows.getCurrent(({ id }) => {
-        launchControlWindow({
-          text,
-          revert_container_id: id
-        })
+      chrome.windows.getCurrent(async ({ id }) => {
+        if (await controlIsLaunched()) {
+          sendMessage('ChangeSearch', text)
+        } else {
+          launchControlWindow({
+            text,
+            revert_container_id: id
+          })
+        }
       })
     }
   )

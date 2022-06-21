@@ -17,6 +17,8 @@ export default function GlobalCommand() {
             text: undefined,
             revert_container_id: undefined
           })
+        } else {
+          console.warn('control window is launched')
         }
       }
     }
