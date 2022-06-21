@@ -5,7 +5,7 @@ import { getWindowId, WindowID } from './../window'
 import { alarmSetTimeout, alarmTask } from '../../../utils/chrome-alarms'
 import { ChromeEvent } from '../../../utils/chrome-event'
 
-import InitContextMenu from './revert-contentmenu'
+import InitContextMenu from './revert-contextmenu'
 import { InitRefocusEvent, InitRefocusLayout } from './refocus'
 import { Limit } from '../../base/limit'
 
