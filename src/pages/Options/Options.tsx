@@ -3,7 +3,7 @@ import { Memo } from 'vait'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { findIndex, map, propEq, update } from 'ramda'
 
-import { load as loadPreferences, Preferences, save } from '../../preferences'
+import { load as loadPreferences, save as savePreferences, Preferences } from '../../preferences'
 import { SiteSettings } from '../../preferences/site-settings'
 import { getCurrentDisplayLimit, Limit } from '../../core/base/limit'
 
@@ -19,8 +19,8 @@ import Help from './Component/Help'
 import About from './Component/About'
 import SettingItem from './Component/SettingItem'
 import SettingSwitch from './Component/SettingSwitch'
-import LaunchContextMenu, { presetLaunchContextMenu, removeLaunchContextMenu } from '../../Background/launch-contextmenu'
 import { controlIsLaunched } from '../../x-state/control-window-launched'
+import { sendMessage } from '../../message'
 
 const [getAdjustTask, setAdjustTask] = Memo<NodeJS.Timeout | null>(null)
 
@@ -113,7 +113,7 @@ export default function OptionsPage() {
 
   useEffect(() => {
     if (preferences !== undefined) {
-      save(preferences)
+      savePreferences(preferences)
     }
   }, [preferences])
 
@@ -174,11 +174,8 @@ export default function OptionsPage() {
                           if (await controlIsLaunched()) {
                             alert('这个设置需要先关闭 Poker 控制窗')
                           } else {
-                            if (newValue) {
-                              presetLaunchContextMenu()
-                            } else {
-                              removeLaunchContextMenu()
-                            }
+                            sendMessage('ChangeLaunchContextMenu', newValue)
+
                             setPreferences((latestPreferences) => {
                               if (!latestPreferences) {
                                 return undefined

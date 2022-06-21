@@ -48,13 +48,7 @@ ApplyChromeEvent(
 
     presetSelectionContextMenu()
 
-    loadPreferences().then(preferences => {
-      if (preferences.launch_poker_contextmenu) {
-        presetLaunchContextMenu()
-      } else {
-        removeLaunchContextMenu()
-      }
-    })
+    initLaunchContextMenu()
 
     await initControlWindowLaunched()
 
@@ -66,6 +60,16 @@ ApplyChromeEvent(
   }
 )
 
+function initLaunchContextMenu() {
+  console.log('initLaunchContextMenu')
+  loadPreferences().then(preferences => {
+    if (preferences.launch_poker_contextmenu) {
+      presetLaunchContextMenu()
+    }
+  })
+}
+
+runBackground()
 function runBackground() {
   regRules()
 
@@ -82,5 +86,13 @@ function runBackground() {
     })
   })
   applyReceive()
+
+  const [ applyLaunchContextMenuChange ] = MessageEvent('ChangeLaunchContextMenu', ({ payload: launch_poker_contextmenu}) => {
+    if (launch_poker_contextmenu) {
+      presetLaunchContextMenu()
+    } else {
+      removeLaunchContextMenu()
+    }
+  })
+  applyLaunchContextMenuChange()
 }
-runBackground()
