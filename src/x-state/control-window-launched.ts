@@ -1,15 +1,24 @@
+import { WindowID } from '../core/layout/window'
 import Storage from '../utils/storage'
 
-const [ getStorage, setStorage ] = Storage<boolean>('X-ControlWindowLaunched')
+const [ getStorage, setStorage ] = Storage<WindowID | null>('X-ControlWindowLaunched')
 
 export function initControlWindowLaunched() {
-  return setControlLaunch(false)
+  return cleanControlLaunch()
 }
 
-export function controlIsLaunched() {
+export async function controlIsLaunched() {
+  return Boolean(await getStorage())
+}
+
+export async function getControlWindowId() {
   return getStorage()
 }
 
-export function setControlLaunch(val: boolean) {
-  return setStorage(val)
+export function cleanControlLaunch() {
+  return setStorage(null)
+}
+
+export function setControlLaunch(id: WindowID) {
+  return setStorage(id)
 }

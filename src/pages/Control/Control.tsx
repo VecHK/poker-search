@@ -14,17 +14,17 @@ import { renderMatrix } from '../../core/layout/render'
 import { closeWindows, SearchWindow } from '../../core/layout/window'
 import { calcControlWindowPos } from '../../core/layout/control-window'
 import { MessageEvent } from '../../message'
-import { setControlLaunch } from '../../x-state/control-window-launched'
+import { cleanControlLaunch } from '../../x-state/control-window-launched'
 
 import useCurrentWindowId from '../../hooks/useCurrentWindowId'
 import useWindowFocus from '../../hooks/useWindowFocus'
+import useLaunchContextMenu from '../../hooks/useLaunchContextMenu'
 
 import Loading from '../../components/Loading'
 import ArrowButtonGroup from './components/ArrowGroup'
 import SearchForm from '../../components/SearchForm'
 
 import './Control.css'
-import useLaunchContextMenu from '../../hooks/useLaunchContextMenu'
 
 type Control = Unpromise<ReturnType<typeof createSearchLayout>>
 
@@ -113,7 +113,7 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
         clearControl(controll)
       }
 
-      setControlLaunch(false)
+      cleanControlLaunch()
     }
     window.addEventListener('beforeunload', handler)
     return () => {

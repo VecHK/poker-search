@@ -19,7 +19,7 @@ import Help from './Component/Help'
 import About from './Component/About'
 import SettingItem from './Component/SettingItem'
 import SettingSwitch from './Component/SettingSwitch'
-import { controlIsLaunched } from '../../x-state/control-window-launched'
+import { controlIsLaunched, getControlWindowId } from '../../x-state/control-window-launched'
 import { sendMessage } from '../../message'
 
 const [getAdjustTask, setAdjustTask] = Memo<NodeJS.Timeout | null>(null)
@@ -171,11 +171,12 @@ export default function OptionsPage() {
                         value={Boolean(preferences.launch_poker_contextmenu)}
                         onChange={async (newValue) => {
                           console.log('preferences.launch_poker_contextmenu change', newValue)
-                          if (await controlIsLaunched()) {
+                          const control_window_id = await getControlWindowId()
+                          if (control_window_id !== null) {
                             alert('这个设置需要先关闭 Poker 控制窗')
+                            chrome.windows.update(control_window_id, { focused: true })
                           } else {
                             sendMessage('ChangeLaunchContextMenu', newValue)
-
                             setPreferences((latestPreferences) => {
                               if (!latestPreferences) {
                                 return undefined
