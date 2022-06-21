@@ -1,8 +1,8 @@
 import { useEffect, useRef } from 'react'
-import { createMemo } from 'vait'
+import { Memo } from 'vait'
 
 export default function useMount() {
-  const ref = useRef(createMemo(false))
+  const ref = useRef(Memo(false))
   const [getMount, setMount] = ref.current
 
   useEffect(() => {

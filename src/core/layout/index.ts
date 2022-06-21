@@ -1,4 +1,4 @@
-import { createMemo, Lock } from 'vait'
+import { Memo, Lock, Signal } from 'vait'
 import { Base } from '../base'
 import { constructSearchWindowsFast } from './window-create'
 import { selectWindow } from './window-update'
@@ -6,7 +6,7 @@ import { getSearchWindowTabURL, getWindowId, SearchWindow } from './window'
 import { renderCol, renderMatrix } from './render'
 import { selectCol } from '../common'
 import { ApplyChromeEvent } from '../../utils/chrome-event'
-import { Signal } from '../../utils/signal'
+
 import TrustedEvents from './events'
 import { clearMobileIdentifier } from '../../preferences/site-settings'
 import { alarmSetTimeout } from '../../utils/chrome-alarms'
@@ -49,7 +49,7 @@ export async function createSearchLayout({
   }
 
   const { search_matrix } = base
-  const [getMatrix, setMatrix] = createMemo(
+  const [getMatrix, setMatrix] = Memo(
     await constructSearchWindowsFast(
       base,
       search_matrix,

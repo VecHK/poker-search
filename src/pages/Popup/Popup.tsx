@@ -1,6 +1,8 @@
 import { Atomic } from 'vait'
 import React, { useState } from 'react'
 
+import { controlIsLaunched } from '../../x-state/control-window-launched'
+import { sendMessage } from '../../message'
 import launchControlWindow from '../../Background/launch'
 
 import useCurrentWindowId from '../../hooks/useCurrentWindowId'
@@ -39,11 +41,27 @@ function AppMain() {
           if (validKeyword(newSearchKeyword)) {
             if (current_window_id !== null) {
               processing(async () => {
-                await launchControlWindow({
-                  text: newSearchKeyword,
-                  revert_container_id: current_window_id
-                })
-                window.close()
+                if (await controlIsLaunched()) {
+                  console.log('send ChangeSearch message')
+                  sendMessage('ChangeSearch', newSearchKeyword)
+                    .then(() => {
+                      window.close()
+                    })
+                    .catch(err => {
+                      console.warn('send failure:', err)
+                    })
+                } else {
+                  console.log('launchControlWindow')
+                  launchControlWindow({
+                    text: newSearchKeyword,
+                    revert_container_id: current_window_id
+                  })
+                    .then(() => {
+                      window.close()
+                    }).catch(err => {
+                      console.warn('launch failure:', err)
+                    })
+                }
               })
             }
           }
