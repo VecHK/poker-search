@@ -14,7 +14,7 @@ import { renderMatrix } from '../../core/layout/render'
 import { closeWindows, SearchWindow } from '../../core/layout/window'
 import { calcControlWindowPos } from '../../core/layout/control-window'
 import { MessageEvent } from '../../message'
-import { cleanControlLaunch } from '../../x-state/control-window-launched'
+import useControlLaunch from '../../hooks/useControlLaunch'
 
 import useCurrentWindow from '../../hooks/useCurrentWindow'
 import useWindowFocus from '../../hooks/useWindowFocus'
@@ -106,14 +106,12 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
     }
   }, [])
 
-  useEffect(function closeAllWindowBeforeExit() {
+  useEffect(function closeAllWindowBeforeUnload() {
     const handler = () => {
       stop_creating_signal.trigger()
       if (control !== null) {
         cleanControl(control)
       }
-
-      cleanControlLaunch()
     }
     window.addEventListener('beforeunload', handler)
     return () => {
@@ -270,6 +268,7 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
   }, [controlWindowId, control, handleSubmit])
 
   useLaunchContextMenu(base.preferences)
+  useControlLaunch()
 
   return (
     <div className="container">
