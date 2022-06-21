@@ -1,6 +1,7 @@
 import React, { ReactNode, useMemo } from 'react'
 
 import s from './index.module.css'
+import SettingItemTitle from './SettingItemTitle'
 
 export default function SettingItem(props: {
   className?: string
@@ -10,7 +11,7 @@ export default function SettingItem(props: {
 }) {
   const tilteNode = useMemo(() => {
     if (props.title) {
-      return <div className={s.Title}>{props.title}</div>
+      return <SettingItemTitle>{props.title}</SettingItemTitle>
     } else {
       return null
     }
