@@ -15,6 +15,7 @@ import { closeWindows, SearchWindow } from '../../core/layout/window'
 import { calcControlWindowPos } from '../../core/layout/control-window'
 import { MessageEvent } from '../../message'
 import { setControlLaunch } from '../../x-state/control-window-launched'
+import { presetLaunchContentMenu, removeLaunchContentMenu } from '../../Background/launch-contentmenu'
 
 import useCurrentWindowId from '../../hooks/useCurrentWindowId'
 import useWindowFocus from '../../hooks/useWindowFocus'
@@ -268,6 +269,15 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
 
     return cancelReceive
   }, [controlWindowId, controll, handleSubmit])
+
+  useEffect(() => {
+    removeLaunchContentMenu()
+  }, [])
+
+  useEffect(function initLaunchContentMenuBeforeExit() {
+    window.addEventListener('beforeunload', presetLaunchContentMenu)
+    return () => window.removeEventListener('beforeunload', presetLaunchContentMenu)
+  }, [])
 
   return (
     <div className="container">

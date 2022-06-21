@@ -3,9 +3,10 @@ import { MessageEvent, sendMessage } from '../message'
 import { ApplyChromeEvent } from '../utils/chrome-event'
 import { controlIsLaunched, initControlWindowLaunched } from '../x-state/control-window-launched'
 import GlobalCommand from './gloal-command'
+import { presetLaunchContentMenu } from './launch-contentmenu'
 import { regRules } from './moble-access'
 import Omnibox from './omnibox'
-import SelectionContextMenu, { initContentMenu } from './selection-contentmenu'
+import SelectionContextMenu, { presetSelectionContentMenu } from './selection-contentmenu'
 
 console.log('Poker Background')
 
@@ -42,7 +43,8 @@ ApplyChromeEvent(
   async (details) => {
     console.log('chrome.runtime.onInstalled', details)
 
-    initContentMenu()
+    presetSelectionContentMenu()
+    presetLaunchContentMenu()
 
     await initControlWindowLaunched()
 
