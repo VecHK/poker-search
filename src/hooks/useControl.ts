@@ -51,13 +51,6 @@ export default function useControl(base: Base) {
     }
   }, [cleanControl, control, stop_creating_signal])
 
-  useEffect(function controlEventsEffect() {
-    if (control !== null) {
-      control.applyAllEvent()
-      return () => control.cancelAllEvent()
-    }
-  }, [control])
-
   const refreshWindows = useCallback((control_window_id: number, keyword: string) => {
     console.log('refreshWindows')
     setLoading(true)
