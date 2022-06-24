@@ -22,10 +22,10 @@ export default function useControl(base: Base) {
   const cleanControl = useCallback(async (con: Control) => {
     con.cancelAllEvent()
 
-    await Promise.all(closeWindows(con.getRegIds()))
-
-    if (con.refocus_window_id !== undefined) {
-      await Promise.all(closeWindows([con.refocus_window_id]))
+    if (con.refocus_window_id === undefined) {
+      await Promise.all(closeWindows(con.getRegIds()))
+    } else {
+      await Promise.all(closeWindows([con.refocus_window_id, ...con.getRegIds()]))
     }
   }, [])
 
