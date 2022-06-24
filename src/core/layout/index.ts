@@ -16,7 +16,7 @@ export type LayoutInfo = {
   searchList: Array<SearchWindow>
 }
 
-export async function createSearchLayout({
+export async function CreateSearchLayout({
   control_window_id,
   base,
   keyword,
@@ -33,7 +33,7 @@ export async function createSearchLayout({
   onRemovedWindow: () => Promise<void>
   onRefocusLayoutClose: () => Promise<void>
 }) {
-  console.log('createSearchLayout')
+  console.log('CreateSearchLayout')
 
   function getRegIds(): number[] {
     return getMatrix().flat().filter(u => u.state !== 'EMPTY').map(u => u.windowId)
@@ -73,11 +73,6 @@ export async function createSearchLayout({
     onRemovedWindow,
 
     onRefocusLayoutClose,
-
-    async onRefocusLayout() {
-      await refreshLayout([])
-      await chrome.windows.update(control_window_id, { focused: true })
-    },
 
     async onSelectSearchWindow(focused_window_id, [needRefocusingLayout]) {
       console.log('onSelectSearchWindow', focused_window_id)

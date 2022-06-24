@@ -12,15 +12,14 @@ import { MessageEvent } from '../../message'
 
 import useWindowFocus from '../../hooks/useWindowFocus'
 import useCurrentWindow from '../../hooks/useCurrentWindow'
-import useLaunchContextMenu from '../../hooks/useLaunchContextMenu'
 import useControl from '../../hooks/useControl'
+import useReFocusMessage from '../../hooks/useReFocusMessage'
 
 import Loading from '../../components/Loading'
 import SearchForm from '../../components/SearchForm'
 import ArrowButtonGroup from './components/ArrowGroup'
 
 import './Control.css'
-import useFocusLayoutShortcut from '../../hooks/useFocusShortcut'
 
 function useChangeRowShortcutKey(props: {
   onPressUp: () => void
@@ -145,8 +144,7 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
     return cancelReceive
   }, [controlWindowId, control, handleSubmit])
 
-  useFocusLayoutShortcut(controlWindowId, control)
-  useLaunchContextMenu(base.preferences)
+  useReFocusMessage(controlWindowId, control)
 
   return (
     <div className="container">

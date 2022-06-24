@@ -143,8 +143,7 @@ export default async function TrustedEvents({
     RefocusLayout: RL
   ): Promise<void>
 
-    onRefocusLayout(): Promise<void>
-    onRefocusLayoutClose(): Promise<void>
+  onRefocusLayoutClose(): Promise<void>
 }) {
   const isNone = equals<WindowID>(chrome.windows.WINDOW_ID_NONE)
   const isControlWindow = equals(control_window_id)
@@ -169,11 +168,6 @@ export default async function TrustedEvents({
         console.log('InitRefocusEvent close callback')
         cancelAllEvent()
         callbacks.onRefocusLayoutClose().finally(applyAllEvent)
-      },
-      refocus() {
-        console.log('InitRefocusEvent refocus callback')
-        cancelAllEvent()
-        callbacks.onRefocusLayout().finally(applyAllEvent)
       }
     }
   )

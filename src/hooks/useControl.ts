@@ -3,11 +3,11 @@ import { Atomic, Lock, Signal } from 'vait'
 
 import { Base } from '../core/base'
 import { Matrix } from '../core/common'
-import { createSearchLayout } from '../core/layout'
+import { CreateSearchLayout } from '../core/layout'
 import { renderMatrix } from '../core/layout/render'
 import { closeWindows, SearchWindow } from '../core/layout/window'
 
-export type Control = Unpromise<ReturnType<typeof createSearchLayout>>
+export type Control = Unpromise<ReturnType<typeof CreateSearchLayout>>
 
 const controlProcessing = Atomic()
 
@@ -62,7 +62,7 @@ export default function useControl(base: Base) {
     creating_signal.receive(closeHandler)
 
     return (
-      createSearchLayout({
+      CreateSearchLayout({
         control_window_id,
         base,
         keyword,
@@ -85,7 +85,7 @@ export default function useControl(base: Base) {
           // 提前取消
           console.log('提前取消')
         } else {
-          console.error('createSearchLayout error', err)
+          console.error('CreateSearchLayout error', err)
           throw err
         }
       }).finally(() => {
