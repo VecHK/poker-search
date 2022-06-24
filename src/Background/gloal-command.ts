@@ -22,6 +22,7 @@ export default function GlobalCommand() {
     chrome.commands.onCommand,
     async (command) => {
       if (command === 'focus-layout') {
+        console.log('call poker command')
         callPoker()
       }
     }

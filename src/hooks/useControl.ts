@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { Atomic, Lock, Signal } from 'vait'
+import { Atomic, Signal } from 'vait'
 
 import { Base } from '../core/base'
 import { Matrix } from '../core/common'
@@ -68,15 +68,11 @@ export default function useControl(base: Base) {
         keyword,
         stop_creating_signal,
         creating_signal,
-        onRefocusLayoutClose() {
+        async onRefocusLayoutClose() {
           window.close()
-          const [neverResolve] = Lock<void>()
-          return neverResolve
         },
-        onRemovedWindow() {
+        async onRemovedWindow() {
           window.close()
-          const [neverResolve] = Lock<void>()
-          return neverResolve
         },
       }).then(newControl => {
         setControl(newControl)

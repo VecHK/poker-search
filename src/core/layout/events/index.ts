@@ -166,8 +166,7 @@ export default async function TrustedEvents({
     {
       close() {
         console.log('InitRefocusEvent close callback')
-        cancelAllEvent()
-        callbacks.onRefocusLayoutClose().finally(applyAllEvent)
+        callbacks.onRefocusLayoutClose()
       }
     }
   )

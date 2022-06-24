@@ -82,6 +82,7 @@ function runBackground() {
     chrome.windows.onRemoved,
     async (removed_id) => {
       const control_id = await getControlWindowId()
+      console.log('onRemoved', control_id, removed_id)
       if (control_id !== null) {
         if (control_id === removed_id) {
           cleanControlLaunch()
