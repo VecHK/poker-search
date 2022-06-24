@@ -1,120 +1,77 @@
 import { compose, equals, not } from 'ramda'
-import { Atomic, Memo, Signal } from 'vait'
+import { Atomic, Signal } from 'vait'
 import cfg from '../../../config'
 import { getWindowId, WindowID } from './../window'
-import { AlarmSetTimeout, AlarmTask } from '../../../utils/chrome-alarms'
+import { AlarmSetTimeout } from '../../../utils/chrome-alarms'
 import { ChromeEvent } from '../../../utils/chrome-event'
 
 import { InitRefocusEvent, InitRefocusLayout } from './refocus'
 import InitMinimizedDetecting from './minimized-detecting'
 import { Limit } from '../../base/limit'
+import DoubleFocusProtection from './double-focus-protection'
 
-type Route = 'REMOVED' | 'MAXIMIZED' | 'FOCUS' | 'MINIMIZED'
+export type Route = 'REMOVED' | 'FOCUS' | 'MAXIMIZED' | 'MINIMIZED'
+type CallRoute<R extends Route, P extends Record<string, unknown>> = {
+  route: R,
+  payload: P
+}
 
-// 回避 Windows 的双次触发 focusChanged 事件
-// refs: #101 #109 #115
-function DoubleFocusProtect(
-  { isLayout, isNone, signal }: {
-    isLayout: (id: WindowID) => boolean,
-    isNone: (id: WindowID) => boolean,
-    signal: Signal<Route>
-  },
-  callback: (true_id: WindowID) => void
-) {
-  type Callback = (id: WindowID) => void
+type R =
+  CallRoute<'MAXIMIZED', { id: WindowID, win: chrome.windows.Window }> |
+  CallRoute<'MINIMIZED', { win_list: chrome.windows.Window[] }> |
+  CallRoute<'REMOVED', { id: WindowID }> |
+  CallRoute<'FOCUS', { id: WindowID }>
 
-  const [getReceivedId, setReceivedId] = Memo<Array<WindowID>>([])
-  const clearReceivedId = () => setReceivedId([])
-  const appendReceivedId = (win_id: WindowID) => setReceivedId([...getReceivedId(), win_id])
-
-  let alarm_task: ReturnType<typeof AlarmTask> | undefined
-
-  function dispatch(received: Array<WindowID>, callback: Callback) {
-    const [first, second] = received
-    if (received.length === 1) {
-      callback(first)
-    } else {
-      if (isLayout(first) && isNone(second)) {
-        callback(first)
-      }
-      else if (isLayout(second) && isNone(first)) {
-        callback(second)
-      }
-      else {
-        // [ None, None ]
-        console.log('[ None, None ]')
-        callback(chrome.windows.WINDOW_ID_NONE)
-      }
-    }
-  }
-
-  return (
-    function focusChangedHandler(
-      untrusted_focused_window_id: WindowID,
-    ) {
-      if (alarm_task === undefined) {
-        alarm_task = AlarmTask(
-          cfg.WINDOWS_DOUBLE_FOCUS_WAITING_DURATION,
-          () => {}
-        )
-      }
-
-      let stop = false
-      const handler = (route: Route) => {
-        signal.unReceive(handler)
-        if (route !== 'FOCUS') {
-          stop = true
-        }
-      }
-      if (signal.isEmpty()) {
-        signal.receive(handler)
-      }
-
-      appendReceivedId(untrusted_focused_window_id)
-
-      const [insteadTask] = alarm_task
-
-      insteadTask(() => {
-        signal.unReceive(handler)
-
-        if (stop !== true) {
-          const received = getReceivedId()
-
-          alarm_task = undefined
-          clearReceivedId()
-
-          dispatch(received, callback)
-        }
-      })
-    }
-  )
+interface CallEvent {
+  (r: R): void
 }
 
 /**
- * removed/focus/bounds 事件调度
- * 作为 onRemovedWindow、onSelectSearchWindow、onEnterFullscreenOrMaximized
- * 的代理。目的是让这三个更专注处理需求而不是关注事件调度
+ * TrustedEvents 事件调度
  *
- * 关于事件调用，会有这些场景（右边括号的为事件的调用顺序）：
- *   1) 失焦的情况点击标题栏 ( focus )
- *   2) 失焦的情况点击全屏/最大化 ( focus -> bounds )
- *   3) 失焦的情况按住 Command 点击全屏/最大化 ( bounds )
- *   4) 没有失去焦点的时候点击全屏/最大化 ( bounds )
- *   5) 失去焦点的时候拖拽窗口边缘进行尺寸调整 ( focus -> bounds )
- *   6) 没有失去焦点的时候拖拽窗口边缘进行尺寸调整 ( bounds )
- *   7) 失去焦点的时候点击关闭按钮 ( focus -> removed )
- *   8) 没有失去焦点的时候点击关闭按钮 ( removed )
- *   9) 失焦的情况按住 Command 点击关闭按钮 ( removed )
+ * 实现这个的目的是因为：
+ *   A) Windows 系统中的 Chrome，有时候会触发两次 onFocusChanged。见 #101
+ *   B) Windows 系统中的 Chrome，有时候会无法触发 WINDOW_NONE 的 onFocusChanged。见 #109
+ *   C) macOS 系统中的 Chrome，会无法识别 state: Minimized 的 onBoundsChanged。见 #130
+ *   D) onFocusChanged 与 onBoundsChanged 存在一些冲突
+ *
+ * 对于 (A)，见 DoubleFocusProtection。大概是定了一个时间，然后在超时的时候查询
+ * 在这个时间内收到的 window_id ，根据收到的 window_id 来判断真正的 focusChanged
+ *
+ * 对于 (B)，使用了唤回窗来做，见InitRefocusEvent、InitRefocusLayout。大概就是新建了
+ * 一个窗口，然后点击这个窗口里的按钮后发送 REFOCUS 的消息,
+ * 控制窗的 useReFocusMessage 钩子在收到这个消息的时候进行poker layout 的重新焦聚
+ *
+ * 对于 (C)，因为还原窗口原本是设想点击最大化按钮的，但macOS中并没有这种按钮
+ * mac里只有类似的全屏按钮，可是用全屏作为还愿窗口的话会很奇怪，而且在系统资源紧张
+ * 的时候表现效果很差。所以需要利用最小化来去做，可是 onBoundsChanged 似乎并不能
+ * 触发最小化的事件，于是只能自己实现了，见 InitMinimizedDetecting。
+ *
+ * 对于 (D)，在窗口失焦的时候点击最小化、最大化、全屏，会先触发 onFocusChanged 事件后
+ * 再触发 onBoundsChanged，这就需要消除掉这种冲突的情况。关于 onFocusChanged、onBoundsChanged 的
+ * 事件调用，会有这些情况（右边括号的为事件的调用顺序）：
+ *   1. 失焦的情况点击标题栏 ( focus )
+ *   2. 失焦的情况点击全屏/最大化 ( focus -> bounds )
+ *   3. 失焦的情况按住 Command 点击全屏/最大化 ( bounds )
+ *   4. 没有失去焦点的时候点击全屏/最大化 ( bounds )
+ *   5. 失去焦点的时候拖拽窗口边缘进行尺寸调整 ( focus -> bounds )
+ *   6. 没有失去焦点的时候拖拽窗口边缘进行尺寸调整 ( bounds )
+ *   7. 失去焦点的时候点击关闭按钮 ( focus -> removed )
+ *   8. 没有失去焦点的时候点击关闭按钮 ( removed )
+ *   9. 失焦的情况按住 Command 点击关闭按钮 ( removed )
  *
  * 主要的麻烦点在于 2、5、7，他们是先执行 focus 后，才执行真正需要的事件
  * 我们需要保证调用顺序，该是选择窗口，还是最大化全屏，还是关闭，要做到
  * 这三个事件不会重复执行。
  *
- * 对于 5，可以利用 isMinimizedOrMaximized 来过滤掉
+ * 对于 5，可以利用 isMaximized 来过滤掉，因为 onBoundsChanged 只需要用到最大化
  * 2 和 7 在下边利用信号触发机制（本质上事件传递、回调函数）来解决
  * 缺点是若 bounds 事件在 cfg.SEARCH_FOCUS_INTERVAL 毫秒后未触发的话
- * 就无法成功获得预期的效果。现在的计算机响应都够快，所以这种缺点还算是
+ * 就无法成功获得预期的效果。不过现在的计算机响应都够快，所以这种缺点还算是
  * 能够接受的。
+ *
+ * 这儿有个没有考虑的情况，那就是 InitMinimizedDetecting 没有考虑进来。
+ * 不过似乎是没有冲突的。
  */
 type RL = ReturnType<typeof InitRefocusLayout>
 export default async function TrustedEvents({
@@ -178,21 +135,6 @@ export default async function TrustedEvents({
 
   const routeProcessing = Atomic()
 
-  type CallRoute<R extends Route, P extends Record<string, unknown>> = {
-    route: R,
-    payload: P
-  }
-
-  type R =
-    CallRoute<'MAXIMIZED', { id: WindowID, win: chrome.windows.Window }> |
-    CallRoute<'MINIMIZED', { win_list: chrome.windows.Window[] }> |
-    CallRoute<'REMOVED', { id: WindowID }> |
-    CallRoute<'FOCUS', { id: WindowID }>
-
-  interface CallEvent {
-    (r: R): void
-  }
-
   const callEvent: CallEvent = ({ route, payload }) => {
     signal.trigger(route)
 
@@ -252,7 +194,7 @@ export default async function TrustedEvents({
     }
   }
 
-  const focusChangedHandler = DoubleFocusProtect(
+  const focusChangedHandler = DoubleFocusProtection(
     { isLayout, isNone, signal },
     (true_id) => {
       if (!isLayout(true_id)) {
