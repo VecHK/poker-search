@@ -1,6 +1,6 @@
 import { mapMatrix, selectCol } from '../common'
 import { isCurrentRow } from './matrix'
-import { SearchWindowMatrix, SearchWindow } from './window'
+import { SearchWindowMatrix, SearchWindow, WindowID } from './window'
 
 const pickItem = <T extends unknown>(arr: T[], idx: number) => [
   arr[idx],
@@ -31,7 +31,7 @@ function changeCurrentRowInColumn(
 type FindRowColByIdResult = Readonly<[false]> | Readonly<[true, number, number]>
 function findSearchWindowById(
   matrix: SearchWindowMatrix,
-  find_id: number
+  find_id: WindowID
 ): FindRowColByIdResult {
   for (let [find_row, line] of matrix.entries()) {
     for (let [find_col, u] of line.entries()) {
@@ -50,12 +50,12 @@ type Update = Readonly<{
   row: number
   col: number
 }>
-type SelectWindowResult = 
-  Readonly<[ NeedUpdate<false> ]> | 
+type SelectWindowResult =
+  Readonly<[ NeedUpdate<false> ]> |
   Readonly<[ NeedUpdate<true>, Update ]>
 export function selectWindow(
   matrix: SearchWindowMatrix,
-  window_id: number
+  window_id: WindowID
 ): SelectWindowResult {
   const [find, row, col] = findSearchWindowById(matrix, window_id)
   if (find) {
@@ -72,7 +72,7 @@ export function selectWindow(
 
 export function updateWindowById(
   matrix: SearchWindowMatrix,
-  find_id: number,
+  find_id: WindowID,
   update: Partial<Omit<SearchWindow, 'windowId'>>
 ) {
   return mapMatrix(matrix, (u => {

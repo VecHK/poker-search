@@ -5,7 +5,7 @@ import { Base } from '../core/base'
 import { Matrix } from '../core/common'
 import { CreateSearchLayout } from '../core/layout'
 import { renderMatrix } from '../core/layout/render'
-import { closeWindows, SearchWindow } from '../core/layout/window'
+import { closeWindows, SearchWindow, WindowID } from '../core/layout/window'
 
 export type Control = Unpromise<ReturnType<typeof CreateSearchLayout>>
 
@@ -51,7 +51,7 @@ export default function useControl(base: Base) {
     }
   }, [cleanControl, control, stop_creating_signal])
 
-  const refreshWindows = useCallback((control_window_id: number, keyword: string) => {
+  const refreshWindows = useCallback((control_window_id: WindowID, keyword: string) => {
     console.log('refreshWindows')
     setLoading(true)
 

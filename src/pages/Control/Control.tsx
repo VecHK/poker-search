@@ -4,6 +4,7 @@ import cfg from '../../config'
 
 import { Base } from '../../core/base'
 import { calcControlWindowPos } from '../../core/layout/control-window'
+import { WindowID } from '../../core/layout/window'
 import { MessageEvent } from '../../message'
 
 import getQuery from '../../utils/get-query'
@@ -64,7 +65,7 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
     }
   }, [controlWindowId])
 
-  const moveControlWindow = useCallback(async (id: number) => {
+  const moveControlWindow = useCallback(async (id: WindowID) => {
     const [ top, left ] = calcControlWindowPos(base.layout_height, base.limit)
     await chrome.windows.update(id, { top, left })
   }, [base.layout_height, base.limit])
