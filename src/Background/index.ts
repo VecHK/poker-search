@@ -19,12 +19,13 @@ Object.assign(global, {
 const [ applyGlobalCommand, cancelGlobalCommand ] = GlobalCommand()
 const [ applyOmnibox, cancelOmnibox ] = Omnibox()
 const [ applySelectionContextMenuClick, cancelSelectionContextMenuClick ] = SelectionContextMenu()
-const [ applyLaunchContextMenuClick ] = LaunchContextMenu()
+const [ applyLaunchContextMenuClick, cancelLaunchContextMenuClick ] = LaunchContextMenu()
 
 async function __hot_reload_before__(): Promise<void> {
   cancelGlobalCommand()
   cancelOmnibox()
   cancelSelectionContextMenuClick()
+  cancelLaunchContextMenuClick()
 }
 
 function createInstalledWindow(is_update: boolean) {
