@@ -41,7 +41,7 @@ function useChangeRowShortcutKey(props: {
 }
 
 const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
-  const [keyword, setKeyword] = useState('')
+  const [keywordInput, setKeywordInput] = useState('')
   const [submitedKeyword, submitKeyword] = useState<string | false>(false)
 
   const windowIsFocus = useWindowFocus(true)
@@ -100,7 +100,7 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
     if (searchWord !== null) {
       if (validKeyword(searchWord)) {
         submitKeyword(searchWord)
-        setKeyword(searchWord)
+        setKeywordInput(searchWord)
       }
     }
   }, [])
@@ -108,6 +108,8 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
   const handleSubmit = useCallback((newSearchKeyword: string) => {
     console.log('onSubmit')
     if (validKeyword(newSearchKeyword)) {
+      setKeywordInput(newSearchKeyword)
+
       controlProcessing(async () => {
         console.log('onSubmit', newSearchKeyword)
         if (control === null) {
@@ -151,9 +153,9 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
       {isLoading ? <Loading /> : (
         <>
           <SearchForm
-            keyword={keyword}
             keywordPlaceholder={`请输入搜索词`}
-            setKeyword={setKeyword}
+            keyword={keywordInput}
+            setKeyword={setKeywordInput}
             submitButtonActive={windowIsFocus}
             onSubmit={({ keyword }) => {
               handleSubmit(keyword)
