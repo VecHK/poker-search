@@ -1,27 +1,19 @@
-import cfg from '../config'
-import { MessageEvent, sendMessage } from '../message'
 import { ApplyChromeEvent } from '../utils/chrome-event'
-import {
-  cleanControlLaunch,
-  controlIsLaunched,
-  getControlWindowId,
-  initControlWindowLaunched
-} from '../x-state/control-window-launched'
 
-import GlobalCommand from './gloal-command'
-import { regRules } from './mobile-access'
-import Omnibox from './omnibox'
-import LaunchContextMenu, { presetLaunchContextMenu, removeLaunchContextMenu } from './launch-contextmenu'
-import SelectionContextMenu, { presetSelectionContextMenu } from './selection-contextmenu'
+import GlobalCommand from './modules/gloal-command'
+import Omnibox from './modules/omnibox'
+import LaunchContextMenu from './modules/launch-contextmenu'
+import SelectionContextMenu from './modules/selection-contextmenu'
 
-import { load as loadPreferences } from '../preferences'
+import BackgroundOnInstalled from './onInstalled'
+import runBackground from './run'
 
 console.log('Poker Background')
 
-const [ applyGlobalCommand, cancelGlobalCommand ] = GlobalCommand()
-const [ applyOmnibox, cancelOmnibox ] = Omnibox()
-const [ applySelectionContextMenuClick, cancelSelectionContextMenuClick ] = SelectionContextMenu()
-const [ applyLaunchContextMenuClick, cancelLaunchContextMenuClick ] = LaunchContextMenu()
+const [ , cancelGlobalCommand ] = GlobalCommand()
+const [ , cancelOmnibox ] = Omnibox()
+const [ , cancelSelectionContextMenuClick ] = SelectionContextMenu()
+const [ , cancelLaunchContextMenuClick ] = LaunchContextMenu()
 
 if (process.env.NODE_ENV === 'development') {
   Object.assign(global, {
@@ -34,89 +26,6 @@ if (process.env.NODE_ENV === 'development') {
   })
 }
 
-ApplyChromeEvent(
-  chrome.runtime.onInstalled,
-  async (details) => {
-    console.log('chrome.runtime.onInstalled', details)
-
-    presetSelectionContextMenu()
-
-    initLaunchContextMenu()
-
-    await initControlWindowLaunched()
-
-    if (details.reason === 'install') {
-      openInstalledWindow(false)
-    } else if (details.reason === 'update') {
-      openInstalledWindow(true)
-    }
-  }
-)
-
-function initLaunchContextMenu() {
-  console.log('initLaunchContextMenu')
-  loadPreferences().then(preferences => {
-    if (preferences.launch_poker_contextmenu) {
-      presetLaunchContextMenu()
-    }
-  })
-}
-
-function openInstalledWindow(is_update: boolean) {
-  const append_params = is_update ? '?update=1' : ''
-
-  return chrome.windows.create({
-    focused: false,
-    type: 'popup',
-    width: cfg.INSTALLED_WINDOW_WIDTH,
-    height: cfg.INSTALLED_WINDOW_HEIGHT,
-    left: 0,
-    top: 0,
-    url: chrome.runtime.getURL(`/installed.html${append_params}`)
-  })
-}
+ApplyChromeEvent(chrome.runtime.onInstalled, BackgroundOnInstalled)
 
 runBackground()
-function runBackground() {
-  console.log('runBackground')
-
-  regRules()
-
-  applyGlobalCommand()
-  applyOmnibox()
-  applySelectionContextMenuClick()
-  applyLaunchContextMenuClick()
-
-  ApplyChromeEvent(
-    chrome.windows.onRemoved,
-    async (removed_id) => {
-      const control_id = await getControlWindowId()
-      console.log('onRemoved', control_id, removed_id)
-      if (control_id !== null) {
-        if (control_id === removed_id) {
-          cleanControlLaunch()
-        }
-      }
-    }
-  )
-
-  const [ applyReceive ] = MessageEvent('ChangeSearch', (search_keyword) => {
-    controlIsLaunched().then(is_launched => {
-      if (is_launched) {
-        sendMessage('ChangeSearch', search_keyword)
-      }
-    })
-  })
-  applyReceive()
-
-  const [ applyLaunchContextMenuChange ] = MessageEvent('ChangeLaunchContextMenu', (launch_poker_contextmenu) => {
-    if (launch_poker_contextmenu) {
-      presetLaunchContextMenu()
-    } else {
-      removeLaunchContextMenu()
-    }
-  })
-  applyLaunchContextMenuChange()
-
-  console.log('runBackground end')
-}

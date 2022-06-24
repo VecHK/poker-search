@@ -1,6 +1,6 @@
-import { sendMessage } from '../message'
-import { ChromeContextMenus } from '../utils/chrome-contextmenu'
-import { controlIsLaunched } from '../x-state/control-window-launched'
+import { sendMessage } from '../../message'
+import { ChromeContextMenus } from '../../utils/chrome-contextmenu'
+import { controlIsLaunched } from '../../x-state/control-window-launched'
 import launchControlWindow from './launch'
 
 const contextMenu = () => (

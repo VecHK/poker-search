@@ -3,7 +3,7 @@ import React, { useState } from 'react'
 
 import { controlIsLaunched } from '../../x-state/control-window-launched'
 import { sendMessage } from '../../message'
-import launchControlWindow from '../../Background/launch'
+import launchControlWindow from '../../Background/modules/launch'
 
 import useCurrentWindow from '../../hooks/useCurrentWindow'
 import useWindowFocus from '../../hooks/useWindowFocus'

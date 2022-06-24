@@ -1,4 +1,4 @@
-import cfg from '../config'
+import cfg from '../../config'
 const { ResourceType, RuleActionType } = chrome.declarativeNetRequest
 
 async function removeAllRules() {

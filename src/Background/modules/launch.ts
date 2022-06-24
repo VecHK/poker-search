@@ -1,7 +1,7 @@
-import cfg from '../config'
-import { createBase, RevertContainerID } from '../core/base'
-import { calcControlWindowPos } from '../core/layout/control-window'
-import { controlIsLaunched, setControlLaunch } from '../x-state/control-window-launched'
+import cfg from '../../config'
+import { createBase, RevertContainerID } from '../../core/base'
+import { calcControlWindowPos } from '../../core/layout/control-window'
+import { controlIsLaunched, setControlLaunch } from '../../x-state/control-window-launched'
 
 function generateUrl({ text, revert_container_id }: {
   text?: string

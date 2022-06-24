@@ -1,6 +1,6 @@
-import { sendMessage } from '../message'
-import { ChromeEvent } from '../utils/chrome-event'
-import { controlIsLaunched } from '../x-state/control-window-launched'
+import { sendMessage } from '../../message'
+import { ChromeEvent } from '../../utils/chrome-event'
+import { controlIsLaunched } from '../../x-state/control-window-launched'
 import launchControlWindow from './launch'
 
 export default function OmniboxEvent() {
