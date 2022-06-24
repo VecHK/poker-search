@@ -6,6 +6,8 @@ import { findIndex, map, propEq, update } from 'ramda'
 import { load as loadPreferences, save as savePreferences, Preferences } from '../../preferences'
 import { SiteSettings } from '../../preferences/site-settings'
 import { getCurrentDisplayLimit, Limit } from '../../core/base/limit'
+import { getControlWindowId } from '../../x-state/control-window-launched'
+import { sendMessage } from '../../message'
 
 import SettingHeader from './Component/SettingHeader'
 import SiteSettingsManager from './Component/SiteSettingsManager'
@@ -13,15 +15,13 @@ import Loading from '../../components/Loading'
 import Failure from './Component/Failure'
 import ImportExport from './Component/ImportExport'
 
-import s from './Options.module.css'
-
 import Help from './Component/Help'
 import About from './Component/About'
 import SettingItem from './Component/SettingItem'
 import SettingSwitch from './Component/SettingSwitch'
-import { getControlWindowId } from '../../x-state/control-window-launched'
-import { sendMessage } from '../../message'
 import SettingItemTitle from './Component/SettingItem/SettingItemTitle'
+
+import s from './Options.module.css'
 
 const [getAdjustTask, setAdjustTask] = Memo<NodeJS.Timeout | null>(null)
 
@@ -175,7 +175,7 @@ export default function OptionsPage() {
                           const control_window_id = await getControlWindowId()
                           if (control_window_id !== null) {
                             alert('修改这个设置项需要先关闭 Poker 控制窗')
-                            chrome.windows.update(control_window_id, { focused: true })
+                            sendMessage('Refocus', null)
                           } else {
                             sendMessage('ChangeLaunchContextMenu', newValue)
                             setPreferences((latestPreferences) => {
