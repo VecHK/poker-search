@@ -1,6 +1,5 @@
 import { ChromeContextMenus } from '../utils/chrome-contextmenu'
-import { controlIsLaunched } from '../x-state/control-window-launched'
-import launchControlWindow from './launch'
+import { callPoker } from './gloal-command'
 
 const contextMenu = () => (
   ChromeContextMenus(
@@ -9,19 +8,7 @@ const contextMenu = () => (
       contexts: ['page'],
       title: '启动Poker'
     },
-    async (info, tab) => {
-      if (tab) {
-        if (await controlIsLaunched()) {
-          console.error('poker control window is launched')
-        } else {
-          const { windowId } = tab
-          launchControlWindow({
-            text: undefined,
-            revert_container_id: windowId
-          })
-        }
-      }
-    }
+    callPoker
   )
 )
 

@@ -12,16 +12,14 @@ import { MessageEvent } from '../../message'
 
 import useWindowFocus from '../../hooks/useWindowFocus'
 import useCurrentWindow from '../../hooks/useCurrentWindow'
-import useLaunchContextMenu from '../../hooks/useLaunchContextMenu'
-import useControlLaunch from '../../hooks/useControlLaunch'
 import useControl from '../../hooks/useControl'
+import useReFocusMessage from '../../hooks/useReFocusMessage'
 
 import Loading from '../../components/Loading'
 import SearchForm from '../../components/SearchForm'
 import ArrowButtonGroup from './components/ArrowGroup'
 
 import './Control.css'
-import useFocusLayoutShortcut from '../../hooks/useFocusShortcut'
 
 function useChangeRowShortcutKey(props: {
   onPressUp: () => void
@@ -43,7 +41,7 @@ function useChangeRowShortcutKey(props: {
 }
 
 const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
-  const [keyword, setKeyword] = useState('')
+  const [keywordInput, setKeywordInput] = useState('')
   const [submitedKeyword, submitKeyword] = useState<string | false>(false)
 
   const windowIsFocus = useWindowFocus(true)
@@ -102,7 +100,7 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
     if (searchWord !== null) {
       if (validKeyword(searchWord)) {
         submitKeyword(searchWord)
-        setKeyword(searchWord)
+        setKeywordInput(searchWord)
       }
     }
   }, [])
@@ -110,6 +108,8 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
   const handleSubmit = useCallback((newSearchKeyword: string) => {
     console.log('onSubmit')
     if (validKeyword(newSearchKeyword)) {
+      setKeywordInput(newSearchKeyword)
+
       controlProcessing(async () => {
         console.log('onSubmit', newSearchKeyword)
         if (control === null) {
@@ -146,18 +146,16 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
     return cancelReceive
   }, [controlWindowId, control, handleSubmit])
 
-  useFocusLayoutShortcut(controlWindowId, control)
-  useLaunchContextMenu(base.preferences)
-  useControlLaunch()
+  useReFocusMessage(controlWindowId, control)
 
   return (
     <div className="container">
       {isLoading ? <Loading /> : (
         <>
           <SearchForm
-            keyword={keyword}
             keywordPlaceholder={`请输入搜索词`}
-            setKeyword={setKeyword}
+            keyword={keywordInput}
+            setKeyword={setKeywordInput}
             submitButtonActive={windowIsFocus}
             onSubmit={({ keyword }) => {
               handleSubmit(keyword)

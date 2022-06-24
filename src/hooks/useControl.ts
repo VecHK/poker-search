@@ -1,13 +1,13 @@
 import { useCallback, useEffect, useState } from 'react'
-import { Atomic, Lock, Signal } from 'vait'
+import { Atomic, Signal } from 'vait'
 
 import { Base } from '../core/base'
 import { Matrix } from '../core/common'
-import { createSearchLayout } from '../core/layout'
+import { CreateSearchLayout } from '../core/layout'
 import { renderMatrix } from '../core/layout/render'
 import { closeWindows, SearchWindow } from '../core/layout/window'
 
-export type Control = Unpromise<ReturnType<typeof createSearchLayout>>
+export type Control = Unpromise<ReturnType<typeof CreateSearchLayout>>
 
 const controlProcessing = Atomic()
 
@@ -22,10 +22,10 @@ export default function useControl(base: Base) {
   const cleanControl = useCallback(async (con: Control) => {
     con.cancelAllEvent()
 
-    await Promise.all(closeWindows(con.getRegIds()))
-
-    if (con.refocus_window_id !== undefined) {
-      await Promise.all(closeWindows([con.refocus_window_id]))
+    if (con.refocus_window_id === undefined) {
+      await Promise.all(closeWindows(con.getRegIds()))
+    } else {
+      await Promise.all(closeWindows([con.refocus_window_id, ...con.getRegIds()]))
     }
   }, [])
 
@@ -51,13 +51,6 @@ export default function useControl(base: Base) {
     }
   }, [cleanControl, control, stop_creating_signal])
 
-  useEffect(function controlEventsEffect() {
-    if (control !== null) {
-      control.applyAllEvent()
-      return () => control.cancelAllEvent()
-    }
-  }, [control])
-
   const refreshWindows = useCallback((control_window_id: number, keyword: string) => {
     console.log('refreshWindows')
     setLoading(true)
@@ -69,21 +62,17 @@ export default function useControl(base: Base) {
     creating_signal.receive(closeHandler)
 
     return (
-      createSearchLayout({
+      CreateSearchLayout({
         control_window_id,
         base,
         keyword,
         stop_creating_signal,
         creating_signal,
-        onRefocusLayoutClose() {
+        async onRefocusLayoutClose() {
           window.close()
-          const [neverResolve] = Lock<void>()
-          return neverResolve
         },
-        onRemovedWindow() {
+        async onRemovedWindow() {
           window.close()
-          const [neverResolve] = Lock<void>()
-          return neverResolve
         },
       }).then(newControl => {
         setControl(newControl)
@@ -92,7 +81,7 @@ export default function useControl(base: Base) {
           // 提前取消
           console.log('提前取消')
         } else {
-          console.error('createSearchLayout error', err)
+          console.error('CreateSearchLayout error', err)
           throw err
         }
       }).finally(() => {

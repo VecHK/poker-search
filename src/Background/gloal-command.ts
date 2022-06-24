@@ -1,6 +1,18 @@
+import { sendMessage } from '../message'
 import { ChromeEvent } from '../utils/chrome-event'
 import { controlIsLaunched } from '../x-state/control-window-launched'
 import launchControlWindow from './launch'
+
+export async function callPoker() {
+  if (await controlIsLaunched()) {
+    sendMessage('Refocus', null)
+  } else {
+    launchControlWindow({
+      text: undefined,
+      revert_container_id: undefined
+    })
+  }
+}
 
 // 未启动Poker的控制窗时候，快捷键 focus-layout 为启动 Poker 控制窗
 // 在启动控制窗后，快捷键 focus-layout 不进行任何操作
@@ -10,14 +22,8 @@ export default function GlobalCommand() {
     chrome.commands.onCommand,
     async (command) => {
       if (command === 'focus-layout') {
-        if (await controlIsLaunched()) {
-          console.error('control window is launched')
-        } else {
-          launchControlWindow({
-            text: undefined,
-            revert_container_id: undefined
-          })
-        }
+        console.log('call poker command')
+        callPoker()
       }
     }
   )

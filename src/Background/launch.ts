@@ -1,8 +1,7 @@
 import cfg from '../config'
 import { createBase, RevertContainerID } from '../core/base'
 import { calcControlWindowPos } from '../core/layout/control-window'
-import { ApplyChromeEvent } from '../utils/chrome-event'
-import { cleanControlLaunch, controlIsLaunched, setControlLaunch } from '../x-state/control-window-launched'
+import { controlIsLaunched, setControlLaunch } from '../x-state/control-window-launched'
 
 function detectUrl({ text, revert_container_id }: {
   text?: string
@@ -51,21 +50,11 @@ export default async function launchControlWindow({ text, revert_container_id }:
 
     const { id: control_window_id } = controlWindow
 
-    if (control_window_id !== undefined) {
-      await setControlLaunch(control_window_id)
-    } else {
+    if (control_window_id === undefined) {
       throw Error('launchControlWindow: control_window_id is undefined')
+    } else {
+      await setControlLaunch(control_window_id)
     }
-
-    const cancelRemoveEvent = ApplyChromeEvent(
-      chrome.windows.onRemoved,
-      (id) => {
-        if (id === control_window_id) {
-          cancelRemoveEvent()
-          cleanControlLaunch()
-        }
-      }
-    )
 
     return {
       controlWindow

@@ -1,6 +1,5 @@
 import { Memo } from 'vait'
 import cfg from '../../../config'
-import { MessageEvent } from '../../../message'
 import { ChromeEvent } from '../../../utils/chrome-event'
 import { Limit } from '../../base/limit'
 
@@ -16,7 +15,6 @@ export async function InitRefocusEvent(
   enableCond: () => boolean,
   limit: Limit,
   callbacks: {
-    refocus: () => void
     close: () => void
   }
 ): Promise<
@@ -29,8 +27,6 @@ export async function InitRefocusEvent(
       refocus_window_id: undefined,
     } as const
   } else {
-    const [ applyRefocusEvent, cancelRefocusEvent ]= MessageEvent('Refocus', callbacks.refocus)
-
     const { id: refocus_window_id } = await chrome.windows.create({
       url: chrome.runtime.getURL('refocusLayout.html'),
       type: 'popup',
@@ -55,11 +51,9 @@ export async function InitRefocusEvent(
 
     return {
       apply() {
-        applyRefocusEvent()
         applyRemovedListener()
       },
       cancel() {
-        cancelRefocusEvent()
         cancelRemovedListener()
       },
       refocus_window_id
