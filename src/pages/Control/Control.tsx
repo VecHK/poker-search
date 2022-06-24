@@ -13,7 +13,6 @@ import { MessageEvent } from '../../message'
 import useWindowFocus from '../../hooks/useWindowFocus'
 import useCurrentWindow from '../../hooks/useCurrentWindow'
 import useLaunchContextMenu from '../../hooks/useLaunchContextMenu'
-import useControlLaunch from '../../hooks/useControlLaunch'
 import useControl from '../../hooks/useControl'
 
 import Loading from '../../components/Loading'
@@ -148,7 +147,6 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
 
   useFocusLayoutShortcut(controlWindowId, control)
   useLaunchContextMenu(base.preferences)
-  useControlLaunch()
 
   return (
     <div className="container">

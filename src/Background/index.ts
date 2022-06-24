@@ -1,7 +1,7 @@
 import cfg from '../config'
 import { MessageEvent, sendMessage } from '../message'
 import { ApplyChromeEvent } from '../utils/chrome-event'
-import { controlIsLaunched, initControlWindowLaunched } from '../x-state/control-window-launched'
+import { cleanControlLaunch, controlIsLaunched, getControlWindowId, initControlWindowLaunched } from '../x-state/control-window-launched'
 import GlobalCommand from './gloal-command'
 import { regRules } from './moble-access'
 import Omnibox from './omnibox'
@@ -77,6 +77,18 @@ function runBackground() {
   applyOmnibox()
   applySelectionContextMenuClick()
   applyLaunchContextMenuClick()
+
+  ApplyChromeEvent(
+    chrome.windows.onRemoved,
+    async (removed_id) => {
+      const control_id = await getControlWindowId()
+      if (control_id !== null) {
+        if (control_id === removed_id) {
+          cleanControlLaunch()
+        }
+      }
+    }
+  )
 
   const [ applyReceive ] = MessageEvent('ChangeSearch', (search_keyword) => {
     controlIsLaunched().then(is_launched => {
