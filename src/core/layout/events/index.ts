@@ -5,10 +5,11 @@ import { getWindowId, WindowID } from './../window'
 import { AlarmSetTimeout } from '../../../utils/chrome-alarms'
 import { ChromeEvent } from '../../../utils/chrome-event'
 
+import { Limit } from '../../base/limit'
+
+import DoubleFocusProtection from './double-focus-protection'
 import { InitRefocusEvent, InitRefocusLayout } from './refocus'
 import InitMinimizedDetecting from './minimized-detecting'
-import { Limit } from '../../base/limit'
-import DoubleFocusProtection from './double-focus-protection'
 
 export type Route = 'REMOVED' | 'FOCUS' | 'MAXIMIZED' | 'MINIMIZED'
 type CallRoute<R extends Route, P extends Record<string, unknown>> = {
@@ -24,6 +25,10 @@ type R =
 
 interface CallEvent {
   (r: R): void
+}
+
+function isMaximized(win: chrome.windows.Window) {
+  return win.state === 'maximized'
 }
 
 /**
@@ -224,7 +229,7 @@ export default async function TrustedEvents({
     console.warn('onBoundsChanged')
     const bounds_window_id = getWindowId(win)
     if (isSearchWindow(bounds_window_id)) {
-      if (win.state === 'maximized') {
+      if (isMaximized(win)) {
         callEvent({
           route: 'MAXIMIZED',
           payload: { id: bounds_window_id, win }
