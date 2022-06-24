@@ -48,8 +48,8 @@ function isMaximized(win: chrome.windows.Window) {
  * 控制窗的 useReFocusMessage 钩子在收到这个消息的时候进行poker layout 的重新焦聚
  *
  * 对于 (C)，因为还原窗口原本是设想点击最大化按钮的，但macOS中并没有这种按钮
- * mac里只有类似的全屏按钮，可是用全屏作为还愿窗口的话会很奇怪，而且在系统资源紧张
- * 的时候表现效果很差。所以需要利用最小化来去做，可是 onBoundsChanged 似乎并不能
+ * mac里只有类似的全屏按钮，可是用全屏作为还原窗口的话看起来会很奇怪，而且在系统资源紧张
+ * 的时候表现效果很差。可以利用最小化来去做，可是 onBoundsChanged 似乎并不能
  * 触发最小化的事件，于是只能自己实现了，见 InitMinimizedDetecting。
  *
  * 对于 (D)，在窗口失焦的时候点击最小化、最大化、全屏，会先触发 onFocusChanged 事件后
