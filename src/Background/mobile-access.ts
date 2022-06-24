@@ -1,7 +1,7 @@
 import cfg from '../config'
 const { ResourceType, RuleActionType } = chrome.declarativeNetRequest
 
-export async function removeAllRules() {
+async function removeAllRules() {
   const currentRules = await chrome.declarativeNetRequest.getDynamicRules()
 
   const removeRuleIds = currentRules.map(rule => rule.id)

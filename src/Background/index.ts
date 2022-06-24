@@ -1,7 +1,13 @@
 import cfg from '../config'
 import { MessageEvent, sendMessage } from '../message'
 import { ApplyChromeEvent } from '../utils/chrome-event'
-import { cleanControlLaunch, controlIsLaunched, getControlWindowId, initControlWindowLaunched } from '../x-state/control-window-launched'
+import {
+  cleanControlLaunch,
+  controlIsLaunched,
+  getControlWindowId,
+  initControlWindowLaunched
+} from '../x-state/control-window-launched'
+
 import GlobalCommand from './gloal-command'
 import { regRules } from './mobile-access'
 import Omnibox from './omnibox'
@@ -12,33 +18,19 @@ import { load as loadPreferences } from '../preferences'
 
 console.log('Poker Background')
 
-Object.assign(global, {
-  __hot_reload_before__,
-})
-
 const [ applyGlobalCommand, cancelGlobalCommand ] = GlobalCommand()
 const [ applyOmnibox, cancelOmnibox ] = Omnibox()
 const [ applySelectionContextMenuClick, cancelSelectionContextMenuClick ] = SelectionContextMenu()
 const [ applyLaunchContextMenuClick, cancelLaunchContextMenuClick ] = LaunchContextMenu()
 
-async function __hot_reload_before__(): Promise<void> {
-  cancelGlobalCommand()
-  cancelOmnibox()
-  cancelSelectionContextMenuClick()
-  cancelLaunchContextMenuClick()
-}
-
-function createInstalledWindow(is_update: boolean) {
-  const append_params = is_update ? '?update=1' : ''
-
-  return chrome.windows.create({
-    focused: false,
-    type: 'popup',
-    width: cfg.INSTALLED_WINDOW_WIDTH,
-    height: cfg.INSTALLED_WINDOW_HEIGHT,
-    left: 0,
-    top: 0,
-    url: chrome.runtime.getURL(`/installed.html${append_params}`)
+if (process.env.NODE_ENV === 'development') {
+  Object.assign(global, {
+    async __hot_reload_before__(): Promise<void> {
+      cancelGlobalCommand()
+      cancelOmnibox()
+      cancelSelectionContextMenuClick()
+      cancelLaunchContextMenuClick()
+    }
   })
 }
 
@@ -54,9 +46,9 @@ ApplyChromeEvent(
     await initControlWindowLaunched()
 
     if (details.reason === 'install') {
-      createInstalledWindow(false)
+      openInstalledWindow(false)
     } else if (details.reason === 'update') {
-      createInstalledWindow(true)
+      openInstalledWindow(true)
     }
   }
 )
@@ -70,8 +62,24 @@ function initLaunchContextMenu() {
   })
 }
 
+function openInstalledWindow(is_update: boolean) {
+  const append_params = is_update ? '?update=1' : ''
+
+  return chrome.windows.create({
+    focused: false,
+    type: 'popup',
+    width: cfg.INSTALLED_WINDOW_WIDTH,
+    height: cfg.INSTALLED_WINDOW_HEIGHT,
+    left: 0,
+    top: 0,
+    url: chrome.runtime.getURL(`/installed.html${append_params}`)
+  })
+}
+
 runBackground()
 function runBackground() {
+  console.log('runBackground')
+
   regRules()
 
   applyGlobalCommand()
@@ -109,4 +117,6 @@ function runBackground() {
     }
   })
   applyLaunchContextMenuChange()
+
+  console.log('runBackground end')
 }
