@@ -1,4 +1,3 @@
-import { nextTick } from 'vait'
 import React, { useCallback, useEffect, useState } from 'react'
 
 import cfg from '../../config'
@@ -52,7 +51,6 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
 
   const {
     isLoading,
-    setLoading,
     control,
     setControl,
     refreshWindows,
@@ -117,21 +115,16 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
         if (control === null) {
           submitKeyword(newSearchKeyword)
         } else {
-          try {
-            setLoading(true)
-            await nextTick()
-          } finally {
-            setControl(() => {
-              // 写成这样是处理提交同样搜索词的时候的处理
-              // 因为是用 useEffect 来判断的，如果是相同的值就不会触发更新了
-              submitKeyword(newSearchKeyword)
-              return null
-            })
-          }
+          setControl(() => {
+            // 写成这样是处理提交同样搜索词的时候的处理
+            // 因为是用 useEffect 来判断的，如果是相同的值就不会触发更新了
+            submitKeyword(newSearchKeyword)
+            return null
+          })
         }
       })
     }
-  }, [control, controlProcessing, setControl, setLoading])
+  }, [control, controlProcessing, setControl])
 
   useEffect(function receiveChangeSearchMessage() {
     const [ applyReceive, cancelReceive ] = MessageEvent('ChangeSearch', (new_keyword) => {
