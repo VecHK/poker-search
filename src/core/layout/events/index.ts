@@ -226,7 +226,7 @@ export default async function TrustedEvents({
   )
 
   const boundsChangedHandler = (win: chrome.windows.Window) => {
-    console.warn('onBoundsChanged')
+    console.log('onBoundsChanged')
     const bounds_window_id = getWindowId(win)
     if (isSearchWindow(bounds_window_id)) {
       if (isMaximized(win)) {
