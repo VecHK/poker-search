@@ -1,5 +1,5 @@
 import { Atomic } from 'vait'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 
 import { controlIsLaunched } from '../../x-state/control-window-launched'
 import { sendMessage } from '../../message'
@@ -28,6 +28,17 @@ function AppMain() {
   const [input, setInput] = useState('')
   const current_window_id = useCurrentWindow()?.windowId
   const windowIsFocus = useWindowFocus(true)
+
+  useEffect(() => {
+    controlIsLaunched()
+      .then(isLaunched => {
+        if (isLaunched) {
+          sendMessage('Refocus', null).finally(() => {
+            window.close()
+          })
+        }
+      })
+  }, [])
 
   return (
     <main className="App-main">
