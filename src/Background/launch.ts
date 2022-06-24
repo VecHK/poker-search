@@ -3,7 +3,7 @@ import { createBase, RevertContainerID } from '../core/base'
 import { calcControlWindowPos } from '../core/layout/control-window'
 import { controlIsLaunched, setControlLaunch } from '../x-state/control-window-launched'
 
-function detectUrl({ text, revert_container_id }: {
+function generateUrl({ text, revert_container_id }: {
   text?: string
   revert_container_id: RevertContainerID
 }): string {
@@ -39,25 +39,32 @@ export default async function launchControlWindow({ text, revert_container_id }:
   } else {
     const [ top, left ] = await getControlPos()
     const controlWindow = await chrome.windows.create({
+      url: generateUrl({ text, revert_container_id }),
       type: 'popup',
+      state: 'normal',
+      focused: true,
+
       width: Math.round(cfg.CONTROL_WINDOW_WIDTH),
       height: Math.round(cfg.CONTROL_WINDOW_HEIGHT),
       left: Math.round(left),
       top: Math.round(top),
-      url: detectUrl({ text, revert_container_id }),
-      focused: true,
     })
 
-    const { id: control_window_id } = controlWindow
+    const { id: control_window_id, state } = controlWindow
 
     if (control_window_id === undefined) {
       throw Error('launchControlWindow: control_window_id is undefined')
     } else {
       await setControlLaunch(control_window_id)
-    }
 
-    return {
-      controlWindow
+      if (state === 'fullscreen') {
+        // prevent fullscreen
+        await chrome.windows.update(control_window_id, { focused: true, state: 'normal' })
+      }
+
+      return {
+        controlWindow
+      }
     }
   }
 }

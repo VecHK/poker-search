@@ -3,17 +3,18 @@ import React, { useCallback, useEffect, useState } from 'react'
 
 import cfg from '../../config'
 
-import getQuery from '../../utils/get-query'
-import { validKeyword } from '../../utils/search'
-
 import { Base } from '../../core/base'
 import { calcControlWindowPos } from '../../core/layout/control-window'
 import { MessageEvent } from '../../message'
+
+import getQuery from '../../utils/get-query'
+import { validKeyword } from '../../utils/search'
 
 import useWindowFocus from '../../hooks/useWindowFocus'
 import useCurrentWindow from '../../hooks/useCurrentWindow'
 import useControl from '../../hooks/useControl'
 import useReFocusMessage from '../../hooks/useReFocusMessage'
+import usePreventEnterFullScreen from '../../hooks/usePreventEnterFullScreen'
 
 import Loading from '../../components/Loading'
 import SearchForm from '../../components/SearchForm'
@@ -46,7 +47,8 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
 
   const windowIsFocus = useWindowFocus(true)
 
-  const controlWindowId = useCurrentWindow()?.windowId
+  const controlWindow = useCurrentWindow()
+  const controlWindowId = controlWindow?.windowId
 
   const {
     isLoading,
@@ -147,6 +149,8 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
   }, [controlWindowId, control, handleSubmit])
 
   useReFocusMessage(controlWindowId, control)
+
+  usePreventEnterFullScreen(controlWindow?.windowId)
 
   return (
     <div className="container">
