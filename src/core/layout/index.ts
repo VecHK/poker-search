@@ -1,16 +1,12 @@
-import { Memo, Lock, Signal } from 'vait'
+import { Memo, Signal } from 'vait'
 import { Base } from '../base'
 import { constructSearchWindowsFast } from './window-create'
 import { selectWindow } from './window-update'
-import { getSearchWindowTabURL, getWindowId, SearchWindow } from './window'
+import { getWindowId, SearchWindow } from './window'
 import { renderCol, renderMatrix } from './render'
 import { selectCol } from '../common'
-import { ApplyChromeEvent } from '../../utils/chrome-event'
 
 import TrustedEvents from './events'
-import { clearMobileIdentifier } from '../../preferences/site-settings'
-import { AlarmSetTimeout } from '../../utils/chrome-alarms'
-import { calcWindowsTotalHeight } from '../base/auto-adjust'
 import WindowRevert from './window-revert'
 
 export type LayoutInfo = {
