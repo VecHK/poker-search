@@ -3,13 +3,13 @@ import generateId from './generate-id'
 
 export function alarmTimeout(timing: number) {
   const [lock, pass] = Lock()
-  alarmSetTimeout(timing, pass)
+  AlarmSetTimeout(timing, pass)
   return lock
 }
 
 // 若程序处于背景的话，setTimeout 将会变慢许多
 // 所以需要使用到 chrome.alarms ref: #105
-export function alarmSetTimeout(timing: number, callback: () => void) {
+export function AlarmSetTimeout(timing: number, callback: () => void) {
   const name = generateId()
   const handler = (alarm: chrome.alarms.Alarm) => {
     if (name === alarm.name) {
@@ -26,12 +26,12 @@ export function alarmSetTimeout(timing: number, callback: () => void) {
   }
 }
 
-export function alarmTask(
+export function AlarmTask(
   timing: number,
   firstTask: () => void
 ) {
   const [getTask, instead] = Memo(firstTask)
-  const discard = alarmSetTimeout(timing, () => {
+  const discard = AlarmSetTimeout(timing, () => {
     getTask()()
   })
 
