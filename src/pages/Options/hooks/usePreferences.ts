@@ -1,7 +1,7 @@
 import { curry } from 'ramda'
 import { useCallback, useState } from 'react'
 
-import { load as loadPreferences, save as savePreferences, Preferences } from '../../../preferences'
+import { Preferences } from '../../../preferences'
 import { controlIsLaunched } from '../../../x-state/control-window-launched'
 import { sendMessage } from '../../../message'
 
@@ -21,19 +21,19 @@ const RequireCloseControlWindow = <A extends unknown[]>(
 )
 
 export default function usePreferences() {
-  const [preferences, setPreferences] = useState<Preferences>()
+  const [preferences, setPreferences] = useState<Preferences | undefined>(undefined)
 
   const setPreferencesItem = curry(
-    useCallback(function setPreferencesItem<F extends SafelyPreferencesKeys>(
+    useCallback(function <F extends SafelyPreferencesKeys>(
       field: F,
       new_value: Preferences[F]
     ) {
-      setPreferences((latestPreferences) => {
-        if (!latestPreferences) {
+      setPreferences((latest) => {
+        if (latest === undefined) {
           return undefined
         } else {
           return {
-            ...latestPreferences,
+            ...latest,
             [field]: new_value
           }
         }

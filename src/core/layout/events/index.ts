@@ -5,6 +5,8 @@ import { getWindowId, WindowID } from './../window'
 import { AlarmSetTimeout } from '../../../utils/chrome-alarms'
 import { ChromeEvent } from '../../../utils/chrome-event'
 
+import { CanUseRefocusWindow } from '../../../compatibility'
+
 import DoubleFocusProtection from './double-focus-protection'
 import { InitRefocusEvent, InitRefocusLayout } from './refocus'
 import InitMinimizedDetecting from './minimized-detecting'
@@ -121,7 +123,7 @@ export default async function TrustedEvents({
     cancel: cancelRefocusEvent,
     refocus_window_id,
   } = await InitRefocusEvent(
-    isWindowsOS,
+    CanUseRefocusWindow(platform, preferences),
     limit,
     {
       close() {
@@ -131,10 +133,7 @@ export default async function TrustedEvents({
     }
   )
 
-  const RefocusLayout = InitRefocusLayout(() => {
-    // 唤回窗只有 Windows 系统才有，而且要开启 【「唤回 Poker」窗口】 的设置项
-    return isWindowsOS() && preferences.refocus_window
-  })
+  const RefocusLayout = InitRefocusLayout(CanUseRefocusWindow(platform, preferences))
   const [, shouldRefocusLayout] = RefocusLayout
 
   const signal = Signal<Route>()

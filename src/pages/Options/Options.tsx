@@ -22,6 +22,8 @@ import SettingSwitch from './Component/SettingSwitch'
 import SettingItemTitle from './Component/SettingItem/SettingItemTitle'
 
 import s from './Options.module.css'
+import { Base } from '../../core/base'
+import { canUseRefocusWindow } from '../../compatibility'
 
 const [getAdjustTask, setAdjustTask] = Memo<NodeJS.Timeout | null>(null)
 function useAdjustMarginCenter(enable: boolean) {
@@ -94,15 +96,23 @@ function useKey() {
 export default function OptionsPage() {
   const { preferences, setPreferences, HandleSettingFieldChange } = usePreferences()
   const [limit, setLimit] = useState<Limit>()
+  const [platform, setPlatform] = useState<Base['platform']>()
   const [failure, setFailure] = useState<Error>()
   const [managerKey, refreshManagerKey] = useKey()
 
+  const isReady = Boolean(preferences) && Boolean(limit) && Boolean(platform)
+
   const refresh = useCallback(() => {
     setFailure(undefined)
-    Promise.all([loadPreferences(), getCurrentDisplayLimit()])
-      .then(([preferences, limit]) => {
+    Promise.all([
+      loadPreferences(),
+      getCurrentDisplayLimit(),
+      chrome.runtime.getPlatformInfo()
+    ])
+      .then(([preferences, limit, platform]) => {
         setPreferences(preferences)
         setLimit(limit)
+        setPlatform(platform)
       })
       .catch(setFailure)
   }, [setPreferences])
@@ -136,9 +146,7 @@ export default function OptionsPage() {
     }
   }, [setPreferences])
 
-  const [innerEl, adjustWidth] = useAdjustMarginCenter(
-    Boolean(preferences) && Boolean(limit)
-  )
+  const [innerEl, adjustWidth] = useAdjustMarginCenter(isReady)
 
   return (
     <div className={s.OptionsContainer}>
@@ -146,7 +154,7 @@ export default function OptionsPage() {
         useMemo(() => {
           if (failure) {
             return <Failure error={failure} />
-          } else if (!preferences || !limit) {
+          } else if (!preferences || !limit || !platform) {
             return <Loading />
           } else {
             return (
@@ -174,14 +182,18 @@ export default function OptionsPage() {
                       />
                     </SettingItem>
 
-                    <SettingItem title="强迫症选项">
-                      <SettingSwitch
-                        title="「唤回 Poker」窗口"
-                        description="开启后，左上角会出现一个小窗口。点击窗口中的「唤回 Poker」后，Poker 所有窗口都会置为最顶端"
-                        value={preferences.refocus_window}
-                        onChange={HandleSettingFieldChange('refocus_window')}
-                      />
-                    </SettingItem>
+                    {
+                      !canUseRefocusWindow(platform, preferences) ? null : (
+                        <SettingItem title="强迫症选项">
+                          <SettingSwitch
+                            title="「唤回 Poker」窗口"
+                            description="开启后，左上角会出现一个小窗口。点击窗口中的「唤回 Poker」后，Poker 所有窗口都会置为最顶端"
+                            value={preferences.refocus_window}
+                            onChange={HandleSettingFieldChange('refocus_window')}
+                          />
+                        </SettingItem>
+                      )
+                    }
 
                     <About />
                   </div>
@@ -239,7 +251,7 @@ export default function OptionsPage() {
               </>
             )
           }
-        }, [HandleSettingFieldChange, adjustWidth, failure, handleSiteSettingsChange, limit, managerKey, preferences, refreshManagerKey, setPreferences])
+        }, [HandleSettingFieldChange, adjustWidth, failure, handleSiteSettingsChange, limit, managerKey, platform, preferences, refreshManagerKey, setPreferences])
       }</div>
     </div>
   )
