@@ -8,7 +8,8 @@ export function initControlWindowLaunched() {
 }
 
 export async function controlIsLaunched() {
-  return Boolean(await getStorage())
+  const control_window_id = await getControlWindowId()
+  return control_window_id !== null
 }
 
 export async function getControlWindowId(): Promise<number | null> {
