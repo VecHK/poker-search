@@ -66,9 +66,7 @@ export async function CreateSearchLayout({
   } = await TrustedEvents({
     getRegIds,
     control_window_id,
-
-    limit: base.limit,
-    platform: base.platform,
+    base,
 
     onRemovedWindow,
 

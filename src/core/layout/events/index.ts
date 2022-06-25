@@ -1,15 +1,14 @@
-import { compose, equals, not } from 'ramda'
+import { equals } from 'ramda'
 import { Atomic, Signal } from 'vait'
 import cfg from '../../../config'
 import { getWindowId, WindowID } from './../window'
 import { AlarmSetTimeout } from '../../../utils/chrome-alarms'
 import { ChromeEvent } from '../../../utils/chrome-event'
 
-import { Limit } from '../../base/limit'
-
 import DoubleFocusProtection from './double-focus-protection'
 import { InitRefocusEvent, InitRefocusLayout } from './refocus'
 import InitMinimizedDetecting from './minimized-detecting'
+import { Base } from '../../base'
 
 export type Route = 'REMOVED' | 'FOCUS' | 'MAXIMIZED' | 'MINIMIZED'
 type CallRoute<R extends Route, P extends Record<string, unknown>> = {
@@ -82,14 +81,12 @@ type RL = ReturnType<typeof InitRefocusLayout>
 export default async function TrustedEvents({
   getRegIds,
   control_window_id,
-  limit,
-  platform,
+  base,
   ...callbacks
 }: {
   getRegIds(): WindowID[]
   control_window_id: WindowID
-  limit: Limit,
-  platform: chrome.runtime.PlatformInfo
+  base: Base,
 
   onRemovedWindow(removed_window_id: WindowID): Promise<void>
   onSelectSearchWindow(
@@ -107,6 +104,7 @@ export default async function TrustedEvents({
 
   onRefocusLayoutClose(): Promise<void>
 }) {
+  const { limit, platform, preferences } = base
   const isNone = equals<WindowID>(chrome.windows.WINDOW_ID_NONE)
   const isControlWindow = equals(control_window_id)
   const isSearchWindow = (id: WindowID) => getRegIds().indexOf(id) !== -1
@@ -133,7 +131,10 @@ export default async function TrustedEvents({
     }
   )
 
-  const RefocusLayout = InitRefocusLayout( compose(not, isWindowsOS) )
+  const RefocusLayout = InitRefocusLayout(() => {
+    // 唤回窗只有 Windows 系统才有，而且要开启 【「唤回 Poker」窗口】 的设置项
+    return isWindowsOS() && preferences.refocus_window
+  })
   const [, shouldRefocusLayout] = RefocusLayout
 
   const signal = Signal<Route>()

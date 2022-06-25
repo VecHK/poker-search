@@ -1,13 +1,13 @@
 import pkg from '../../../package.json'
 import { Memo } from 'vait'
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { findIndex, map, propEq, update } from 'ramda'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { load as loadPreferences, save as savePreferences, Preferences } from '../../preferences'
 import { SiteSettings } from '../../preferences/site-settings'
 import { getCurrentDisplayLimit, Limit } from '../../core/base/limit'
-import { getControlWindowId } from '../../x-state/control-window-launched'
-import { sendMessage } from '../../message'
+
+import usePreferences from './hooks/usePreferences'
 
 import SettingHeader from './Component/SettingHeader'
 import SiteSettingsManager from './Component/SiteSettingsManager'
@@ -24,7 +24,6 @@ import SettingItemTitle from './Component/SettingItem/SettingItemTitle'
 import s from './Options.module.css'
 
 const [getAdjustTask, setAdjustTask] = Memo<NodeJS.Timeout | null>(null)
-
 function useAdjustMarginCenter(enable: boolean) {
   const ref = useRef<HTMLDivElement>(null)
 
@@ -93,7 +92,7 @@ function useKey() {
 }
 
 export default function OptionsPage() {
-  const [preferences, setPreferences] = useState<Preferences>()
+  const { preferences, setPreferences, HandleSettingFieldChange } = usePreferences()
   const [limit, setLimit] = useState<Limit>()
   const [failure, setFailure] = useState<Error>()
   const [managerKey, refreshManagerKey] = useKey()
@@ -106,7 +105,7 @@ export default function OptionsPage() {
         setLimit(limit)
       })
       .catch(setFailure)
-  }, [])
+  }, [setPreferences])
 
   useEffect(() => {
     refresh()
@@ -135,7 +134,7 @@ export default function OptionsPage() {
       })
       return [true, 'OK']
     }
-  }, [])
+  }, [setPreferences])
 
   const [innerEl, adjustWidth] = useAdjustMarginCenter(
     Boolean(preferences) && Boolean(limit)
@@ -169,28 +168,18 @@ export default function OptionsPage() {
                     <SettingItem>
                       <SettingSwitch
                         title="右键菜单栏「启动Poker」"
-                        value={Boolean(preferences.launch_poker_contextmenu)}
-                        onChange={async (newValue) => {
-                          console.log('preferences.launch_poker_contextmenu change', newValue)
-                          const control_window_id = await getControlWindowId()
-                          if (control_window_id !== null) {
-                            alert('修改这个设置项需要先关闭 Poker 控制窗')
-                            sendMessage('Refocus', null)
-                          } else {
-                            sendMessage('ChangeLaunchContextMenu', newValue)
-                            setPreferences((latestPreferences) => {
-                              if (!latestPreferences) {
-                                return undefined
-                              } else {
-                                return {
-                                  ...latestPreferences,
-                                  launch_poker_contextmenu: newValue
-                                }
-                              }
-                            })
-                          }
-                        }}
                         description="在网页空白处点击右键，将会有「启动Poker」菜单项"
+                        value={Boolean(preferences.launch_poker_contextmenu)}
+                        onChange={HandleSettingFieldChange('launch_poker_contextmenu')}
+                      />
+                    </SettingItem>
+
+                    <SettingItem title="强迫症选项">
+                      <SettingSwitch
+                        title="「唤回 Poker」窗口"
+                        description="开启后，左上角会出现一个小窗口。点击窗口中的「唤回 Poker」后，Poker 所有窗口都会置为最顶端"
+                        value={preferences.refocus_window}
+                        onChange={HandleSettingFieldChange('refocus_window')}
                       />
                     </SettingItem>
 
@@ -250,7 +239,7 @@ export default function OptionsPage() {
               </>
             )
           }
-        }, [adjustWidth, failure, handleSiteSettingsChange, limit, managerKey, preferences, refreshManagerKey])
+        }, [HandleSettingFieldChange, adjustWidth, failure, handleSiteSettingsChange, limit, managerKey, preferences, refreshManagerKey, setPreferences])
       }</div>
     </div>
   )
