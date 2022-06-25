@@ -120,7 +120,7 @@ export default async function TrustedEvents({
 
   const enableRefocusWindowCond = allPass([
     CanUseRefocusWindow(platform),
-    Wrap(preferences.fill_empty_window)
+    Wrap(preferences.refocus_window)
   ])
 
   const {
