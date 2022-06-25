@@ -182,9 +182,18 @@ export default function OptionsPage() {
                       />
                     </SettingItem>
 
+                    <SettingItem title="强迫症选项">
+                      <SettingSwitch
+                        title="将每一层的页面填充满"
+                        description="开启此选项后，每一层都会打开目前显示器所能容纳的最多页面数"
+                        value={preferences.fill_empty_window}
+                        onChange={HandleSettingFieldChange('fill_empty_window')}
+                      />
+                    </SettingItem>
+
                     {
-                      !canUseRefocusWindow(platform, preferences) ? null : (
-                        <SettingItem title="强迫症选项">
+                      !canUseRefocusWindow(platform) ? null : (
+                        <SettingItem>
                           <SettingSwitch
                             title="「唤回 Poker」窗口"
                             description="开启后，左上角会出现一个小窗口。点击窗口中的「唤回 Poker」后，Poker 所有窗口都会置为最顶端"

@@ -1,5 +1,5 @@
-import { equals } from 'ramda'
-import { Atomic, Signal } from 'vait'
+import { allPass, equals } from 'ramda'
+import { Atomic, Signal, Wrap } from 'vait'
 import cfg from '../../../config'
 import { getWindowId, WindowID } from './../window'
 import { AlarmSetTimeout } from '../../../utils/chrome-alarms'
@@ -118,12 +118,17 @@ export default async function TrustedEvents({
     return (isControlWindow(id) || isSearchWindow(id)) && !isNone(id)
   }
 
+  const enableRefocusWindowCond = allPass([
+    CanUseRefocusWindow(platform),
+    Wrap(preferences.fill_empty_window)
+  ])
+
   const {
     apply: applyRefocusEvent,
     cancel: cancelRefocusEvent,
     refocus_window_id,
   } = await InitRefocusEvent(
-    CanUseRefocusWindow(platform, preferences),
+    enableRefocusWindowCond,
     limit,
     {
       close() {
@@ -133,7 +138,7 @@ export default async function TrustedEvents({
     }
   )
 
-  const RefocusLayout = InitRefocusLayout(CanUseRefocusWindow(platform, preferences))
+  const RefocusLayout = InitRefocusLayout(enableRefocusWindowCond)
   const [, shouldRefocusLayout] = RefocusLayout
 
   const signal = Signal<Route>()
