@@ -14,7 +14,9 @@ export default function getDefaultPreferences(
 ): Preferences {
   return {
     __is_poker__: true,
-    version: 3,
+    version: 4,
+    fill_empty_window: false,
+    refocus_window: false,
     launch_poker_contextmenu: true,
     site_settings: getDefaultSiteSettings(),
     ...append,
@@ -24,12 +26,13 @@ export default function getDefaultPreferences(
 function getDefaultSiteSettings(): SiteSettings {
   return mapMatrix(
     cfg.DEFAULT_SITES,
-    (url_pattern) => ({
+    (url_pattern): SiteOption => ({
       id: generateId(),
       icon: null,
       name: '__DEFAULT_NAME__',
-      enable_mobile: cfg.DEFAULT_ENABLE_MOBILE,
       url_pattern,
+      enable_mobile: true,
+      access_mode: 'MOBILE'
     })
   ).map(row => {
     return generateSiteSettingsRow(row)
@@ -42,6 +45,7 @@ export function generateExampleOption(): SiteOption {
     icon: cfg.DEFAULT_SITE_ICON,
     name: '_DEFAULT_NAME_',
     url_pattern: `https://example.com?search=${cfg.KEYWORD_REPLACEHOLDER}`,
-    enable_mobile: cfg.DEFAULT_ENABLE_MOBILE,
+    enable_mobile: true,
+    access_mode: 'MOBILE',
   }
 }

@@ -47,8 +47,6 @@ const cfg = Object.freeze({
     return chrome.runtime.getURL(`/default-siteicon.png`)
   },
 
-  DEFAULT_ENABLE_MOBILE: true,
-
   EXPORT_SITE_SETTINGS_FILE_NAME: 'poker-sites.json',
   DEFAULT_SITE_OPTION_NAME: '站点',
 
