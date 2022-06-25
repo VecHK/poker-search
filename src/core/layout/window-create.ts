@@ -87,10 +87,10 @@ function CreateWindow(url: string, CreateData: chrome.windows.CreateData) {
 //   return newMatrix
 // }
 
-type CreateData = {
+type CreateOption = {
   url: string
   window_data: chrome.windows.CreateData
-}
+} | null
 
 export async function constructSearchWindowsFast(
   base: Base,
@@ -101,18 +101,22 @@ export async function constructSearchWindowsFast(
 ): Promise<SearchWindowMatrix> {
   search_matrix = [...search_matrix].reverse()
 
-  const create_matrix: CreateData[][] = []
+  const create_matrix: CreateOption[][] = []
 
   for (let [row, cols] of search_matrix.entries()) {
-    const create_row: CreateData[] = []
+    const create_row: CreateOption[] = []
     create_matrix.push(create_row)
 
-    for (let [col, getSearchURL] of cols.entries()) {
+    for (let [col, search_opt] of cols.entries()) {
+      const { getSearchURL, is_plain } = search_opt
       const url = getSearchURL(keyword)
 
       const [left, top] = calcRealPos(base, row, col)
 
-      if (isCurrentRow(search_matrix, row)) {
+      if (is_plain && (!base.preferences.fill_empty_window)) {
+        create_row.push(null)
+      }
+      else if (isCurrentRow(search_matrix, row)) {
         create_row.push({
           url,
           window_data: {
@@ -124,7 +128,8 @@ export async function constructSearchWindowsFast(
             top,
           }
         })
-      } else {
+      }
+      else {
         create_row.push({
           url,
           window_data: {
@@ -162,7 +167,14 @@ export async function constructSearchWindowsFast(
       if (__is_creating_close__) {
         creating_signal.trigger()
         throw Object.assign(Error(), { cancel: true })
-      } else {
+      }
+      else if (create === null) {
+        new_row.push({
+          state: 'EMPTY',
+          windowId: -9
+        })
+      }
+      else {
         const [win, p] = CreateWindow(create.url, {
           ...create.window_data
         })

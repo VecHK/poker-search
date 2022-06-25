@@ -10,9 +10,31 @@ import {
   toMatrix
 } from '../../preferences/site-settings'
 
-type GetSearchURL = (keyword: string) => string
-type SearchRow = Array<GetSearchURL>
+type GetSearchURLFn = (keyword: string) => string
+export type SearchOption = {
+  is_plain: boolean
+  getSearchURL: GetSearchURLFn
+}
+type SearchRow = Array<SearchOption>
 export type SearchMatrix = Array<SearchRow>
+
+function GetSearchURL(
+  plain_window_url_pattern: string,
+  site_row: Row<SiteOption>,
+  col: number
+): GetSearchURLFn {
+  const site_opt = nth(col, site_row)
+  if (site_opt === undefined) {
+    return curry(toSearchURL)(plain_window_url_pattern)
+  } else {
+    const toUrl = curry(toSearchURL)(site_opt.url_pattern)
+    if (site_opt.enable_mobile) {
+      return compose(addMobileIdentifier, toUrl)
+    } else {
+      return toUrl
+    }
+  }
+}
 
 function fillSearchRow(
   plain_window_url_pattern: string,
@@ -22,15 +44,9 @@ function fillSearchRow(
   return map(
     (col) => {
       const site_opt = nth(col, site_row)
-      if (site_opt === undefined) {
-        return curry(toSearchURL)(plain_window_url_pattern)
-      } else {
-        const toUrl = curry(toSearchURL)(site_opt.url_pattern)
-        if (site_opt.enable_mobile) {
-          return compose(addMobileIdentifier, toUrl)
-        } else {
-          return toUrl
-        }
+      return {
+        is_plain: (site_opt === undefined),
+        getSearchURL: GetSearchURL(plain_window_url_pattern, site_row, col)
       }
     },
     range(0, max_window_per_line)
@@ -46,7 +62,7 @@ function createSearchMatrix(
     return []
   } else {
     const [cols, ...remain_matrix] = site_matrix
-    
+
     if (max_window_per_row < cols.length) {
       return createSearchMatrix(
         plain_window_url_pattern,
