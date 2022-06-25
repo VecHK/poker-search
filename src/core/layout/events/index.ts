@@ -1,4 +1,4 @@
-import { allPass, equals } from 'ramda'
+import { allPass, compose, equals, not } from 'ramda'
 import { Atomic, Signal, Wrap } from 'vait'
 import cfg from '../../../config'
 import { getWindowId, WindowID } from './../window'
@@ -8,7 +8,7 @@ import { ChromeEvent } from '../../../utils/chrome-event'
 import { CanUseRefocusWindow } from '../../../can-i-use'
 
 import DoubleFocusProtection from './double-focus-protection'
-import { InitRefocusEvent, InitRefocusLayout } from './refocus'
+import { InitRefocusEvent, InitRefocusLayoutMemo } from './refocus'
 import InitMinimizedDetecting from './minimized-detecting'
 import { Base } from '../../base'
 
@@ -31,6 +31,8 @@ interface CallEvent {
 function isMaximized(win: chrome.windows.Window) {
   return win.state === 'maximized'
 }
+
+type RL = ReturnType<typeof InitRefocusLayoutMemo>
 
 /**
  * TrustedEvents 事件调度
@@ -79,7 +81,6 @@ function isMaximized(win: chrome.windows.Window) {
  * 这儿有个没有考虑的情况，那就是 InitMinimizedDetecting 没有考虑进来。
  * 不过似乎是没有冲突的。
  */
-type RL = ReturnType<typeof InitRefocusLayout>
 export default async function TrustedEvents({
   getRegIds,
   control_window_id,
@@ -138,7 +139,7 @@ export default async function TrustedEvents({
     }
   )
 
-  const RefocusLayout = InitRefocusLayout(enableRefocusWindowCond)
+  const RefocusLayout = InitRefocusLayoutMemo(compose(not, enableRefocusWindowCond))
   const [, shouldRefocusLayout] = RefocusLayout
 
   const signal = Signal<Route>()

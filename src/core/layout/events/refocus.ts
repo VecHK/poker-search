@@ -61,7 +61,7 @@ export async function InitRefocusEvent(
   }
 }
 
-export function InitRefocusLayout(enableCond: () => boolean): Readonly<[
+export function InitRefocusLayoutMemo(enableCond: () => boolean): Readonly<[
   () => boolean, (v: boolean) => void
 ]> {
   if (enableCond()) {
