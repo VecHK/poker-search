@@ -7,6 +7,8 @@ import { load as loadPreferences, save as savePreferences, Preferences } from '.
 import { SiteSettings } from '../../preferences/site-settings'
 import { getCurrentDisplayLimit, Limit } from '../../core/base/limit'
 
+import { canUseRefocusWindow } from '../../can-i-use'
+
 import usePreferences from './hooks/usePreferences'
 
 import SettingHeader from './Component/SettingHeader'
@@ -23,7 +25,6 @@ import SettingItemTitle from './Component/SettingItem/SettingItemTitle'
 
 import s from './Options.module.css'
 import { Base } from '../../core/base'
-import { canUseRefocusWindow } from '../../compatibility'
 
 const [getAdjustTask, setAdjustTask] = Memo<NodeJS.Timeout | null>(null)
 function useAdjustMarginCenter(enable: boolean) {

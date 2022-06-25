@@ -5,7 +5,7 @@ import { getWindowId, WindowID } from './../window'
 import { AlarmSetTimeout } from '../../../utils/chrome-alarms'
 import { ChromeEvent } from '../../../utils/chrome-event'
 
-import { CanUseRefocusWindow } from '../../../compatibility'
+import { CanUseRefocusWindow } from '../../../can-i-use'
 
 import DoubleFocusProtection from './double-focus-protection'
 import { InitRefocusEvent, InitRefocusLayout } from './refocus'
