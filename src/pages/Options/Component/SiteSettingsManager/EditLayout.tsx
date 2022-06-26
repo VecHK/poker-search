@@ -1,27 +1,9 @@
 import React, { useMemo, useState } from 'react'
 import { SiteOption } from '../../../../preferences/site-settings'
-import Switch from '../Switch'
+import { getFormItem } from '../../../../utils/form'
+
+import AccessModeSetting from './AccessModeSetting'
 import s from './EditLayout.module.css'
-
-function getFormItem(formData: FormData, name: string) {
-  const value = formData.get(name)
-  if (value === null) {
-    throw Error(`formData '${name}' value not found!`)
-  } else if (typeof value !== 'string') {
-    throw Error(`formData '${name}' value is not a string!`)
-  } else {
-    return value
-  }
-}
-
-function getFormCheckItem(formData: FormData, name: string): boolean {
-  const value = formData.get(name)
-  if ((value === null) || (typeof value === 'string')) {
-    return value === 'on'
-  } else {
-    throw Error(`formData '${name}' value is not a string or null!`)
-  }
-}
 
 function getAccessMode(formData: FormData): SiteOption['access_mode'] {
   const val = formData.get('access_mode')
@@ -121,58 +103,5 @@ export default function EditLayout({ siteOption, onSubmit, onCancel }: EditLayou
       </div>
       {failureNode}
     </form>
-  )
-}
-
-function AccessModeSetting({
-  accessMode,
-  onChange
-}: {
-  accessMode: SiteOption['access_mode']
-  onChange: (a: SiteOption['access_mode']) => void
-}) {
-  const isDesktopAccess = accessMode === 'DESKTOP'
-  const isStrongMobileAccess = accessMode === 'MOBILE-STRONG'
-
-  return (
-    <div className={s.AccessMode}>
-      <input
-        name="access_mode"
-        readOnly
-        value={accessMode}
-        style={{ display: 'none' }}
-      />
-      <span>使用电脑端访问</span>
-      <Switch
-        name=""
-        value={isDesktopAccess}
-        onChange={(val) => {
-          if (val === true) {
-            onChange('DESKTOP')
-          } else {
-            onChange('MOBILE')
-          }
-        }}
-      />
-
-      {
-        isDesktopAccess ? null : (
-          <div style={{ marginLeft: '10px' }}>
-            <span>强制使用移动端方式打开</span>
-            <Switch
-              name=""
-              value={isStrongMobileAccess}
-              onChange={(val) => {
-                if (val === true) {
-                  onChange('MOBILE-STRONG')
-                } else {
-                  onChange('MOBILE')
-                }
-              }}
-            />
-          </div>
-        )
-      }
-    </div>
   )
 }
