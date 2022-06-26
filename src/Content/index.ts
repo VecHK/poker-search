@@ -64,7 +64,12 @@ const Series = [
         return
       } else {
         const getSearchText = () => {
-          return 'hehe'
+          const input = document.querySelector<HTMLInputElement>('#searchform input')
+          if (input === null) {
+            throw Error('input is null')
+          } else {
+            return input.value
+          }
         }
         extabar.parentNode?.appendChild(createTryNode(getSearchText));
         (extabar as unknown as any).style.height = '32px'
