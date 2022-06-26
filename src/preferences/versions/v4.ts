@@ -8,8 +8,8 @@ export function updater(v3: PreferencesV3): PreferencesV4 {
 
     launch_poker_contextmenu: true,
 
-    fill_empty_window: false,
-    refocus_window: false,
+    fill_empty_window: true,
+    refocus_window: true,
 
     site_settings: v3.site_settings.map(settings_row => {
       return {
