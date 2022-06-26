@@ -23,6 +23,16 @@ function getFormCheckItem(formData: FormData, name: string): boolean {
   }
 }
 
+function getAccessMode(formData: FormData): SiteOption['access_mode'] {
+  const val = formData.get('access_mode')
+
+  if ((val === 'DESKTOP') || (val === 'MOBILE') ||  (val === 'MOBILE-STRONG')) {
+    return val
+  } else {
+    throw Error(`formData 'access_mode' value is not SiteOption.access_mode type`)
+  }
+}
+
 function formDataTransform(sourceOption: SiteOption, e: React.FormEvent<HTMLFormElement>): SiteOption {
   e.preventDefault()
 
@@ -31,7 +41,7 @@ function formDataTransform(sourceOption: SiteOption, e: React.FormEvent<HTMLForm
   return {
     ...sourceOption,
     url_pattern: getFormItem(formData, 'url_pattern'),
-    enable_mobile: getFormCheckItem(formData, 'enable_mobile'),
+    access_mode: getAccessMode(formData),
   }
 }
 
@@ -56,8 +66,8 @@ type EditLayoutProps = {
 export default function EditLayout({ siteOption, onSubmit, onCancel }: EditLayoutProps) {
   const [failure, setFailure] = useState<Error | null>(null)
   const [urlPattern, setUrlPattern] = useState(siteOption.url_pattern)
-  const [enableMobile, setEnableMobile] = useState(siteOption.enable_mobile)
-  
+  const [accessMode, setAccessMode] = useState(siteOption.access_mode)
+
   const failureNode = useMemo(() => {
     if (failure) {
       return <div className={s.Failure}>{failure.message}</div>
@@ -100,16 +110,10 @@ export default function EditLayout({ siteOption, onSubmit, onCancel }: EditLayou
             name="url_pattern"
           />
         </label>
-        <label className={s.EnableMobile}>
-          <span>启用移动端访问</span>
-          <Switch
-            name="enable_mobile"
-            value={enableMobile}
-            onChange={() => {
-              setEnableMobile(!enableMobile)
-            }}
-          />
-        </label>
+        <AccessModeSetting
+          accessMode={accessMode}
+          onChange={setAccessMode}
+        />
       </div>
       <div className={s.ButtonGroup}>
         <button className={s.Button} type="submit">确定</button>
@@ -117,5 +121,58 @@ export default function EditLayout({ siteOption, onSubmit, onCancel }: EditLayou
       </div>
       {failureNode}
     </form>
+  )
+}
+
+function AccessModeSetting({
+  accessMode,
+  onChange
+}: {
+  accessMode: SiteOption['access_mode']
+  onChange: (a: SiteOption['access_mode']) => void
+}) {
+  const isDesktopAccess = accessMode === 'DESKTOP'
+  const isStrongMobileAccess = accessMode === 'MOBILE-STRONG'
+
+  return (
+    <div className={s.AccessMode}>
+      <input
+        name="access_mode"
+        readOnly
+        value={accessMode}
+        style={{ display: 'none' }}
+      />
+      <span>使用电脑端访问</span>
+      <Switch
+        name=""
+        value={isDesktopAccess}
+        onChange={(val) => {
+          if (val === true) {
+            onChange('DESKTOP')
+          } else {
+            onChange('MOBILE')
+          }
+        }}
+      />
+
+      {
+        isDesktopAccess ? null : (
+          <div style={{ marginLeft: '10px' }}>
+            <span>强制使用移动端方式打开</span>
+            <Switch
+              name=""
+              value={isStrongMobileAccess}
+              onChange={(val) => {
+                if (val === true) {
+                  onChange('MOBILE-STRONG')
+                } else {
+                  onChange('MOBILE')
+                }
+              }}
+            />
+          </div>
+        )
+      }
+    </div>
   )
 }

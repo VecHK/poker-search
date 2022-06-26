@@ -12,7 +12,12 @@ import {
 
 type GetSearchURLFn = (keyword: string) => string
 export type SearchOption = {
-  is_plain: boolean
+  is_plain: true
+  site_option: undefined
+  getSearchURL: GetSearchURLFn
+} | {
+  is_plain: false
+  site_option: SiteOption
   getSearchURL: GetSearchURLFn
 }
 type SearchRow = Array<SearchOption>
@@ -28,7 +33,7 @@ function GetSearchURL(
     return curry(toSearchURL)(plain_window_url_pattern)
   } else {
     const toUrl = curry(toSearchURL)(site_opt.url_pattern)
-    if (site_opt.enable_mobile) {
+    if (site_opt.access_mode === 'MOBILE') {
       return compose(addMobileIdentifier, toUrl)
     } else {
       return toUrl
@@ -43,10 +48,20 @@ function fillSearchRow(
 ): SearchRow {
   return map(
     (col) => {
-      const site_opt = nth(col, site_row)
-      return {
-        is_plain: (site_opt === undefined),
-        getSearchURL: GetSearchURL(plain_window_url_pattern, site_row, col)
+      const getSearchURL = GetSearchURL(plain_window_url_pattern, site_row, col)
+      const site_option = nth(col, site_row)
+      if (site_option === undefined) {
+        return {
+          is_plain: true,
+          site_option: undefined,
+          getSearchURL,
+        }
+      } else {
+        return {
+          is_plain: false,
+          site_option,
+          getSearchURL,
+        }
       }
     },
     range(0, max_window_per_line)

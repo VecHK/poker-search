@@ -20,8 +20,7 @@ export function updater(v3: PreferencesV3): PreferencesV4 {
             icon: opt.icon,
             name: opt.name,
             url_pattern: opt.url_pattern,
-            enable_mobile: true,
-            access_mode: 'MOBILE'
+            access_mode: opt.enable_mobile ? 'MOBILE' : 'DESKTOP'
           }
         })
       }

@@ -4,7 +4,6 @@ export type SiteOption = {
   icon: string | null
   name: string
   url_pattern: URLPattern
-  enable_mobile: boolean // deprecated
   access_mode: 'DESKTOP' | 'MOBILE' | 'MOBILE-STRONG'
 }
 export type SiteSettingsRow = {

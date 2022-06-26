@@ -31,7 +31,6 @@ function getDefaultSiteSettings(): SiteSettings {
       icon: null,
       name: '__DEFAULT_NAME__',
       url_pattern,
-      enable_mobile: true,
       access_mode: 'MOBILE'
     })
   ).map(row => {
@@ -45,7 +44,6 @@ export function generateExampleOption(): SiteOption {
     icon: cfg.DEFAULT_SITE_ICON,
     name: '_DEFAULT_NAME_',
     url_pattern: `https://example.com?search=${cfg.KEYWORD_REPLACEHOLDER}`,
-    enable_mobile: true,
     access_mode: 'MOBILE',
   }
 }

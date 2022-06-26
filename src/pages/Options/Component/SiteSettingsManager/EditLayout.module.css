@@ -32,10 +32,7 @@
   color: red;
 }
 
-.EnableMobile :global(span) {
-  margin-right: 5px;
-}
-.EnableMobile {
+.AccessMode {
   margin-top: 10px;
   display: flex;
   align-items: center;

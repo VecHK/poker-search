@@ -1,6 +1,6 @@
-import { SearchWindowMatrix, SearchWindowRow } from './window'
+import { SearchWindowMatrix, SearchWindowRow, TabID, WindowID } from './window'
 import { Base } from '../base'
-import { SearchMatrix } from '../base/search-matrix'
+import { SearchMatrix, SearchOption } from '../base/search-matrix'
 import { calcRealPos } from './pos'
 import { isCurrentRow } from './matrix'
 import { renderMatrix } from './render'
@@ -10,85 +10,47 @@ type PlainUnit = null
 type Unit = PlainUnit | {
   url: string
   getWindowId: () => number
+  getTabId: () => number
 }
 
-function CreateWindow(url: string, CreateData: chrome.windows.CreateData) {
-  let windowId: number
+function OpenSearchWindow(url: string, CreateData: chrome.windows.CreateData) {
+  let windowId: WindowID
+  let tabId: TabID
   const newUnit: Unit = {
     url,
-    getWindowId: () => windowId
+    getWindowId: () => windowId,
+    getTabId: () => tabId
   }
 
   const createP = chrome.windows.create({
     ...CreateData,
     url,
   }).then(newWindow => {
-    if (newWindow.id === undefined) {
+    if (newWindow.tabs === undefined) {
+      throw Error('newWindow.tabs is undefined')
+    }
+    else if (newWindow.id === undefined) {
       throw Error('newWindow.id is undefined')
-    } else {
+    }
+    else {
       windowId = newWindow.id
-      return newWindow
+
+      const tab = newWindow.tabs[0]
+      if (tab.id === undefined) {
+        throw Error('tab.id is undefined')
+      } else {
+        tabId = tab.id
+        return newWindow
+      }
     }
   })
 
   return [newUnit, createP] as const
 }
 
-// export async function constructSearchWindows(
-//   base: Base,
-//   search_matrix: SearchMatrix,
-//   keyword: string,
-//   canContinue: () => boolean,
-//   stop: () => void
-// ) {
-//   const ids: number[] = []
-//   const newMatrix: SearchWindowMatrix = []
-
-//   search_matrix = [...search_matrix].reverse()
-
-//   for (let [row, cols] of search_matrix.entries()) {
-//     const newRow: SearchWindowRow = []
-//     newMatrix.push(newRow)
-//     for (let [col, getSearchURL] of cols.entries()) {
-
-//       const url = getSearchURL(keyword)
-
-//       const [left, top] = calcRealPos(base, row, col)
-
-//       if (canContinue()) {
-//         const [win, p] = CreateWindow(url, {
-//           type: 'popup',
-//           width: base.info.window_width,
-//           height: base.info.window_height,
-//           left,
-//           top,
-//         })
-//         await p
-//         const windowId = win.getWindowId()
-//         ids.push(windowId)
-//         newRow.push({
-//           state: 'NORMAL',
-//           windowId
-//         })
-//         const h = (closedWindowId: number) => {
-//           if (windowId === closedWindowId) {
-//             chrome.windows.onRemoved.removeListener(h)
-//             stop()
-//           }
-//         }
-//         chrome.windows.onRemoved.addListener(h)
-//       } else {
-//         // cancel
-//         throw Object.assign(Error('Cancel'), { ids, cancel: true })
-//       }
-//     }
-//   }
-
-//   return newMatrix
-// }
-
 type CreateOption = {
   url: string
+  search_option: SearchOption
   window_data: chrome.windows.CreateData
 } | null
 
@@ -107,8 +69,8 @@ export async function constructSearchWindowsFast(
     const create_row: CreateOption[] = []
     create_matrix.push(create_row)
 
-    for (let [col, search_opt] of cols.entries()) {
-      const { getSearchURL, is_plain } = search_opt
+    for (let [col, search_option] of cols.entries()) {
+      const { getSearchURL, is_plain } = search_option
       const url = getSearchURL(keyword)
 
       const [left, top] = calcRealPos(base, row, col)
@@ -119,6 +81,7 @@ export async function constructSearchWindowsFast(
       else if (isCurrentRow(search_matrix, row)) {
         create_row.push({
           url,
+          search_option,
           window_data: {
             type: 'popup',
             focused: true,
@@ -132,6 +95,7 @@ export async function constructSearchWindowsFast(
       else {
         create_row.push({
           url,
+          search_option,
           window_data: {
             type: 'popup',
             focused: false,
@@ -147,13 +111,13 @@ export async function constructSearchWindowsFast(
 
   let __is_creating_close__ = false
   const handler_list: ((closedWindowId: number) => void)[] = []
-  const ids: number[] = []
+  const created_window_ids: number[] = []
   let new_matrix: SearchWindowMatrix = []
 
   const stopCreatingHandler = () => {
     stop_creating_signal.unReceive(stopCreatingHandler)
     __is_creating_close__ = true
-    ids.forEach(id => {
+    created_window_ids.forEach(id => {
       chrome.windows.remove(id)
     })
   }
@@ -163,29 +127,54 @@ export async function constructSearchWindowsFast(
     const new_row: SearchWindowRow = []
     new_matrix.push(new_row)
 
-    for (const create of create_row) {
+    for (const create_opt of create_row) {
       if (__is_creating_close__) {
         creating_signal.trigger()
         throw Object.assign(Error(), { cancel: true })
       }
-      else if (create === null) {
+      else if (create_opt === null) {
         new_row.push({
           state: 'EMPTY',
-          windowId: -9
+          windowId: -9,
+          tabId: -9,
+          is_debugger_attach: false
         })
       }
       else {
-        const [win, p] = CreateWindow(create.url, {
-          ...create.window_data
+        const [win, p] = OpenSearchWindow(create_opt.url, {
+          ...create_opt.window_data
         })
 
         await p
         const windowId = win.getWindowId()
-        ids.push(windowId)
+        const tabId = win.getTabId()
+        created_window_ids.push(windowId)
+        const { search_option } = create_opt
+        const is_debugger_attach = (search_option?.site_option?.access_mode === 'MOBILE-STRONG')
         new_row.push({
-          state: 'NORMAL',
+          state: search_option.is_plain ? 'PLAIN' : 'NORMAL',
           windowId,
+          tabId,
+          is_debugger_attach,
         })
+
+        if (is_debugger_attach) {
+          // apply debugg attach
+          const mobileUserAgent = 'Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Mobile/15E148 Safari/604.1'
+
+          await chrome.debugger.attach({ tabId }, '1.2')
+          await Promise.all([
+            chrome.debugger.sendCommand({ tabId }, 'Emulation.setUserAgentOverride', {
+              userAgent: mobileUserAgent
+            }),
+            chrome.debugger.sendCommand({ tabId }, 'Emulation.setDeviceMetricsOverride',{
+              mobile: true,
+              deviceScaleFactor: 0,
+              width: create_opt.window_data.width,
+              height: create_opt.window_data.height,
+            })
+          ])
+        }
 
         const h = (closedWindowId: number) => {
           if (windowId === closedWindowId) {

@@ -20,7 +20,7 @@ export async function callPoker() {
 export default function GlobalCommand() {
   const [applyGlobalCommand, cancelGlobalCommand] = ChromeEvent(
     chrome.commands.onCommand,
-    async (command) => {
+    (command) => {
       if (command === 'focus-layout') {
         console.log('call poker command')
         callPoker()

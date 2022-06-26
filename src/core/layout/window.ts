@@ -1,11 +1,14 @@
 import { nth } from 'ramda'
 
 export type WindowID = number
+export type TabID = number
 
 export type SearchWindowState = 'NORMAL' | 'EMPTY' | 'PLAIN'
 export type SearchWindow = Readonly<{
   state: SearchWindowState
   windowId: WindowID
+  tabId: TabID
+  is_debugger_attach: boolean
 }>
 export type SearchWindowRow = Array<SearchWindow>
 export type SearchWindowMatrix = Array<SearchWindowRow>
