@@ -7,11 +7,13 @@ import GlobalCommand from './modules/gloal-command'
 import Omnibox from './modules/omnibox'
 import SelectionContextMenu from './modules/selection-contextmenu'
 import LaunchContextMenu, { presetLaunchContextMenu, removeLaunchContextMenu } from './modules/launch-contextmenu'
+import TryPoker from './modules/try-poker'
 
 const [ applyGlobalCommand, ] = GlobalCommand()
 const [ applyOmnibox, ] = Omnibox()
 const [ applySelectionContextMenuClick, ] = SelectionContextMenu()
 const [ applyLaunchContextMenuClick, ] = LaunchContextMenu()
+const [ applyTryPoker, ] = TryPoker()
 
 export default function runBackground() {
   console.log('runBackground')
@@ -22,6 +24,7 @@ export default function runBackground() {
   applyOmnibox()
   applySelectionContextMenuClick()
   applyLaunchContextMenuClick()
+  applyTryPoker()
 
   ApplyChromeEvent(
     chrome.windows.onRemoved,

@@ -5,7 +5,8 @@ type Types =
   'Refocus' |
   'RefocusLayoutClose' |
   'ChangeSearch' |
-  'ChangeLaunchContextMenu'
+  'ChangeLaunchContextMenu' |
+  'TryPoker'
 
 type RuntimeMessage<T extends Types, P extends unknown> = {
   type: T,
@@ -18,6 +19,7 @@ export type Messages = {
   RefocusWindowClose: RuntimeMessage<'RefocusLayoutClose', null>
   ChangeSearch: RuntimeMessage<'ChangeSearch', string>
   ChangeLaunchContextMenu: RuntimeMessage<'ChangeLaunchContextMenu', boolean>
+  TryPoker: RuntimeMessage<'TryPoker', string>
 }
 
 export async function sendMessage<

@@ -7,6 +7,7 @@ import SelectionContextMenu from './modules/selection-contextmenu'
 
 import BackgroundOnInstalled from './onInstalled'
 import runBackground from './run'
+import TryPoker from './modules/try-poker'
 
 console.log('Poker Background')
 
@@ -14,6 +15,7 @@ const [ , cancelGlobalCommand ] = GlobalCommand()
 const [ , cancelOmnibox ] = Omnibox()
 const [ , cancelSelectionContextMenuClick ] = SelectionContextMenu()
 const [ , cancelLaunchContextMenuClick ] = LaunchContextMenu()
+const [ , cancelTryPoker ] = TryPoker()
 
 if (process.env.NODE_ENV === 'development') {
   Object.assign(global, {
@@ -22,6 +24,7 @@ if (process.env.NODE_ENV === 'development') {
       cancelOmnibox()
       cancelSelectionContextMenuClick()
       cancelLaunchContextMenuClick()
+      cancelTryPoker()
     }
   })
 }
