@@ -5,6 +5,7 @@ import { load as loadPreferences, Preferences } from '../../preferences'
 import { getCurrentDisplayLimit, Limit } from './limit'
 import { autoAdjustHeight, autoAdjustWidth } from './auto-adjust'
 import { initSearchMatrix, SearchMatrix } from './search-matrix'
+import { getControlWindowHeight } from './control-window-height'
 
 export type RevertContainerID = number | undefined
 type BaseInfo = {
@@ -22,6 +23,8 @@ export type Base = Readonly<{
   layout_width: number
   layout_height: number
 
+  control_window_height: number
+
   getRevertContainerId: () => RevertContainerID
   setRevertContainerId: (r: RevertContainerID) => void
 }>
@@ -31,6 +34,8 @@ async function initBase(
   preferences: Preferences,
   revert_container_id: RevertContainerID,
 ): Promise<Base> {
+  const control_window_height = getControlWindowHeight(preferences.site_settings)
+
   const [limit, platform] = await Promise.all([
     getCurrentDisplayLimit(),
     chrome.runtime.getPlatformInfo()
@@ -48,6 +53,8 @@ async function initBase(
   ] = initSearchMatrix(max_window_per_line, preferences.site_settings)
 
   const { window_height, total_height } = autoAdjustHeight(
+    [...cfg.SEARCH_WINDOW_HEIGHT_LIST],
+    control_window_height,
     total_row,
     environment.titlebar_height,
     limit.height
@@ -63,6 +70,8 @@ async function initBase(
 
     layout_width: total_width,
     layout_height: total_height,
+
+    control_window_height,
 
     getRevertContainerId,
     setRevertContainerId,

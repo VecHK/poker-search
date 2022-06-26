@@ -1,18 +1,16 @@
-import { partial } from 'ramda'
 import { Limit } from '../base/limit'
 import cfg from '../../config'
 import { calcBaseY } from './pos'
 
-export const calcControlWindowPos = partial((
+export const calcControlWindowPos = (
   control_window_height: number,
-  control_window_width: number,
   total_height: number,
   limit: Limit,
 ) => {
   const base_y = calcBaseY(total_height, limit.height)
 
   const top = total_height - control_window_height + base_y + limit.minY
-  const left = ((limit.width - control_window_width) / 2) + limit.minX
+  const left = ((limit.width - cfg.CONTROL_WINDOW_WIDTH) / 2) + limit.minX
 
   return [ Math.round(top), Math.round(left) ] as const
-}, [cfg.CONTROL_WINDOW_HEIGHT, cfg.CONTROL_WINDOW_WIDTH])
+}

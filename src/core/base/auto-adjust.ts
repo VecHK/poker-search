@@ -1,4 +1,3 @@
-import { partial } from 'ramda'
 import cfg from '../../config'
 
 export const calcWindowsTotalWidth = (multi: number, width: number, gap: number) => {
@@ -26,7 +25,7 @@ function calcMaxColumns(
     } else {
       return c(count + 1)
     }
-  } 
+  }
 
   return c(1)
 }
@@ -55,8 +54,7 @@ export function autoAdjustWidth(
   }
 }
 
-const calcTotalHeight = partial(function calcTotalHeight(
-  control_window_gap: number,
+function calcTotalHeight(
   control_window_height: number,
   o: {
     row: number,
@@ -68,11 +66,12 @@ const calcTotalHeight = partial(function calcTotalHeight(
     o.row, o.window_height, o.titlebar_height
   )
 
-  return windows_height + control_window_gap + control_window_height
-}, [cfg.SEARCH_WINDOW_GAP_HORIZONTAL, cfg.CONTROL_WINDOW_HEIGHT])
+  return windows_height + cfg.SEARCH_WINDOW_GAP_HORIZONTAL + control_window_height
+}
 
-export const autoAdjustHeight = partial(function autoAdjustHeight(
+export function autoAdjustHeight(
   height_list: number[],
+  control_window_height: number,
   total_row: number,
   titlebar_height: number,
   limit_height: number,
@@ -82,18 +81,25 @@ export const autoAdjustHeight = partial(function autoAdjustHeight(
   } else {
     const [window_height, ...remain_height_list] = height_list
 
-    const total_height = calcTotalHeight({
-      row: total_row,
-      window_height,
-      titlebar_height,
-    })
+    const total_height = calcTotalHeight(
+      control_window_height,
+      {
+        row: total_row,
+        window_height,
+        titlebar_height,
+      }
+    )
 
     if (total_height < limit_height) {
       return { window_height, total_height }
     } else {
       return autoAdjustHeight(
-        remain_height_list, total_row, titlebar_height, limit_height
+        remain_height_list,
+        control_window_height,
+        total_row,
+        titlebar_height,
+        limit_height
       )
     }
   }
-}, [cfg.SEARCH_WINDOW_HEIGHT_LIST])
+}

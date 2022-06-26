@@ -26,7 +26,11 @@ function generateUrl({ text, revert_container_id }: {
 async function getControlPos() {
   const base = await createBase(undefined)
 
-  const [ top, left ] = calcControlWindowPos(base.layout_height, base.limit)
+  const [ top, left ] = calcControlWindowPos(
+    base.control_window_height,
+    base.layout_height,
+    base.limit
+  )
   return [ top, left ] as const
 }
 
@@ -34,9 +38,12 @@ export default async function launchControlWindow({ text, revert_container_id }:
   text: string | undefined
   revert_container_id: RevertContainerID
 }) {
-  if (await controlIsLaunched()) {
+  const base_P = createBase(undefined)
+  const control_is_launched_P = controlIsLaunched()
+  if (await control_is_launched_P) {
     throw Error('control window is Launched')
   } else {
+    const { control_window_height } = await base_P
     const [ top, left ] = await getControlPos()
     const controlWindow = await chrome.windows.create({
       url: generateUrl({ text, revert_container_id }),
@@ -45,7 +52,7 @@ export default async function launchControlWindow({ text, revert_container_id }:
       focused: true,
 
       width: Math.round(cfg.CONTROL_WINDOW_WIDTH),
-      height: Math.round(cfg.CONTROL_WINDOW_HEIGHT),
+      height: Math.round(control_window_height),
       left: Math.round(left),
       top: Math.round(top),
     })
