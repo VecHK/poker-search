@@ -82,9 +82,9 @@ export default function AccessModeSetting({
               effect: 'solid',
               children: (
                 <article>
-                  如果你开启强制移动端，浏览器会弹出开启开发模式的警告。<br />
-                  并且此权限，不在普通的插件权限中。这意味着你开启后，隐私或许有被泄露的风险<br />
-                  同时，页面也会有崩溃可能。
+                  将会使用效果最好的移动端访问方式。缺点是每一个 Chrome 的页面顶部都会<br />
+                  出现「"Poker Search" started debugging this browser」的横条。<br />
+                  另外会对打开窗口的速度造成一定的减缓。
                 </article>
               )
             })
