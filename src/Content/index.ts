@@ -234,7 +234,7 @@ const Series = [
     name: 'Bing',
     cond() {
       const u = new URL(window.location.href)
-      const is_bing_hostname = u.hostname === 'bing.com' || u.hostname === 'www.bing.com'
+      const is_bing_hostname = /^((bing.com)|(cn.bing.com))/.test(u.hostname)
       const is_search_page = /^\/search/.test(u.pathname)
 
       const b_result = Boolean( $('#b_results') )
