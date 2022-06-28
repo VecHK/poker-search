@@ -7,14 +7,15 @@
     "service_worker": "background.bundle.js"
   },
   "permissions": [
+    "system.display",
     "storage",
-    "declarativeNetRequest",
     "search",
+    "alarms",
+    "declarativeNetRequest",
+    "declarativeNetRequestWithHostAccess",
     "tabs",
     "contextMenus",
-    "declarativeNetRequestWithHostAccess",
-    "system.display",
-    "alarms"
+    "debugger"
   ],
   "host_permissions": [
     "<all_urls>"
@@ -44,9 +45,15 @@
   "content_scripts": [
     {
       "matches": [
-        "http://*/*",
-        "https://*/*",
-        "<all_urls>"
+        "https://*.google.com/*",
+        "https://google.com/*",
+        "https://*.baidu.com/*",
+        "https://baidu.com/*",
+        "https://search.yahoo.com/*",
+        "https://yandex.com/*",
+        "https://duckduckgo.com/*",
+        "https://www.bing.com/*",
+        "https://bing.com/*"
       ],
       "js": [
         "contentScript.bundle.js"

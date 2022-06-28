@@ -20,7 +20,7 @@ function AppMain() {
           e.preventDefault()
           sendMessage('Refocus', null)
         }}
-      >还原 Poker 窗口</button>
+      >唤回 Poker</button>
     </footer>
   )
 }

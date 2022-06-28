@@ -8,11 +8,30 @@ export function initControlWindowLaunched() {
 }
 
 export async function controlIsLaunched() {
-  return Boolean(await getStorage())
+  const control_window_id = await getControlWindowId()
+  return control_window_id !== null
 }
 
-export async function getControlWindowId() {
-  return getStorage()
+export async function getControlWindowId(): Promise<number | null> {
+  const control_window_id = await getStorage()
+  if (control_window_id === null) {
+    return null
+  } else {
+    if (await windowExist(control_window_id)) {
+      return control_window_id
+    } else {
+      await cleanControlLaunch()
+      return null
+    }
+  }
+}
+
+async function windowExist(window_id: WindowID): Promise<boolean> {
+  try {
+    return Boolean(await chrome.windows.get(window_id))
+  } catch {
+    return false
+  }
 }
 
 export function cleanControlLaunch() {

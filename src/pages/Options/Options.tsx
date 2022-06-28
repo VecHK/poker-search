@@ -1,11 +1,15 @@
 import pkg from '../../../package.json'
 import { Memo } from 'vait'
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { findIndex, map, propEq, update } from 'ramda'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { load as loadPreferences, save as savePreferences, Preferences } from '../../preferences'
 import { SiteSettings } from '../../preferences/site-settings'
 import { getCurrentDisplayLimit, Limit } from '../../core/base/limit'
+
+import { canUseRefocusWindow } from '../../can-i-use'
+
+import usePreferences from './hooks/usePreferences'
 
 import SettingHeader from './Component/SettingHeader'
 import SiteSettingsManager from './Component/SiteSettingsManager'
@@ -13,18 +17,16 @@ import Loading from '../../components/Loading'
 import Failure from './Component/Failure'
 import ImportExport from './Component/ImportExport'
 
-import s from './Options.module.css'
-
 import Help from './Component/Help'
 import About from './Component/About'
 import SettingItem from './Component/SettingItem'
 import SettingSwitch from './Component/SettingSwitch'
-import { getControlWindowId } from '../../x-state/control-window-launched'
-import { sendMessage } from '../../message'
 import SettingItemTitle from './Component/SettingItem/SettingItemTitle'
 
-const [getAdjustTask, setAdjustTask] = Memo<NodeJS.Timeout | null>(null)
+import s from './Options.module.css'
+import { Base } from '../../core/base'
 
+const [getAdjustTask, setAdjustTask] = Memo<NodeJS.Timeout | null>(null)
 function useAdjustMarginCenter(enable: boolean) {
   const ref = useRef<HTMLDivElement>(null)
 
@@ -93,20 +95,28 @@ function useKey() {
 }
 
 export default function OptionsPage() {
-  const [preferences, setPreferences] = useState<Preferences>()
+  const { preferences, setPreferences, HandleSettingFieldChange } = usePreferences()
   const [limit, setLimit] = useState<Limit>()
+  const [platform, setPlatform] = useState<Base['platform']>()
   const [failure, setFailure] = useState<Error>()
   const [managerKey, refreshManagerKey] = useKey()
 
+  const isReady = Boolean(preferences) && Boolean(limit) && Boolean(platform)
+
   const refresh = useCallback(() => {
     setFailure(undefined)
-    Promise.all([loadPreferences(), getCurrentDisplayLimit()])
-      .then(([preferences, limit]) => {
+    Promise.all([
+      loadPreferences(),
+      getCurrentDisplayLimit(),
+      chrome.runtime.getPlatformInfo()
+    ])
+      .then(([preferences, limit, platform]) => {
         setPreferences(preferences)
         setLimit(limit)
+        setPlatform(platform)
       })
       .catch(setFailure)
-  }, [])
+  }, [setPreferences])
 
   useEffect(() => {
     refresh()
@@ -135,11 +145,9 @@ export default function OptionsPage() {
       })
       return [true, 'OK']
     }
-  }, [])
+  }, [setPreferences])
 
-  const [innerEl, adjustWidth] = useAdjustMarginCenter(
-    Boolean(preferences) && Boolean(limit)
-  )
+  const [innerEl, adjustWidth] = useAdjustMarginCenter(isReady)
 
   return (
     <div className={s.OptionsContainer}>
@@ -147,7 +155,7 @@ export default function OptionsPage() {
         useMemo(() => {
           if (failure) {
             return <Failure error={failure} />
-          } else if (!preferences || !limit) {
+          } else if (!preferences || !limit || !platform) {
             return <Loading />
           } else {
             return (
@@ -169,30 +177,33 @@ export default function OptionsPage() {
                     <SettingItem>
                       <SettingSwitch
                         title="右键菜单栏「启动Poker」"
-                        value={Boolean(preferences.launch_poker_contextmenu)}
-                        onChange={async (newValue) => {
-                          console.log('preferences.launch_poker_contextmenu change', newValue)
-                          const control_window_id = await getControlWindowId()
-                          if (control_window_id !== null) {
-                            alert('修改这个设置项需要先关闭 Poker 控制窗')
-                            chrome.windows.update(control_window_id, { focused: true })
-                          } else {
-                            sendMessage('ChangeLaunchContextMenu', newValue)
-                            setPreferences((latestPreferences) => {
-                              if (!latestPreferences) {
-                                return undefined
-                              } else {
-                                return {
-                                  ...latestPreferences,
-                                  launch_poker_contextmenu: newValue
-                                }
-                              }
-                            })
-                          }
-                        }}
                         description="在网页空白处点击右键，将会有「启动Poker」菜单项"
+                        value={Boolean(preferences.launch_poker_contextmenu)}
+                        onChange={HandleSettingFieldChange('launch_poker_contextmenu')}
                       />
                     </SettingItem>
+
+                    <SettingItem title="强迫症选项">
+                      <SettingSwitch
+                        title="将每一层的页面填充满"
+                        description="开启此选项后，每一层都会打开目前显示器所能容纳的最多页面数"
+                        value={preferences.fill_empty_window}
+                        onChange={HandleSettingFieldChange('fill_empty_window')}
+                      />
+                    </SettingItem>
+
+                    {
+                      !canUseRefocusWindow(platform) ? null : (
+                        <SettingItem>
+                          <SettingSwitch
+                            title="「唤回 Poker」窗口"
+                            description="开启后，左上角会出现一个小窗口。点击窗口中的「唤回 Poker」后，Poker 所有窗口都会置为最顶端"
+                            value={preferences.refocus_window}
+                            onChange={HandleSettingFieldChange('refocus_window')}
+                          />
+                        </SettingItem>
+                      )
+                    }
 
                     <About />
                   </div>
@@ -250,7 +261,7 @@ export default function OptionsPage() {
               </>
             )
           }
-        }, [adjustWidth, failure, handleSiteSettingsChange, limit, managerKey, preferences, refreshManagerKey])
+        }, [HandleSettingFieldChange, adjustWidth, failure, handleSiteSettingsChange, limit, managerKey, platform, preferences, refreshManagerKey, setPreferences])
       }</div>
     </div>
   )

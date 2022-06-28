@@ -9,7 +9,10 @@ const cfg = Object.freeze({
   INSTALLED_WINDOW_HEIGHT: 480,
 
   CONTROL_WINDOW_WIDTH: 380,
-  CONTROL_WINDOW_HEIGHT: 150,
+
+  CONTROL_WINDOW_HEIGHT_WITH_NORMAL: 150,
+  CONTROL_WINDOW_HEIGHT_WITH_DEBUGGER: 192,
+
   CONTROL_QUERY_TEXT: 'text',
   CONTROL_QUERY_REVERT: 'revert',
 
@@ -46,8 +49,6 @@ const cfg = Object.freeze({
   get DEFAULT_SITE_ICON() {
     return chrome.runtime.getURL(`/default-siteicon.png`)
   },
-
-  DEFAULT_ENABLE_MOBILE: true,
 
   EXPORT_SITE_SETTINGS_FILE_NAME: 'poker-sites.json',
   DEFAULT_SITE_OPTION_NAME: '站点',

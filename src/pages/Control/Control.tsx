@@ -1,19 +1,20 @@
-import { nextTick } from 'vait'
 import React, { useCallback, useEffect, useState } from 'react'
 
 import cfg from '../../config'
 
-import getQuery from '../../utils/get-query'
-import { validKeyword } from '../../utils/search'
-
 import { Base } from '../../core/base'
 import { calcControlWindowPos } from '../../core/layout/control-window'
+import { WindowID } from '../../core/layout/window'
 import { MessageEvent } from '../../message'
+
+import getQuery from '../../utils/get-query'
+import { validKeyword } from '../../utils/search'
 
 import useWindowFocus from '../../hooks/useWindowFocus'
 import useCurrentWindow from '../../hooks/useCurrentWindow'
 import useControl from '../../hooks/useControl'
 import useReFocusMessage from '../../hooks/useReFocusMessage'
+import usePreventEnterFullScreen from '../../hooks/usePreventEnterFullScreen'
 
 import Loading from '../../components/Loading'
 import SearchForm from '../../components/SearchForm'
@@ -46,11 +47,11 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
 
   const windowIsFocus = useWindowFocus(true)
 
-  const controlWindowId = useCurrentWindow()?.windowId
+  const controlWindow = useCurrentWindow()
+  const controlWindowId = controlWindow?.windowId
 
   const {
     isLoading,
-    setLoading,
     control,
     setControl,
     refreshWindows,
@@ -64,10 +65,14 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
     }
   }, [controlWindowId])
 
-  const moveControlWindow = useCallback(async (id: number) => {
-    const [ top, left ] = calcControlWindowPos(base.layout_height, base.limit)
+  const moveControlWindow = useCallback(async (id: WindowID) => {
+    const [ top, left ] = calcControlWindowPos(
+      base.control_window_height,
+      base.layout_height,
+      base.limit
+    )
     await chrome.windows.update(id, { top, left })
-  }, [base.layout_height, base.limit])
+  }, [base.control_window_height, base.layout_height, base.limit])
 
   function changeRow(act: 'previus' | 'next') {
     controlChangeRow(act).then(focusControlWindow)
@@ -115,21 +120,16 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
         if (control === null) {
           submitKeyword(newSearchKeyword)
         } else {
-          try {
-            setLoading(true)
-            await nextTick()
-          } finally {
-            setControl(() => {
-              // 写成这样是处理提交同样搜索词的时候的处理
-              // 因为是用 useEffect 来判断的，如果是相同的值就不会触发更新了
-              submitKeyword(newSearchKeyword)
-              return null
-            })
-          }
+          setControl(() => {
+            // 写成这样是处理提交同样搜索词的时候的处理
+            // 因为是用 useEffect 来判断的，如果是相同的值就不会触发更新了
+            submitKeyword(newSearchKeyword)
+            return null
+          })
         }
       })
     }
-  }, [control, controlProcessing, setControl, setLoading])
+  }, [control, controlProcessing, setControl])
 
   useEffect(function receiveChangeSearchMessage() {
     const [ applyReceive, cancelReceive ] = MessageEvent('ChangeSearch', (new_keyword) => {
@@ -147,6 +147,8 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
   }, [controlWindowId, control, handleSubmit])
 
   useReFocusMessage(controlWindowId, control)
+
+  usePreventEnterFullScreen(controlWindow?.windowId)
 
   return (
     <div className="container">

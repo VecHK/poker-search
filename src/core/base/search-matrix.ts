@@ -10,9 +10,36 @@ import {
   toMatrix
 } from '../../preferences/site-settings'
 
-type GetSearchURL = (keyword: string) => string
-type SearchRow = Array<GetSearchURL>
+type GetSearchURLFn = (keyword: string) => string
+export type SearchOption = {
+  is_plain: true
+  site_option: undefined
+  getSearchURL: GetSearchURLFn
+} | {
+  is_plain: false
+  site_option: SiteOption
+  getSearchURL: GetSearchURLFn
+}
+type SearchRow = Array<SearchOption>
 export type SearchMatrix = Array<SearchRow>
+
+function GetSearchURL(
+  plain_window_url_pattern: string,
+  site_row: Row<SiteOption>,
+  col: number
+): GetSearchURLFn {
+  const site_opt = nth(col, site_row)
+  if (site_opt === undefined) {
+    return curry(toSearchURL)(plain_window_url_pattern)
+  } else {
+    const toUrl = curry(toSearchURL)(site_opt.url_pattern)
+    if (site_opt.access_mode === 'MOBILE') {
+      return compose(addMobileIdentifier, toUrl)
+    } else {
+      return toUrl
+    }
+  }
+}
 
 function fillSearchRow(
   plain_window_url_pattern: string,
@@ -21,15 +48,19 @@ function fillSearchRow(
 ): SearchRow {
   return map(
     (col) => {
-      const site_opt = nth(col, site_row)
-      if (site_opt === undefined) {
-        return curry(toSearchURL)(plain_window_url_pattern)
+      const getSearchURL = GetSearchURL(plain_window_url_pattern, site_row, col)
+      const site_option = nth(col, site_row)
+      if (site_option === undefined) {
+        return {
+          is_plain: true,
+          site_option: undefined,
+          getSearchURL,
+        }
       } else {
-        const toUrl = curry(toSearchURL)(site_opt.url_pattern)
-        if (site_opt.enable_mobile) {
-          return compose(addMobileIdentifier, toUrl)
-        } else {
-          return toUrl
+        return {
+          is_plain: false,
+          site_option,
+          getSearchURL,
         }
       }
     },
@@ -46,7 +77,7 @@ function createSearchMatrix(
     return []
   } else {
     const [cols, ...remain_matrix] = site_matrix
-    
+
     if (max_window_per_row < cols.length) {
       return createSearchMatrix(
         plain_window_url_pattern,

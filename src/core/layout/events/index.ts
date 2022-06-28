@@ -1,15 +1,16 @@
-import { compose, equals, not } from 'ramda'
-import { Atomic, Signal } from 'vait'
+import { allPass, compose, equals, not } from 'ramda'
+import { Atomic, Signal, Wrap } from 'vait'
 import cfg from '../../../config'
 import { getWindowId, WindowID } from './../window'
 import { AlarmSetTimeout } from '../../../utils/chrome-alarms'
 import { ChromeEvent } from '../../../utils/chrome-event'
 
-import { Limit } from '../../base/limit'
+import { CanUseRefocusWindow } from '../../../can-i-use'
 
 import DoubleFocusProtection from './double-focus-protection'
-import { InitRefocusEvent, InitRefocusLayout } from './refocus'
+import { InitRefocusEvent, InitRefocusLayoutMemo } from './refocus'
 import InitMinimizedDetecting from './minimized-detecting'
+import { Base } from '../../base'
 
 export type Route = 'REMOVED' | 'FOCUS' | 'MAXIMIZED' | 'MINIMIZED'
 type CallRoute<R extends Route, P extends Record<string, unknown>> = {
@@ -31,6 +32,8 @@ function isMaximized(win: chrome.windows.Window) {
   return win.state === 'maximized'
 }
 
+type RL = ReturnType<typeof InitRefocusLayoutMemo>
+
 /**
  * TrustedEvents 事件调度
  *
@@ -48,8 +51,8 @@ function isMaximized(win: chrome.windows.Window) {
  * 控制窗的 useReFocusMessage 钩子在收到这个消息的时候进行poker layout 的重新焦聚
  *
  * 对于 (C)，因为还原窗口原本是设想点击最大化按钮的，但macOS中并没有这种按钮
- * mac里只有类似的全屏按钮，可是用全屏作为还愿窗口的话会很奇怪，而且在系统资源紧张
- * 的时候表现效果很差。所以需要利用最小化来去做，可是 onBoundsChanged 似乎并不能
+ * mac里只有类似的全屏按钮，可是用全屏作为还原窗口的话看起来会很奇怪，而且在系统资源紧张
+ * 的时候表现效果很差。可以利用最小化来去做，可是 onBoundsChanged 似乎并不能
  * 触发最小化的事件，于是只能自己实现了，见 InitMinimizedDetecting。
  *
  * 对于 (D)，在窗口失焦的时候点击最小化、最大化、全屏，会先触发 onFocusChanged 事件后
@@ -78,18 +81,15 @@ function isMaximized(win: chrome.windows.Window) {
  * 这儿有个没有考虑的情况，那就是 InitMinimizedDetecting 没有考虑进来。
  * 不过似乎是没有冲突的。
  */
-type RL = ReturnType<typeof InitRefocusLayout>
 export default async function TrustedEvents({
   getRegIds,
   control_window_id,
-  limit,
-  platform,
+  base,
   ...callbacks
 }: {
   getRegIds(): WindowID[]
   control_window_id: WindowID
-  limit: Limit,
-  platform: chrome.runtime.PlatformInfo
+  base: Base,
 
   onRemovedWindow(removed_window_id: WindowID): Promise<void>
   onSelectSearchWindow(
@@ -107,6 +107,7 @@ export default async function TrustedEvents({
 
   onRefocusLayoutClose(): Promise<void>
 }) {
+  const { limit, platform, preferences } = base
   const isNone = equals<WindowID>(chrome.windows.WINDOW_ID_NONE)
   const isControlWindow = equals(control_window_id)
   const isSearchWindow = (id: WindowID) => getRegIds().indexOf(id) !== -1
@@ -118,12 +119,17 @@ export default async function TrustedEvents({
     return (isControlWindow(id) || isSearchWindow(id)) && !isNone(id)
   }
 
+  const enableRefocusWindowCond = allPass([
+    CanUseRefocusWindow(platform),
+    Wrap(preferences.refocus_window)
+  ])
+
   const {
     apply: applyRefocusEvent,
     cancel: cancelRefocusEvent,
     refocus_window_id,
   } = await InitRefocusEvent(
-    isWindowsOS,
+    enableRefocusWindowCond,
     limit,
     {
       close() {
@@ -133,7 +139,7 @@ export default async function TrustedEvents({
     }
   )
 
-  const RefocusLayout = InitRefocusLayout( compose(not, isWindowsOS) )
+  const RefocusLayout = InitRefocusLayoutMemo(compose(not, enableRefocusWindowCond))
   const [, shouldRefocusLayout] = RefocusLayout
 
   const signal = Signal<Route>()
@@ -226,7 +232,7 @@ export default async function TrustedEvents({
   )
 
   const boundsChangedHandler = (win: chrome.windows.Window) => {
-    console.warn('onBoundsChanged')
+    console.log('onBoundsChanged')
     const bounds_window_id = getWindowId(win)
     if (isSearchWindow(bounds_window_id)) {
       if (isMaximized(win)) {

@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
+import { WindowID } from '../core/layout/window'
 
 export default function useCurrentWindow() {
   const [win, setWin] = useState<{
-    windowId: number
+    windowId: WindowID
     incognito: boolean
   } | undefined>(undefined)
 

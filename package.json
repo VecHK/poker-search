@@ -30,6 +30,7 @@
     "react-beautiful-dnd": "^13.1.0",
     "react-dom": "^17.0.2",
     "react-hot-loader": "^4.13.0",
+    "react-tooltip": "^4.2.21",
     "react-transition-group": "^4.4.2",
     "vait": "^2.5.1",
     "whatwg-mimetype": "^3.0.0"

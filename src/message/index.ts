@@ -5,7 +5,8 @@ type Types =
   'Refocus' |
   'RefocusLayoutClose' |
   'ChangeSearch' |
-  'ChangeLaunchContextMenu'
+  'ChangeLaunchContextMenu' |
+  'TryPoker'
 
 type RuntimeMessage<T extends Types, P extends unknown> = {
   type: T,
@@ -18,15 +19,21 @@ export type Messages = {
   RefocusWindowClose: RuntimeMessage<'RefocusLayoutClose', null>
   ChangeSearch: RuntimeMessage<'ChangeSearch', string>
   ChangeLaunchContextMenu: RuntimeMessage<'ChangeLaunchContextMenu', boolean>
+  TryPoker: RuntimeMessage<'TryPoker', string>
 }
 
-export function sendMessage<
+export async function sendMessage<
   T extends keyof Messages,
 >(type: T, payload: Messages[T]['payload']) {
-  return chrome.runtime.sendMessage(
-    chrome.runtime.id,
-    { type, payload }
-  )
+  try {
+    await chrome.runtime.sendMessage(
+      chrome.runtime.id,
+      { type, payload }
+    )
+  } catch (err) {
+    console.error(`sendMessage<${type}> failure:`, err)
+    throw err
+  }
 }
 
 export function MessageEvent<T extends keyof Messages, Msg extends  Messages[T]>(

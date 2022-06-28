@@ -1,7 +1,22 @@
-import { sendMessage } from '../message'
-import { ChromeContextMenus } from '../utils/chrome-contextmenu'
-import { controlIsLaunched } from '../x-state/control-window-launched'
+import { RevertContainerID } from '../../core/base'
+import { sendMessage } from '../../message'
+import { ChromeContextMenus } from '../../utils/chrome-contextmenu'
+import { controlIsLaunched } from '../../x-state/control-window-launched'
 import launchControlWindow from './launch'
+
+export async function searchPoker(
+  search_text: string,
+  revert_container_id: RevertContainerID
+) {
+  if (await controlIsLaunched()) {
+    sendMessage('ChangeSearch', search_text)
+  } else {
+    launchControlWindow({
+      text: search_text,
+      revert_container_id
+    })
+  }
+}
 
 const contextMenu = () => (
   ChromeContextMenus(
@@ -17,14 +32,7 @@ const contextMenu = () => (
         const { selectionText } = info
         const { windowId } = tab
         if (selectionText !== undefined) {
-          if (await controlIsLaunched()) {
-            sendMessage('ChangeSearch', selectionText)
-          } else {
-            launchControlWindow({
-              text: selectionText,
-              revert_container_id: windowId
-            })
-          }
+          searchPoker(selectionText, windowId)
         }
       }
     }

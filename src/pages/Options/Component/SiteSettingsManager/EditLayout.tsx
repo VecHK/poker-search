@@ -1,25 +1,17 @@
 import React, { useMemo, useState } from 'react'
 import { SiteOption } from '../../../../preferences/site-settings'
-import Switch from '../Switch'
+import { getFormItem } from '../../../../utils/form'
+
+import AccessModeSetting from './AccessModeSetting'
 import s from './EditLayout.module.css'
 
-function getFormItem(formData: FormData, name: string) {
-  const value = formData.get(name)
-  if (value === null) {
-    throw Error(`formData '${name}' value not found!`)
-  } else if (typeof value !== 'string') {
-    throw Error(`formData '${name}' value is not a string!`)
-  } else {
-    return value
-  }
-}
+function getAccessMode(formData: FormData): SiteOption['access_mode'] {
+  const val = formData.get('access_mode')
 
-function getFormCheckItem(formData: FormData, name: string): boolean {
-  const value = formData.get(name)
-  if ((value === null) || (typeof value === 'string')) {
-    return value === 'on'
+  if ((val === 'DESKTOP') || (val === 'MOBILE') ||  (val === 'MOBILE-STRONG')) {
+    return val
   } else {
-    throw Error(`formData '${name}' value is not a string or null!`)
+    throw Error(`formData 'access_mode' value is not SiteOption.access_mode type`)
   }
 }
 
@@ -31,7 +23,7 @@ function formDataTransform(sourceOption: SiteOption, e: React.FormEvent<HTMLForm
   return {
     ...sourceOption,
     url_pattern: getFormItem(formData, 'url_pattern'),
-    enable_mobile: getFormCheckItem(formData, 'enable_mobile'),
+    access_mode: getAccessMode(formData),
   }
 }
 
@@ -56,8 +48,8 @@ type EditLayoutProps = {
 export default function EditLayout({ siteOption, onSubmit, onCancel }: EditLayoutProps) {
   const [failure, setFailure] = useState<Error | null>(null)
   const [urlPattern, setUrlPattern] = useState(siteOption.url_pattern)
-  const [enableMobile, setEnableMobile] = useState(siteOption.enable_mobile)
-  
+  const [accessMode, setAccessMode] = useState(siteOption.access_mode)
+
   const failureNode = useMemo(() => {
     if (failure) {
       return <div className={s.Failure}>{failure.message}</div>
@@ -100,16 +92,10 @@ export default function EditLayout({ siteOption, onSubmit, onCancel }: EditLayou
             name="url_pattern"
           />
         </label>
-        <label className={s.EnableMobile}>
-          <span>启用移动端访问</span>
-          <Switch
-            name="enable_mobile"
-            value={enableMobile}
-            onChange={() => {
-              setEnableMobile(!enableMobile)
-            }}
-          />
-        </label>
+        <AccessModeSetting
+          accessMode={accessMode}
+          onChange={setAccessMode}
+        />
       </div>
       <div className={s.ButtonGroup}>
         <button className={s.Button} type="submit">确定</button>

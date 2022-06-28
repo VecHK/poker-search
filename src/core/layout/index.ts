@@ -2,7 +2,7 @@ import { Memo, Signal } from 'vait'
 import { Base } from '../base'
 import { constructSearchWindowsFast } from './window-create'
 import { selectWindow } from './window-update'
-import { getWindowId, SearchWindow } from './window'
+import { getWindowId, SearchWindow, WindowID } from './window'
 import { renderCol, renderMatrix } from './render'
 import { selectCol } from '../common'
 
@@ -25,7 +25,7 @@ export async function CreateSearchLayout({
   onRemovedWindow,
   onRefocusLayoutClose,
 }: {
-  control_window_id: number,
+  control_window_id: WindowID,
   base: Base
   keyword: string
   creating_signal: Signal<void>
@@ -66,9 +66,7 @@ export async function CreateSearchLayout({
   } = await TrustedEvents({
     getRegIds,
     control_window_id,
-
-    limit: base.limit,
-    platform: base.platform,
+    base,
 
     onRemovedWindow,
 

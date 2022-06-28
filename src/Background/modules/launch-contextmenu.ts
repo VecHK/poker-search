@@ -1,4 +1,4 @@
-import { ChromeContextMenus } from '../utils/chrome-contextmenu'
+import { ChromeContextMenus } from '../../utils/chrome-contextmenu'
 import { callPoker } from './gloal-command'
 
 const contextMenu = () => (
