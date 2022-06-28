@@ -29,6 +29,7 @@ function createTryNode(getSearchText: () => string, style: React.CSSProperties =
 
   const a = node.querySelector('a')
   if (a) {
+    a.style.color = '#0040ab'
     a.onclick = async (e) => {
       e.preventDefault()
       devLog('try clicked')
@@ -81,10 +82,10 @@ const Series = [
             return input.value
           }
         }
-        extabar.parentNode?.appendChild(createTryNode(getSearchText));
+        extabar.parentNode?.appendChild(createTryNode(getSearchText, { color: '#70757a' }));
         (extabar as unknown as any).style.height = '32px'
 
-        botstuff.appendChild(createTryNode(getSearchText))
+        botstuff.appendChild(createTryNode(getSearchText, { color: '#70757a' }))
       }
     }
   }),
@@ -153,6 +154,41 @@ const Series = [
         )
         insertBefore(search_bottom, createTryNode(
           getSearchText, { color: '#70757a', paddingTop: '32px' })
+        )
+      }
+    }
+  }),
+
+  InitInject({
+    name: 'Yandex',
+    cond() {
+      const u = new URL(window.location.href)
+      const is_yandex_hostname = u.hostname === 'yandex.com'
+      const is_search_page = /^\/search/.test(u.pathname)
+
+      const search_result_list = Boolean( $('#search-result.serp-list') )
+
+      return is_yandex_hostname && is_search_page && search_result_list
+    },
+    async exec() {
+      const search_result_list = $('#search-result.serp-list')
+
+      if (!search_result_list) {
+        return
+      } else {
+        const getSearchText = () => {
+          const input = document.querySelector<HTMLInputElement>('input#kw')
+          if (input === null) {
+            throw Error('input is null')
+          } else {
+            return input.value
+          }
+        }
+        insertAfter(search_result_list, createTryNode(
+          getSearchText, { color: 'rgba(62,70,94,.8)', paddingBottom: '16px', paddingLeft: '20px' })
+        )
+        insertBefore(search_result_list, createTryNode(
+          getSearchText, { color: 'rgba(62,70,94,.8)', paddingBottom: '16px' })
         )
       }
     }
