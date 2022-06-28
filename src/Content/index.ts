@@ -1,3 +1,4 @@
+import { Memo } from 'vait'
 import { sendMessage } from '../message'
 
 function devLog(message?: any, ...optionalParams: any[]) {
@@ -232,10 +233,53 @@ const Series = [
   })
 ] as const
 
-for (const [name, cond, exec] of Series) {
-  if (cond()) {
-    devLog(`poker content: is ${name}`)
-    exec()
-    break
+function run() {
+  for (const [name, cond, exec] of Series) {
+    if (cond()) {
+      devLog(`poker content: is ${name}`)
+      try {
+        exec()
+      } finally {
+        return true
+      }
+    }
+  }
+}
+
+startDecting()
+function startDecting() {
+  const [ isExecuted, setExecute ] = Memo(false)
+
+  function intervalDetecting() {
+    const interval_handler = setInterval(() => {
+      if (!isExecuted()) {
+        if (run()) {
+          setExecute(true)
+          clean()
+        }
+      }
+    }, 1000)
+
+    function clean() {
+      clearInterval(interval_handler)
+    }
+
+    return clean
+  }
+
+  if (run()) {
+    setExecute(true)
+    return
+  } else {
+    let cleanIntervalDetecting = intervalDetecting();
+
+    // 没有去调查为什么 navigation 对象不存在
+    // 不知道是不是 chrome 的专有接口
+    ((window as any).navigation).addEventListener('navigate', () => {
+      if (!isExecuted()) {
+        cleanIntervalDetecting()
+        cleanIntervalDetecting = intervalDetecting()
+      }
+    })
   }
 }
