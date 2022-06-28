@@ -141,7 +141,7 @@ const Series = [
         return
       } else {
         const getSearchText = () => {
-          const input = document.querySelector<HTMLInputElement>('input#kw')
+          const input = document.querySelector<HTMLInputElement>('#sbq-wrap input')
           if (input === null) {
             throw Error('input is null')
           } else {
@@ -176,7 +176,7 @@ const Series = [
         return
       } else {
         const getSearchText = () => {
-          const input = document.querySelector<HTMLInputElement>('input#kw')
+          const input = document.querySelector<HTMLInputElement>('.input__box input')
           if (input === null) {
             throw Error('input is null')
           } else {
@@ -213,7 +213,7 @@ const Series = [
         return
       } else {
         const getSearchText = () => {
-          const input = document.querySelector<HTMLInputElement>('input#kw')
+          const input = document.querySelector<HTMLInputElement>('#search_form input[type="text"]')
           if (input === null) {
             throw Error('input is null')
           } else {
@@ -250,7 +250,7 @@ const Series = [
         return
       } else {
         const getSearchText = () => {
-          const input = document.querySelector<HTMLInputElement>('input#kw')
+          const input = document.querySelector<HTMLInputElement>('input.b_searchbox')
           if (input === null) {
             throw Error('input is null')
           } else {
