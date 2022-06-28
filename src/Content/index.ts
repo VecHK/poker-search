@@ -9,8 +9,6 @@ function devLog(message?: any, ...optionalParams: any[]) {
 
 devLog('Poker Content Script works!')
 
-// type Optional<T, K extends keyof T> = Pick<Partial<T>, K> & Omit<T, K>;
-
 function insertAfter(existingNode: Element, newNode: Element) {
   existingNode.parentNode?.insertBefore(newNode, existingNode.nextSibling)
 }
@@ -227,6 +225,44 @@ const Series = [
         )
         insertBefore(result_more, createTryNode(
           getSearchText, { color: 'rgba(62,70,94,.8)', paddingBottom: '16px' })
+        )
+      }
+    }
+  }),
+
+  InitInject({
+    name: 'Bing',
+    cond() {
+      const u = new URL(window.location.href)
+      const is_bing_hostname = u.hostname === 'bing.com' || u.hostname === 'www.bing.com'
+      const is_search_page = /^\/search/.test(u.pathname)
+
+      const b_result = Boolean( $('#b_results') )
+      const pagenation = Boolean( $('.b_pag') )
+
+      return is_bing_hostname && is_search_page && b_result && pagenation
+    },
+    async exec() {
+      const b_result = $('#b_results')
+      const pagenation = $('.b_pag')
+
+      if (!b_result || !pagenation) {
+        return
+      } else {
+        const getSearchText = () => {
+          const input = document.querySelector<HTMLInputElement>('input#kw')
+          if (input === null) {
+            throw Error('input is null')
+          } else {
+            return input.value
+          }
+        }
+        insertBefore(pagenation, createTryNode(
+          getSearchText, { color: 'rgba(62,70,94,.8)', paddingLeft: '20px' })
+        )
+
+        insertBefore(b_result, createTryNode(
+          getSearchText, { color: 'rgba(62,70,94,.8)', paddingBottom: '8px', paddingLeft: '20px', paddingTop: '8px' })
         )
       }
     }
