@@ -10,11 +10,11 @@ devLog('Poker Content Script works!')
 
 // type Optional<T, K extends keyof T> = Pick<Partial<T>, K> & Omit<T, K>;
 
-function insertAfter(newNode: Element, existingNode: Element) {
+function insertAfter(existingNode: Element, newNode: Element) {
   existingNode.parentNode?.insertBefore(newNode, existingNode.nextSibling)
 }
 
-function insertBefore(newNode: Element, currentNode: Element) {
+function insertBefore(currentNode: Element, newNode: Element) {
   currentNode.parentNode?.insertBefore(newNode, currentNode)
 }
 
@@ -115,8 +115,45 @@ const Series = [
             return input.value
           }
         }
-        insertAfter(createTryNode(getSearchText, { color: '#9195a3' }), result_molecule_search_tool)
-        insertBefore(createTryNode(getSearchText, { color: '#9195a3', paddingLeft: '150px' }), result_molecule_page)
+        insertAfter(result_molecule_search_tool, createTryNode(getSearchText, { color: '#9195a3' }))
+        insertBefore(result_molecule_page, createTryNode(getSearchText, { color: '#9195a3', paddingLeft: '150px' }))
+      }
+    }
+  }),
+
+  InitInject({
+    name: 'Yahoo',
+    cond() {
+      const u = new URL(window.location.href)
+      const is_yahoo_hostname = u.hostname === 'search.yahoo.com'
+      const is_search_page = /^\/search;/.test(u.pathname)
+
+      const search_super_top = Boolean( $('.searchSuperTop') )
+      const search_bottom = Boolean( $('.searchBottom') )
+
+      return is_yahoo_hostname && is_search_page && search_super_top && search_bottom
+    },
+    async exec() {
+      const search_super_top = $('.searchSuperTop')
+      const search_bottom = $('.searchBottom')
+
+      if (!search_super_top || !search_bottom) {
+        return
+      } else {
+        const getSearchText = () => {
+          const input = document.querySelector<HTMLInputElement>('input#kw')
+          if (input === null) {
+            throw Error('input is null')
+          } else {
+            return input.value
+          }
+        }
+        insertAfter(search_super_top, createTryNode(
+          getSearchText, { color: '#70757a', paddingBottom: '16px', paddingLeft: '20px' })
+        )
+        insertBefore(search_bottom, createTryNode(
+          getSearchText, { color: '#70757a', paddingTop: '32px' })
+        )
       }
     }
   })

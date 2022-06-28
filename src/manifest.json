@@ -48,7 +48,8 @@
         "https://*.google.com/*",
         "https://google.com/*",
         "https://*.baidu.com/*",
-        "https://baidu.com/*"
+        "https://baidu.com/*",
+        "https://search.yahoo.com/*"
       ],
       "js": [
         "contentScript.bundle.js"
