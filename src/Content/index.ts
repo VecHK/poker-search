@@ -29,9 +29,10 @@ function createTryNode(getSearchText: () => string, style: React.CSSProperties =
   const a = node.querySelector('a')
   if (a) {
     a.style.color = '#0040ab'
-    a.onclick = async (e) => {
+    a.addEventListener('click', (e) => {
       e.preventDefault()
-      devLog('try clicked')
+
+      devLog('try clicked', getSearchText())
 
       sendMessage('TryPoker', getSearchText())
         .then(() => {
@@ -40,7 +41,7 @@ function createTryNode(getSearchText: () => string, style: React.CSSProperties =
         .catch(err => {
           console.error('TryPoker failure:', err)
         })
-    }
+    }, true)
   }
   return node
 }
@@ -141,7 +142,7 @@ const Series = [
         return
       } else {
         const getSearchText = () => {
-          const input = document.querySelector<HTMLInputElement>('input#kw')
+          const input = document.querySelector<HTMLInputElement>('#sbq-wrap input')
           if (input === null) {
             throw Error('input is null')
           } else {
@@ -176,7 +177,7 @@ const Series = [
         return
       } else {
         const getSearchText = () => {
-          const input = document.querySelector<HTMLInputElement>('input#kw')
+          const input = document.querySelector<HTMLInputElement>('.input__box input')
           if (input === null) {
             throw Error('input is null')
           } else {
@@ -213,7 +214,7 @@ const Series = [
         return
       } else {
         const getSearchText = () => {
-          const input = document.querySelector<HTMLInputElement>('input#kw')
+          const input = document.querySelector<HTMLInputElement>('#search_form input[type="text"]')
           if (input === null) {
             throw Error('input is null')
           } else {
@@ -234,7 +235,7 @@ const Series = [
     name: 'Bing',
     cond() {
       const u = new URL(window.location.href)
-      const is_bing_hostname = u.hostname === 'bing.com' || u.hostname === 'www.bing.com'
+      const is_bing_hostname = /^((bing.com)|(cn.bing.com))/.test(u.hostname)
       const is_search_page = /^\/search/.test(u.pathname)
 
       const b_result = Boolean( $('#b_results') )
@@ -250,7 +251,7 @@ const Series = [
         return
       } else {
         const getSearchText = () => {
-          const input = document.querySelector<HTMLInputElement>('input#kw')
+          const input = document.querySelector<HTMLInputElement>('input.b_searchbox')
           if (input === null) {
             throw Error('input is null')
           } else {
