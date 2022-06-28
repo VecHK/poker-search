@@ -45,9 +45,10 @@
   "content_scripts": [
     {
       "matches": [
-        "http://*/*",
-        "https://*/*",
-        "<all_urls>"
+        "https://*.google.com/*",
+        "https://google.com/*",
+        "https://*.baidu.com/*",
+        "https://baidu.com/*"
       ],
       "js": [
         "contentScript.bundle.js"
