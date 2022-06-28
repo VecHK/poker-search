@@ -50,7 +50,8 @@
         "https://*.baidu.com/*",
         "https://baidu.com/*",
         "https://search.yahoo.com/*",
-        "https://yandex.com/*"
+        "https://yandex.com/*",
+        "https://duckduckgo.com/*"
       ],
       "js": [
         "contentScript.bundle.js"

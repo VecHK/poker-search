@@ -192,6 +192,43 @@ const Series = [
         )
       }
     }
+  }),
+
+  InitInject({
+    name: 'Duckduckgo',
+    cond() {
+      const u = new URL(window.location.href)
+      const is_duckduckgo_hostname = u.hostname === 'duckduckgo.com'
+      const is_search_query = Boolean( (new URLSearchParams(u.search)).get('q') )
+
+      const search_filters_wrap = Boolean( $('.search-filters-wrap') )
+      const result_more = Boolean( $('.result.result--more') )
+
+      return is_duckduckgo_hostname && is_search_query && search_filters_wrap && result_more
+    },
+    async exec() {
+      const search_filters_wrap = $('.search-filters-wrap')
+      const result_more = $('.result.result--more')
+
+      if (!search_filters_wrap || !result_more) {
+        return
+      } else {
+        const getSearchText = () => {
+          const input = document.querySelector<HTMLInputElement>('input#kw')
+          if (input === null) {
+            throw Error('input is null')
+          } else {
+            return input.value
+          }
+        }
+        insertAfter(search_filters_wrap, createTryNode(
+          getSearchText, { color: 'rgba(62,70,94,.8)', paddingBottom: '16px', paddingLeft: '20px' })
+        )
+        insertBefore(result_more, createTryNode(
+          getSearchText, { color: 'rgba(62,70,94,.8)', paddingBottom: '16px' })
+        )
+      }
+    }
   })
 ] as const
 
