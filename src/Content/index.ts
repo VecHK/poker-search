@@ -29,9 +29,10 @@ function createTryNode(getSearchText: () => string, style: React.CSSProperties =
   const a = node.querySelector('a')
   if (a) {
     a.style.color = '#0040ab'
-    a.onclick = async (e) => {
+    a.addEventListener('click', (e) => {
       e.preventDefault()
-      devLog('try clicked')
+
+      devLog('try clicked', getSearchText())
 
       sendMessage('TryPoker', getSearchText())
         .then(() => {
@@ -40,7 +41,7 @@ function createTryNode(getSearchText: () => string, style: React.CSSProperties =
         .catch(err => {
           console.error('TryPoker failure:', err)
         })
-    }
+    }, true)
   }
   return node
 }
