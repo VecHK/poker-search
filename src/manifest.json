@@ -25,7 +25,7 @@
     "default_icon": "icon-34.png"
   },
   "icons": {
-    "128": "icon-128.png"
+    "128": "icon-logo.png"
   },
   "omnibox": {
     "keyword": "poker"
@@ -69,7 +69,7 @@
     {
       "resources": [
         "content.styles.css",
-        "icon-128.png",
+        "icon-logo.png",
         "icon-34.png"
       ],
       "matches": []
