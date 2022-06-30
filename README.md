@@ -1,4 +1,4 @@
-<img src="src/assets/img/icon-128.png" width="100"/>
+<img src="src/assets/img/icon-logo.png" width="100"/>
 
 ![Platform](https://img.shields.io/badge/Platform-macOS%20%7C%20Windows-green?color=%235599FF&style=plastic&logo=Google%20Chrome&logoColor=%23F0F0F0)
 ![Rating](https://img.shields.io/chrome-web-store/stars/test?color=%235599FF&logoColor=F0F0F0&style=plastic)
@@ -74,7 +74,7 @@ Poker 搜索启动后，用户能在底部的控制台窗口中再次键入新�
 
 你能直接在 [Discussions](https://github.com/VecHK/poker-search/discussions)、[Issues](https://github.com/VecHK/poker-search/issues) 页面发帖提出。
 
-也能直接联系 [Vec](http://vec.moe/) 与 [NT³](https://t.me/nt_cubic) 
+也能直接联系 [Vec](http://vec.moe/) 与 [NT³](https://t.me/nt_cubic)
 
 # 致谢
 
