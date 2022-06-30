@@ -4,8 +4,34 @@ var webpack = require('webpack'),
   env = require('./utils/env'),
   CopyWebpackPlugin = require('copy-webpack-plugin'),
   HtmlWebpackPlugin = require('html-webpack-plugin'),
-  TerserPlugin = require('terser-webpack-plugin');
+  TerserPlugin = require('terser-webpack-plugin'),
+  sharp = require('sharp')
 var { CleanWebpackPlugin } = require('clean-webpack-plugin');
+
+function toResizeFileName(to, size) {
+  const p = path.parse(to)
+  return path.join(
+    p.dir,
+    p.name.replace('[SIZE]', `${size}`) + p.ext
+  )
+}
+
+function resizePicture({
+  from,
+  to,
+  sizes
+}) {
+  return (
+    new CopyWebpackPlugin({
+      patterns: sizes.map(size => ({
+        from,
+        to: toResizeFileName(to, size),
+        force: true,
+        transform: content => sharp(content).resize(size).toBuffer(),
+      }))
+    })
+  )
+}
 
 const ASSET_PATH = process.env.ASSET_PATH || '/';
 
@@ -159,26 +185,14 @@ var options = {
           from: 'src/assets/default-siteicon.png',
           to: path.join(__dirname, 'build'),
           force: true,
+          transform: content => sharp(content).resize(192).toBuffer(),
         },
       ],
     }),
-    new CopyWebpackPlugin({
-      patterns: [
-        {
-          from: 'src/assets/img/icon-128.png',
-          to: path.join(__dirname, 'build'),
-          force: true,
-        },
-      ],
-    }),
-    new CopyWebpackPlugin({
-      patterns: [
-        {
-          from: 'src/assets/img/icon-34.png',
-          to: path.join(__dirname, 'build'),
-          force: true,
-        },
-      ],
+    resizePicture({
+      from: 'src/assets/img/icon-logo.png',
+      to: path.join(__dirname, 'build', 'logo-[SIZE].png'),
+      sizes: [ 128, 34 ]
     }),
     new HtmlWebpackPlugin({
       template: path.join(__dirname, 'src', 'pages', 'Installed', 'index.html'),
