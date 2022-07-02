@@ -5,7 +5,7 @@ import { getWindowId, WindowID } from './../window'
 import { AlarmSetTimeout } from '../../../utils/chrome-alarms'
 import { ChromeEvent } from '../../../utils/chrome-event'
 
-import { CanUseRefocusWindow } from '../../../can-i-use'
+import { CanUseMinimizeRevert, CanUseRefocusWindow } from '../../../can-i-use'
 
 import DoubleFocusProtection from './double-focus-protection'
 import { InitRefocusEvent, InitRefocusLayoutMemo } from './refocus'
@@ -46,14 +46,14 @@ type RL = ReturnType<typeof InitRefocusLayoutMemo>
  * 对于 (A)，见 DoubleFocusProtection。大概是定了一个时间，然后在超时的时候查询
  * 在这个时间内收到的 window_id ，根据收到的 window_id 来判断真正的 focusChanged
  *
- * 对于 (B)，使用了唤回窗来做，见InitRefocusEvent、InitRefocusLayout。大概就是新建了
+ * 对于 (B)，使用了唤回窗来做，见 InitRefocusEvent、InitRefocusLayout。大概就是新建了
  * 一个窗口，然后点击这个窗口里的按钮后发送 REFOCUS 的消息,
- * 控制窗的 useReFocusMessage 钩子在收到这个消息的时候进行poker layout 的重新焦聚
+ * 控制窗的 useReFocusMessage 钩子在收到这个消息的时候进行 poker layout 的重新焦聚
  *
- * 对于 (C)，因为还原窗口原本是设想点击最大化按钮的，但macOS中并没有这种按钮
- * mac里只有类似的全屏按钮，可是用全屏作为还原窗口的话看起来会很奇怪，而且在系统资源紧张
+ * 对于 (C)，因为还原窗口原本是设想点击最大化按钮的，但 macOS 中并没有这种按钮
+ * mac 里只有类似的全屏按钮，可是用全屏作为还原窗口的话看起来会很奇怪，而且在系统资源紧张
  * 的时候表现效果很差。可以利用最小化来去做，可是 onBoundsChanged 似乎并不能
- * 触发最小化的事件，于是只能自己实现了，见 InitMinimizedDetecting。
+ * 触发最小化的事件，于是只能自己实现了，见 InitMinimizedDetecting
  *
  * 对于 (D)，在窗口失焦的时候点击最小化、最大化、全屏，会先触发 onFocusChanged 事件后
  * 再触发 onBoundsChanged，这就需要消除掉这种冲突的情况。关于 onFocusChanged、onBoundsChanged 的
@@ -69,7 +69,7 @@ type RL = ReturnType<typeof InitRefocusLayoutMemo>
  *   9. 失焦的情况按住 Command 点击关闭按钮 ( removed )
  *
  * 主要的麻烦点在于 2、5、7，他们是先执行 focus 后，才执行真正需要的事件
- * 我们需要保证调用顺序，该是选择窗口，还是最大化全屏，还是关闭，要做到
+ * 我们需要保证调用顺序，该是选择窗口、还是最大化全屏、还是关闭，要做到
  * 这三个事件不会重复执行。
  *
  * 对于 5，可以利用 isMaximized 来过滤掉，因为 onBoundsChanged 只需要用到最大化
@@ -113,7 +113,6 @@ export default async function TrustedEvents({
   const isSearchWindow = (id: WindowID) => getRegIds().indexOf(id) !== -1
 
   const isWindowsOS = () => platform.os === 'win'
-  const isMacOS = () => platform.os === 'mac'
 
   function isLayout(id: WindowID) {
     return (isControlWindow(id) || isSearchWindow(id)) && !isNone(id)
@@ -162,7 +161,7 @@ export default async function TrustedEvents({
               applyFocusChanged()
               applyBoundsChanged()
               applyRemoved()
-              applyMinimized()
+              applyMinimizedRevert()
             })
         )
       }
@@ -244,8 +243,8 @@ export default async function TrustedEvents({
     }
   }
 
-  const [ applyMinimized, cancelMinimized ] = InitMinimizedDetecting(
-    isMacOS,
+  const [ applyMinimizedRevert, cancelMinimizedRevert ] = InitMinimizedDetecting(
+    CanUseMinimizeRevert(platform),
     getRegIds,
     async (minimized_windows) => {
       console.log('cancelMinimized', minimized_windows)
@@ -265,7 +264,7 @@ export default async function TrustedEvents({
     // Windows 系统需要还原窗口 #115
     applyRefocusEvent()
 
-    applyMinimized()
+    applyMinimizedRevert()
 
     applyRemoved()
     applyFocusChanged()
@@ -278,7 +277,7 @@ export default async function TrustedEvents({
     // Windows 系统需要还原窗口 #115
     cancelRefocusEvent()
 
-    cancelMinimized()
+    cancelMinimizedRevert()
 
     cancelRemoved()
     cancelFocusChanged()
