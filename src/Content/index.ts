@@ -82,10 +82,9 @@ const Series = [
             return input.value
           }
         }
-        extabar.parentNode?.appendChild(createTryNode(getSearchText, { color: '#70757a' }));
-        (extabar as unknown as any).style.height = '32px'
+        extabar.parentNode?.appendChild(createTryNode(getSearchText, { color: '#70757a', lineHeight: '32px' }));
 
-        botstuff.appendChild(createTryNode(getSearchText, { color: '#70757a' }))
+        botstuff.appendChild(createTryNode(getSearchText, { color: '#70757a', lineHeight: '32px' }))
       }
     }
   }),
