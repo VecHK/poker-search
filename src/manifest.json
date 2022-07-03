@@ -2,6 +2,7 @@
   "manifest_version": 3,
   "name": "Poker Search",
   "description": "一款灵感来源于 Smartisan TNT 发牌手的 Chrome 扩展插件。",
+  "default_locale": "zh_CN",
   "options_page": "options.html",
   "background": {
     "service_worker": "background.bundle.js"
@@ -22,7 +23,8 @@
   ],
   "action": {
     "default_popup": "popup.html",
-    "default_icon": "logo-34.png"
+    "default_icon": "logo-34.png",
+    "default_title": "Poker Search"
   },
   "icons": {
     "128": "logo-128.png"

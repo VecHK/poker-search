@@ -168,6 +168,11 @@ var options = {
             );
           },
         },
+        {
+          from: 'src/_locales',
+          to: path.join(__dirname, 'build', '_locales'),
+          force: true,
+        }
       ],
     }),
     new CopyWebpackPlugin({
