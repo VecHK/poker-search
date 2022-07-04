@@ -31,6 +31,9 @@
 }
 
 .App-footer {
+  display: flex;
+  justify-content: center;
+
   font-size: var(--footer-font-size);
   width: 100%;
   height: var(--footer-height);
@@ -45,7 +48,9 @@
   ;
   background-color: var(--footer-background);
 }
-a {
+.App-footer a {
   color: hsl(219deg 59% 46%);
   text-decoration: none;
+
+  padding: 0 12px;
 }

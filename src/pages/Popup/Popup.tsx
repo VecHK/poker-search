@@ -15,7 +15,8 @@ import './Popup.css'
 
 const processing = Atomic()
 
-const Popup = () => {
+export default PopupPage
+function PopupPage () {
   return (
     <div className="App">
       <AppMain />
@@ -82,7 +83,36 @@ function AppMain() {
   )
 }
 
+async function getCurrentTabPageUrl() {
+  const [ tab ] = await chrome.tabs.query({ active: true, currentWindow: true })
+
+  if (tab === undefined) {
+    throw Error('tab is undefined')
+  }
+  else if (tab.url === undefined) {
+    throw Error('tab.url is undefined')
+  }
+  else {
+    return tab.url
+  }
+}
+
+const match_search_keyword = `poker`
+function hasPokerSearchIdentifier(url: string) {
+  const has_keyword_query = url.indexOf(encodeURIComponent(match_search_keyword)) !== -1
+  const has_keyword_base64 = url.indexOf(btoa(match_search_keyword)) !== -1
+  return has_keyword_query || has_keyword_base64
+}
+
 function AppFooter() {
+  const [isPokerSearchIdentifier, setPokerSearchIdentifier] = useState(false)
+
+  useEffect(() => {
+    getCurrentTabPageUrl()
+      .then(hasPokerSearchIdentifier)
+      .then(setPokerSearchIdentifier)
+  }, [])
+
   return (
     <footer className="App-footer">
       <a
@@ -90,8 +120,16 @@ function AppFooter() {
         target="_blank"
         rel="noreferrer"
       >打开 Poker 设置</a>
+
+      { !isPokerSearchIdentifier ? null : (
+        <a
+          href={chrome.runtime.getURL('options.html')}
+          target="_blank"
+          rel="noreferrer"
+        >
+          添加该站点到 Poker
+        </a>
+      ) }
     </footer>
   )
 }
-
-export default Popup
