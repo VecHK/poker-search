@@ -1,11 +1,12 @@
-.App {
+.Popup {
   --footer-background: rgba(246, 246, 246);
-  --footer-height: 24px;
+  --footer-height: 25px;
   --footer-font-size: 12px;
   --footer-shadow-size: 3px;
   --footer-shadow-color: rgba(0, 0, 0, .1);
 
   --main-padding-horizontal: 30px;
+  --main-height: calc(var(--popup-height) - var(--footer-height));
 
   position: absolute;
   top: 0px;
@@ -14,14 +15,17 @@
   right: 0px;
   height: 100%;
 
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: space-between;
+  overflow: hidden;
 }
 
-.App-main {
-  flex-grow: 2;
+.search-form-wrap {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+
+  overflow: hidden;
+  height: var(--main-height);
+
   display: flex;
   align-items: center;
   justify-content: center;
@@ -30,7 +34,18 @@
   box-sizing: border-box;
 }
 
-.App-footer {
+.popup-main.hide {
+  height: 0px;
+}
+.popup-main {
+  position: relative;
+  overflow: hidden;
+
+  height: var(--main-height);
+  transition: height 500ms;
+}
+
+.popup-background {
   display: flex;
   justify-content: center;
 
@@ -47,8 +62,10 @@
     inset 0 calc(-1 * var(--footer-shadow-size)) var(--footer-shadow-size) calc(-1 * var(--footer-shadow-size)) var(--footer-shadow-color)
   ;
   background-color: var(--footer-background);
+
+  height: var(--popup-height);
 }
-.App-footer a {
+.popup-background a {
   color: hsl(219deg 59% 46%);
   text-decoration: none;
 

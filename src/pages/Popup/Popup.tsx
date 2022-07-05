@@ -17,15 +17,21 @@ const processing = Atomic()
 
 export default PopupPage
 function PopupPage () {
+  const [isOpenBackground, setOpenBackground] = useState(false)
+
   return (
-    <div className="App">
-      <AppMain />
-      <AppFooter />
+    <div className="Popup">
+      <PopupMain isOpenBackground={isOpenBackground} />
+      <PopupBackground
+        onClickAddToPoker={() => {
+          setOpenBackground(!isOpenBackground)
+        }}
+      />
     </div>
   )
 }
 
-function AppMain() {
+function PopupMain({ isOpenBackground }: { isOpenBackground: boolean }) {
   const [input, setInput] = useState('')
   const current_window_id = useCurrentWindow()?.windowId
   const windowIsFocus = useWindowFocus(true)
@@ -42,43 +48,45 @@ function AppMain() {
   }, [])
 
   return (
-    <main className="App-main">
-      <SearchForm
-        keyword={input}
-        keywordPlaceholder="请输入搜索词"
-        setKeyword={setInput}
-        submitButtonActive={windowIsFocus}
-        onSubmit={({ keyword: newSearchKeyword }) => {
-          console.log('onSubmit', newSearchKeyword)
-          if (validKeyword(newSearchKeyword)) {
-            if (current_window_id !== undefined) {
-              processing(async () => {
-                if (await controlIsLaunched()) {
-                  console.log('send ChangeSearch message')
-                  sendMessage('ChangeSearch', newSearchKeyword)
-                    .then(() => {
-                      window.close()
+    <main className={`popup-main ${isOpenBackground ? 'hide' : ''}`}>
+      <div className="search-form-wrap">
+        <SearchForm
+          keyword={input}
+          keywordPlaceholder="请输入搜索词"
+          setKeyword={setInput}
+          submitButtonActive={windowIsFocus}
+          onSubmit={({ keyword: newSearchKeyword }) => {
+            console.log('onSubmit', newSearchKeyword)
+            if (validKeyword(newSearchKeyword)) {
+              if (current_window_id !== undefined) {
+                processing(async () => {
+                  if (await controlIsLaunched()) {
+                    console.log('send ChangeSearch message')
+                    sendMessage('ChangeSearch', newSearchKeyword)
+                      .then(() => {
+                        window.close()
+                      })
+                      .catch(err => {
+                        console.warn('send failure:', err)
+                      })
+                  } else {
+                    console.log('launchControlWindow')
+                    launchControlWindow({
+                      text: newSearchKeyword,
+                      revert_container_id: current_window_id
                     })
-                    .catch(err => {
-                      console.warn('send failure:', err)
-                    })
-                } else {
-                  console.log('launchControlWindow')
-                  launchControlWindow({
-                    text: newSearchKeyword,
-                    revert_container_id: current_window_id
-                  })
-                    .then(() => {
-                      window.close()
-                    }).catch(err => {
-                      console.warn('launch failure:', err)
-                    })
-                }
-              })
+                      .then(() => {
+                        window.close()
+                      }).catch(err => {
+                        console.warn('launch failure:', err)
+                      })
+                  }
+                })
+              }
             }
-          }
-        }}
-      />
+          }}
+        />
+      </div>
     </main>
   )
 }
@@ -104,7 +112,7 @@ function hasPokerSearchIdentifier(url: string) {
   return has_keyword_query || has_keyword_base64
 }
 
-function AppFooter() {
+function PopupBackground({ onClickAddToPoker }: { onClickAddToPoker: () => void }) {
   const [isPokerSearchIdentifier, setPokerSearchIdentifier] = useState(false)
 
   useEffect(() => {
@@ -114,7 +122,7 @@ function AppFooter() {
   }, [])
 
   return (
-    <footer className="App-footer">
+    <footer className="popup-background">
       <a
         href={chrome.runtime.getURL('options.html')}
         target="_blank"
@@ -126,6 +134,10 @@ function AppFooter() {
           href={chrome.runtime.getURL('options.html')}
           target="_blank"
           rel="noreferrer"
+          onClick={e => {
+            e.preventDefault()
+            onClickAddToPoker()
+          }}
         >
           添加该站点到 Poker
         </a>
