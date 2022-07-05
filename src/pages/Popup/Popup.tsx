@@ -77,20 +77,20 @@ function addToSiteSettings(
   if (site_settings.length === 0) {
     throw Error('site_settings.length is 0')
   } else {
-    const [ first_settings, ...remain_settings ] = reverse(site_settings)
-    const total_column = first_settings.row.length
+    const [ upper_settings, ...remain_settings ] = reverse(site_settings)
+    const total_column = upper_settings.row.length
     if (total_column >= maxWindowPerLine) {
-      // 已满，另开新行
+      // 不够放了，就多创个 site setting
       return reverse([
         generateSiteSettingsRow([ new_site_option ]),
-        first_settings,
+        upper_settings,
         ...remain_settings
       ])
     } else {
       return reverse([
         {
-          ...first_settings,
-          row: [new_site_option, ...first_settings.row]
+          ...upper_settings,
+          row: [new_site_option, ...upper_settings.row]
         },
         ...remain_settings
       ])
