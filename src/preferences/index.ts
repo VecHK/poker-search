@@ -1,8 +1,9 @@
 import cfg from '../config'
 import InitStorage from '../utils/storage'
 import getDefaultPreferences from './default'
+import checkPreferences from './check'
 
-import { AllVersion, checkVersion, LatestVersion } from './versions'
+import { AllVersion, checkVersion, CURRENT_PREFERENCES_VERSION, LatestVersion } from './versions'
 import { updatePreferences } from './versions/update'
 
 export * from './versions/'
@@ -31,7 +32,18 @@ export async function load(): Promise<Preferences> {
   }
 }
 
-export const save = saveStorage
+export async function save(preferences: AllVersion) {
+  if (preferences.version !== CURRENT_PREFERENCES_VERSION) {
+    console.warn('save Preferences failure: ', 'cannot save old version preferences')
+  } else {
+    const result = checkPreferences(preferences)
+    if (result) {
+      throw Error(result)
+    } else {
+      return saveStorage(preferences)
+    }
+  }
+}
 
 export async function init(append: Parameters<typeof getDefaultPreferences>[0]) {
   const default_preferences = getDefaultPreferences(append)
