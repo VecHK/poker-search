@@ -3,7 +3,7 @@ import { Memo } from 'vait'
 import { findIndex, map, propEq, update } from 'ramda'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
-import { load as loadPreferences, save as savePreferences, Preferences } from '../../preferences'
+import { load as loadPreferences, Preferences } from '../../preferences'
 import { SiteSettings } from '../../preferences/site-settings'
 import { getCurrentDisplayLimit, Limit } from '../../core/base/limit'
 
@@ -95,7 +95,9 @@ function useKey() {
 }
 
 export default function OptionsPage() {
-  const { preferences, setPreferences, HandleSettingFieldChange } = usePreferences()
+  const { preferences, setPreferences, HandleSettingFieldChange } = usePreferences({
+    autoSave: true
+  })
   const [limit, setLimit] = useState<Limit>()
   const [platform, setPlatform] = useState<Base['platform']>()
   const [failure, setFailure] = useState<Error>()
@@ -121,12 +123,6 @@ export default function OptionsPage() {
   useEffect(() => {
     refresh()
   }, [refresh])
-
-  useEffect(() => {
-    if (preferences !== undefined) {
-      savePreferences(preferences)
-    }
-  }, [preferences])
 
   const handleSiteSettingsChange = useCallback((
     currentPreferences: Preferences,

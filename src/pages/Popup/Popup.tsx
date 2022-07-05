@@ -1,31 +1,91 @@
 import { Atomic } from 'vait'
+import { reverse } from 'ramda'
 import React, { useEffect, useState } from 'react'
 
 import { controlIsLaunched } from '../../x-state/control-window-launched'
 import { sendMessage } from '../../message'
 import launchControlWindow from '../../Background/modules/launch'
 
+import { validKeyword } from '../../utils/search'
+
+import { AlarmSetTimeout } from '../../utils/chrome-alarms'
+import { getCurrentDisplayLimit, Limit } from '../../core/base/limit'
+
+import { RenderEditLayout, useEditLayoutSubmit } from '../Options/Component/SiteSettingsManager/EditLayout'
+import { generateExampleOption } from '../../preferences/default'
+import { load as loadPreferences, SiteSettings, SiteOption } from '../../preferences'
+import { generateSiteSettingsRow } from '../../preferences/site-settings'
+
 import useCurrentWindow from '../../hooks/useCurrentWindow'
 import useWindowFocus from '../../hooks/useWindowFocus'
-
-import { validKeyword } from '../../utils/search'
+import usePreferences from '../Options/hooks/usePreferences'
+import useMaxWindowPerLine from '../../hooks/useMaxWindowPerLine'
 
 import SearchForm from '../../components/SearchForm'
 import './Popup.css'
+
+function PreventDefaultClick<E extends { preventDefault(): void }>(
+  fn: (e: E) => void
+) {
+  return (
+    function onClick(e: E) {
+      e.preventDefault()
+      return fn(e)
+    }
+  )
+}
 
 const processing = Atomic()
 
 export default PopupPage
 function PopupPage () {
-  const [isOpenBackground, setOpenBackground] = useState(false)
+  const [ switchState, setSwitchState ] = useState<SwitchState>('NORMAL')
+
+  const { preferences, setPreferences, setPreferencesItem } = usePreferences({
+    autoSave: true,
+  })
+  const [limit, setLimit] = useState<Limit>()
+
+  const maxWindowPerLine = useMaxWindowPerLine(limit)
+
+  useEffect(() => {
+    getCurrentDisplayLimit()
+      .then(setLimit)
+  }, [])
+
+  useEffect(() => {
+    loadPreferences()
+      .then(setPreferences)
+  }, [setPreferences])
+
+  useEffect(() => {
+    if (switchState === 'SAVED') {
+      const cancel = AlarmSetTimeout(1500, () => {
+        setSwitchState('NORMAL')
+      })
+
+      return () => { cancel() }
+    }
+  }, [switchState])
 
   return (
     <div className="Popup">
-      <PopupMain isOpenBackground={isOpenBackground} />
+      <PopupMain isOpenBackground={switchState === 'BACKGROUND'} />
       <PopupBackground
+        switchState={switchState}
         onClickAddToPoker={() => {
-          setOpenBackground(!isOpenBackground)
+          setSwitchState('BACKGROUND')
         }}
+        onSave={(opt) => {
+          console.log('onSave', preferences)
+          if (preferences) {
+            setPreferencesItem('site_settings')((latest) => {
+              setSwitchState('SAVED')
+              return addToSiteSettings(opt, latest.site_settings, maxWindowPerLine)
+            })
+          }
+        }}
+        onClickCancel={() => setSwitchState('NORMAL')}
       />
     </div>
   )
@@ -112,36 +172,184 @@ function hasPokerSearchIdentifier(url: string) {
   return has_keyword_query || has_keyword_base64
 }
 
-function PopupBackground({ onClickAddToPoker }: { onClickAddToPoker: () => void }) {
-  const [isPokerSearchIdentifier, setPokerSearchIdentifier] = useState(false)
+type Action = 'add-to-poker' | 'save' | 'cancel'
+type SwitchState = 'NORMAL' | 'BACKGROUND' | 'SAVED'
+function ActionSwitch({
+  state,
+  isPokerSearchIdentifier,
+  actions
+}: {
+  state: SwitchState
+  isPokerSearchIdentifier: boolean
+  actions: { [k in Action]: () => void }
+}) {
+  function onAction(act: Action) {
+    actions[act]()
+  }
 
-  useEffect(() => {
-    getCurrentTabPageUrl()
-      .then(hasPokerSearchIdentifier)
-      .then(setPokerSearchIdentifier)
-  }, [])
+  const isNormal = state === 'NORMAL'
+  const isOpenBackground = state === 'BACKGROUND'
+  const isSaved = state === 'SAVED'
 
   return (
-    <footer className="popup-background">
-      <a
-        href={chrome.runtime.getURL('options.html')}
-        target="_blank"
-        rel="noreferrer"
-      >打开 Poker 设置</a>
-
-      { !isPokerSearchIdentifier ? null : (
+    <div className="action-switch">
+      <div className={`action-normal ${isNormal ? '' : 'hide'}`}>
         <a
           href={chrome.runtime.getURL('options.html')}
           target="_blank"
           rel="noreferrer"
-          onClick={e => {
-            e.preventDefault()
-            onClickAddToPoker()
-          }}
-        >
-          添加该站点到 Poker
-        </a>
-      ) }
+        >打开 Poker 设置</a>
+
+        { !isPokerSearchIdentifier ? null : (
+          <a
+            href={chrome.runtime.getURL('options.html')}
+            target="_blank"
+            rel="noreferrer"
+            onClick={PreventDefaultClick(() => {
+              onAction('add-to-poker')
+            })}
+          >
+            添加该站点到 Poker
+          </a>
+        ) }
+      </div>
+      <div className={`action-background ${isOpenBackground ? '' : 'hide'}`}>
+        <a
+          href={chrome.runtime.getURL('options.html')}
+          target="_blank"
+          rel="noreferrer"
+          onClick={PreventDefaultClick(() => {
+            onAction('save')
+          })}
+        >保存</a>
+
+        <a
+          href={chrome.runtime.getURL('options.html')}
+          target="_blank"
+          rel="noreferrer"
+          onClick={PreventDefaultClick(() => {
+            onAction('cancel')
+          })}
+        >取消</a>
+      </div>
+
+      <div className={`action-background ${isSaved ? '' : 'hide'}`}>
+        <a
+          href={chrome.runtime.getURL('options.html')}
+          target="_blank"
+          rel="noreferrer"
+          onClick={PreventDefaultClick(() => {})}
+        >已保存</a>
+      </div>
+    </div>
+  )
+}
+
+function replaceAsUrlPattern(url: string) {
+  return url
+    .replaceAll(encodeURIComponent(match_search_keyword), '%poker%')
+    .replaceAll(btoa(match_search_keyword), '%poker%')
+}
+
+function addToSiteSettings(
+  new_site_option: SiteOption,
+  site_settings: SiteSettings,
+  maxWindowPerLine: number
+): SiteSettings {
+  if (site_settings.length === 0) {
+    throw Error('site_settings.length is 0')
+  } else {
+    const [ first_settings, ...remain_settings ] = reverse(site_settings)
+    const total_column = first_settings.row.length
+    if (total_column >= maxWindowPerLine) {
+      // 已满，另开新行
+      return reverse([
+        generateSiteSettingsRow([ new_site_option ]),
+        first_settings,
+        ...remain_settings
+      ])
+    } else {
+      return reverse([
+        {
+          ...first_settings,
+          row: [new_site_option, ...first_settings.row]
+        },
+        ...remain_settings
+      ])
+    }
+  }
+}
+
+function PopupBackground({
+  switchState,
+  onSave,
+  onClickCancel,
+  onClickAddToPoker,
+}: {
+  switchState: SwitchState
+  onSave: (s: SiteOption) => void
+  onClickCancel: () => void
+  onClickAddToPoker: () => void
+}) {
+  const [siteOption, setSiteOption] = useState<SiteOption | null>(null)
+  const [url, setUrl] = useState<string | null>(null)
+
+  const isPokerSearchIdentifier = url ? hasPokerSearchIdentifier(url) : false
+
+  useEffect(() => {
+    getCurrentTabPageUrl()
+      .then(setUrl)
+  }, [])
+
+  useEffect(() => {
+    if (switchState === 'BACKGROUND') {
+      if (typeof url === 'string') {
+        setSiteOption({
+          ...generateExampleOption(),
+          url_pattern: replaceAsUrlPattern(url),
+        })
+      }
+    }
+  }, [switchState, url])
+
+  const [formRef, triggerSubmit] = useEditLayoutSubmit()
+
+  return (
+    <footer className="popup-background">
+      <ActionSwitch
+        state={switchState}
+        isPokerSearchIdentifier={isPokerSearchIdentifier}
+        actions={{
+          'add-to-poker': onClickAddToPoker,
+          'cancel': onClickCancel,
+          'save': triggerSubmit,
+        }}
+      />
+
+      <div className="option-edit-wrap">
+        {!siteOption ? null : (
+          <RenderEditLayout
+            formRef={formRef}
+            key={siteOption.id}
+            siteOption={siteOption}
+            onSubmit={(opt) => {
+              console.log('onSubmit', opt)
+              onSave({
+                ...opt,
+                icon: null
+              })
+            }}
+            onCancel={() => {}}
+          >
+            {({ formFields, failureNode }) => (
+              <>
+                {failureNode}
+                {formFields}
+              </>
+            )}
+          </RenderEditLayout>
+        )}
+      </div>
     </footer>
   )
 }
