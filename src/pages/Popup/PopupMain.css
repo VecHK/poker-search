@@ -1,0 +1,27 @@
+
+.search-form-wrap {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+
+  overflow: hidden;
+  height: var(--main-height);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 0 var(--main-padding-horizontal);
+  box-sizing: border-box;
+}
+
+.popup-main.hide {
+  height: 0px;
+}
+.popup-main {
+  position: relative;
+  overflow: hidden;
+
+  height: var(--main-height);
+  transition: height 500ms;
+}

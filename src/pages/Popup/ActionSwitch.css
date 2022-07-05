@@ -1,0 +1,26 @@
+
+.action-switch {
+  position: relative;
+  width: 100%;
+  height: var(--footer-height);
+}
+.action-switch > [class^="action-"].hide {
+  opacity: 0;
+  z-index: 0;
+}
+.action-switch > [class^="action-"] {
+  position: absolute;
+  left: 0;
+  top: 0;
+  opacity: 1;
+  transition: opacity 382ms;
+  width: 100%;
+  z-index: 1;
+}
+
+.action-switch > [class^="action-"] a {
+  color: hsl(219deg 59% 46%);
+  text-decoration: none;
+
+  padding: 0 12px;
+}
