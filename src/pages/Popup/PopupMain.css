@@ -15,13 +15,9 @@
   box-sizing: border-box;
 }
 
-.popup-main.hide {
-  height: 0px;
-}
 .popup-main {
   position: relative;
   overflow: hidden;
 
   height: var(--main-height);
-  transition: height 500ms;
 }

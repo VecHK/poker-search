@@ -12,11 +12,13 @@ export default function PopupBackground({
   onSave,
   onClickCancel,
   onClickAddToPoker,
+  onClickForceMobileAccessTipsCircle,
 }: {
   switchState: SwitchState
   onSave: (s: SiteOption) => void
   onClickCancel: () => void
   onClickAddToPoker: () => void
+  onClickForceMobileAccessTipsCircle: () => void
 }) {
   const [siteOption, setSiteOption] = useState<SiteOption | null>(null)
   const [url, setUrl] = useState<string | null>(null)
@@ -59,9 +61,7 @@ export default function PopupBackground({
             formRef={formRef}
             key={siteOption.id}
             showForceMobileAccessTips={false}
-            onClickForceMobileAccessTipsCircle={() => {
-              alert('click')
-            }}
+            onClickForceMobileAccessTipsCircle={onClickForceMobileAccessTipsCircle}
             siteOption={siteOption}
             onSubmit={(opt) => {
               console.log('onSubmit', opt)

@@ -61,6 +61,16 @@ function AccessModeLabelDesc({ preventClick, onClickCircle }: {
   )
 }
 
+export const accessModeTipText = (
+  <>
+    若你选中此项，这意味着浏览器会通过 debugger 的方式来强行启动页面的移动端版本。<br />
+    缺点是每一个 Chrome 的页面顶部都会<br />
+    出现「"Poker Search" started debugging this browser」的横条。<br />
+    这个横条不应该去关闭，因为关闭了会导致移动端访问失效。<br />
+    另外会对打开窗口的速度造成一定的减缓。
+  </>
+)
+
 export default function AccessModeSetting({
   accessMode,
   onChange,
@@ -100,11 +110,7 @@ export default function AccessModeSetting({
               effect: 'solid',
               children: (
                 <article>
-                  若你选中此项，这意味着浏览器会通过 debugger 的方式来强行启动页面的移动端版本。<br />
-                  缺点是每一个 Chrome 的页面顶部都会<br />
-                  出现「"Poker Search" started debugging this browser」的横条。<br />
-                  这个横条不应该去关闭，因为关闭了会导致移动端访问失效。<br />
-                  另外会对打开窗口的速度造成一定的减缓。
+                  {accessModeTipText}
                 </article>
               )
             })

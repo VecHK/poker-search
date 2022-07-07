@@ -33,7 +33,7 @@ export default function PopupMain({ isOpenBackground }: { isOpenBackground: bool
   }, [])
 
   return (
-    <main className={`popup-main ${isOpenBackground ? 'hide' : ''}`}>
+    <main className="popup-main">
       <div className="search-form-wrap">
         <SearchForm
           keyword={input}
