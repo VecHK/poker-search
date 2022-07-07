@@ -58,6 +58,7 @@ export default function PopupBackground({
           <RenderEditLayout
             formRef={formRef}
             key={siteOption.id}
+            showForceMobileAccessTips={false}
             siteOption={siteOption}
             onSubmit={(opt) => {
               console.log('onSubmit', opt)

@@ -44,6 +44,7 @@ type EditLayoutProps = {
   siteOption: SiteOption
   onSubmit(siteOption: SiteOption): void
   onCancel(): void
+  showForceMobileAccessTips?: boolean
 }
 
 export function RenderEditLayout({
@@ -51,7 +52,8 @@ export function RenderEditLayout({
   siteOption,
   onSubmit,
   onCancel,
-  children: renderProp
+  children: renderProp,
+  showForceMobileAccessTips = true
 }: EditLayoutProps & {
   formRef?: React.RefObject<HTMLFormElement>
   children: (p: {
@@ -112,6 +114,7 @@ export function RenderEditLayout({
               <AccessModeSetting
                 accessMode={accessMode}
                 onChange={setAccessMode}
+                showForceMobileAccessTips={showForceMobileAccessTips}
               />
             </div>
           ),

@@ -1,23 +1,24 @@
-import React, { ReactNode } from 'react'
+import React, { ReactNode, useMemo } from 'react'
 import { SiteOption } from '../../../../preferences'
 
 import ReactTooltip from 'react-tooltip'
 
 import s from './AccessModeSetting.module.css'
 
+type AccessModeLabelProps = {
+  accessMode: SiteOption['access_mode']
+  value: SiteOption['access_mode']
+  desc: ReactNode
+  onClick: (accessMode: SiteOption['access_mode']) => void
+  popup?: ReactNode
+}
 function AccessModeLabel({
   accessMode,
   value,
   desc,
   onClick,
   popup
-}: {
-  accessMode: SiteOption['access_mode']
-  value: SiteOption['access_mode']
-  desc: ReactNode
-  onClick: (accessMode: SiteOption['access_mode']) => void
-  popup?: ReactNode
-}) {
+}: AccessModeLabelProps) {
   return (
     <div className={s.AccessModeLabelWrapper}>
       <label
@@ -38,14 +39,69 @@ function AccessModeLabel({
   )
 }
 
+function AccessModeLabelDesc({ preventClick }: { preventClick: boolean }) {
+  return (
+    <>
+      强制使用移动端访问
+      <span
+        className={s.AccessModeCircle}
+        onClick={e => {
+          if (preventClick) {
+            e.preventDefault()
+            e.stopPropagation()
+          }
+        }}
+      >?</span>
+    </>
+  )
+}
 
 export default function AccessModeSetting({
   accessMode,
-  onChange
+  onChange,
+  showForceMobileAccessTips = true,
 }: {
   accessMode: SiteOption['access_mode']
   onChange: (a: SiteOption['access_mode']) => void
+  showForceMobileAccessTips?: boolean
 }) {
+  const forceAccessMobileLabel = useMemo(() => {
+    const labelNode = (
+      <AccessModeLabel
+        value={accessMode}
+        accessMode='MOBILE-STRONG'
+        onClick={onChange}
+        desc={<AccessModeLabelDesc preventClick={!showForceMobileAccessTips} />}
+      />
+    )
+    if (!showForceMobileAccessTips) {
+      return labelNode
+    } else {
+      return (
+        <>
+          {labelNode}
+
+          {
+            React.createElement(ReactTooltip, {
+              place: 'right',
+              type: 'dark',
+              effect: 'solid',
+              children: (
+                <article>
+                  若你选中此项，这意味着浏览器会通过 debugger 的方式来强行启动页面的移动端版本。<br />
+                  缺点是每一个 Chrome 的页面顶部都会<br />
+                  出现「"Poker Search" started debugging this browser」的横条。<br />
+                  这个横条不应该去关闭，因为关闭了会导致移动端访问失效。<br />
+                  另外会对打开窗口的速度造成一定的减缓。
+                </article>
+              )
+            })
+          }
+        </>
+      )
+    }
+  }, [accessMode, showForceMobileAccessTips, onChange])
+
   return (
     <div className={s.AccessMode}>
       <span>访问方式</span>
@@ -64,33 +120,7 @@ export default function AccessModeSetting({
         />
 
         <div data-tip="React-tooltip">
-          <AccessModeLabel
-            value={accessMode}
-            accessMode='MOBILE-STRONG'
-            onClick={onChange}
-            desc={
-              <>
-                强制使用移动端访问 <span className={s.AccessModeCircle}>?</span>
-              </>
-            }
-          />
-
-          {
-            React.createElement(ReactTooltip, {
-              place: 'right',
-              type: 'dark',
-              effect: 'solid',
-              children: (
-                <article>
-                  若你选中此项，这意味着浏览器会通过 debugger 的方式来强行启动页面的移动端版本。<br />
-                  缺点是每一个 Chrome 的页面顶部都会<br />
-                  出现「"Poker Search" started debugging this browser」的横条。<br />
-                  这个横条不应该去关闭，因为关闭了会导致移动端访问失效。<br />
-                  另外会对打开窗口的速度造成一定的减缓。
-                </article>
-              )
-            })
-          }
+          {forceAccessMobileLabel}
         </div>
       </div>
     </div>

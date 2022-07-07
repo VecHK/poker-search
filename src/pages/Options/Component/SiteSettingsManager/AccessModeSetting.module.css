@@ -6,7 +6,6 @@
 .AccessMode {
   margin-top: 10px;
   display: flex;
-  /* align-items: center; */
 }
 .AccessModePopup {
   display: none;
@@ -48,4 +47,6 @@
   vertical-align: text-top;
   line-height: var(--AccessModeCircleSize);
   font-size: 13px;
+
+  margin-left: 4px;
 }
