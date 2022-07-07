@@ -10,14 +10,14 @@ type AccessModeLabelProps = {
   value: SiteOption['access_mode']
   desc: ReactNode
   onClick: (accessMode: SiteOption['access_mode']) => void
-  popup?: ReactNode
+  appendDesc?: ReactNode
 }
 function AccessModeLabel({
   accessMode,
   value,
   desc,
   onClick,
-  popup
+  appendDesc
 }: AccessModeLabelProps) {
   return (
     <div className={s.AccessModeLabelWrapper}>
@@ -35,29 +35,27 @@ function AccessModeLabel({
         />
         <span className={s.AccessModeDesc}>{desc}</span>
       </label>
+      {appendDesc}
     </div>
   )
 }
 
-function AccessModeLabelDesc({ preventClick, onClickCircle }: {
+function ForceAccessLabelDesc({ preventClick, onClickCircle }: {
   preventClick: boolean
   onClickCircle?: () => void
 }) {
   return (
-    <>
-      强制使用移动端访问
-      <span
-        className={s.AccessModeCircle}
-        onClick={e => {
-          if (preventClick) {
-            e.preventDefault()
-            e.stopPropagation()
-          }
+    <span
+      className={s.AccessModeCircle}
+      onClick={e => {
+        if (preventClick) {
+          e.preventDefault()
+          e.stopPropagation()
+        }
 
-          onClickCircle && onClickCircle()
-        }}
-      >?</span>
-    </>
+        onClickCircle && onClickCircle()
+      }}
+    >?</span>
   )
 }
 
@@ -88,8 +86,9 @@ export default function AccessModeSetting({
         value={accessMode}
         accessMode='MOBILE-STRONG'
         onClick={onChange}
-        desc={
-          <AccessModeLabelDesc
+        desc={<>强制使用移动端访问</>}
+        appendDesc={
+          <ForceAccessLabelDesc
             preventClick={!showForceMobileAccessTips}
             onClickCircle={onClickForceMobileAccessTipsCircle}
           />
