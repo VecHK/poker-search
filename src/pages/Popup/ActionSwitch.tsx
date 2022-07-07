@@ -1,6 +1,6 @@
-import React from 'react'
+import React, { ReactNode } from 'react'
 
-import './ActionSwitch.css'
+import s from './ActionSwitch.module.css'
 
 export type Action = 'add-to-poker' | 'save' | 'cancel'
 export type SwitchState = 'NORMAL' | 'BACKGROUND' | 'SAVED'
@@ -14,6 +14,30 @@ function PreventDefaultClick<E extends { preventDefault(): void }>(
       return fn(e)
     }
   )
+}
+
+export function ActionBar(props: { name: string; show: boolean; children: ReactNode; }) {
+  return (
+    <div className={`${s.Action} action-${props.name} ${props.show ? '' : s.Hide}`}>
+      {props.children}
+    </div>
+  )
+}
+
+export function ActionLink({ onClick, children }: { onClick?: () => void, children: ReactNode }) {
+  return (
+    <a
+      className={s.ActionLink}
+      onClick={PreventDefaultClick(() => onClick && onClick())}
+      href="/"
+      target="_blank"
+      rel="noreferrer"
+    >{ children }</a>
+  )
+}
+
+export function ActionWrap(p: { children: ReactNode }) {
+  return <div className={s.ActionSwitch}>{p.children}</div>
 }
 
 export default function ActionSwitch({
@@ -34,55 +58,27 @@ export default function ActionSwitch({
   const isSaved = state === 'SAVED'
 
   return (
-    <div className="action-switch">
-      <div className={`action-normal ${isNormal ? '' : 'hide'}`}>
-        <a
-          href={chrome.runtime.getURL('options.html')}
-          target="_blank"
-          rel="noreferrer"
-        >打开 Poker 设置</a>
+    <ActionWrap>
+      <ActionBar name="NORMAL" show={isNormal}>
+        <ActionLink onClick={() => chrome.runtime.openOptionsPage()}>打开 Poker 设置</ActionLink>
 
         { !isPokerSearchIdentifier ? null : (
-          <a
-            href={chrome.runtime.getURL('options.html')}
-            target="_blank"
-            rel="noreferrer"
-            onClick={PreventDefaultClick(() => {
+          <ActionLink
+            onClick={() => {
               onAction('add-to-poker')
-            })}
-          >
-            添加该站点到 Poker
-          </a>
+            }}
+          >添加该站点到 Poker</ActionLink>
         ) }
-      </div>
-      <div className={`action-background ${isOpenBackground ? '' : 'hide'}`}>
-        <a
-          href={chrome.runtime.getURL('options.html')}
-          target="_blank"
-          rel="noreferrer"
-          onClick={PreventDefaultClick(() => {
-            onAction('save')
-          })}
-        >保存</a>
+      </ActionBar>
 
-        <a
-          href={chrome.runtime.getURL('options.html')}
-          target="_blank"
-          rel="noreferrer"
-          onClick={PreventDefaultClick(() => {
-            onAction('cancel')
-          })}
-        >取消</a>
-      </div>
+      <ActionBar name="BACKGROUND" show={isOpenBackground}>
+        <ActionLink onClick={() => onAction('save')}>保存</ActionLink>
+        <ActionLink onClick={() => onAction('cancel')}>取消</ActionLink>
+      </ActionBar>
 
-      <div className={`action-background ${isSaved ? '' : 'hide'}`}>
-        <a
-          href={chrome.runtime.getURL('options.html')}
-          target="_blank"
-          rel="noreferrer"
-          onClick={PreventDefaultClick(() => {})}
-        >已保存</a>
-      </div>
-    </div>
+      <ActionBar name="SAVED" show={isSaved}>
+        <ActionLink>已保存</ActionLink>
+      </ActionBar>
+    </ActionWrap>
   )
 }

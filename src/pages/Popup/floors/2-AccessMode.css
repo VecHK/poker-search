@@ -1,0 +1,6 @@
+.AccessModeFloor {
+  background-color: var(--footer-background);
+  box-sizing: border-box;
+  padding: 0 10px;
+  height: 100%;
+}

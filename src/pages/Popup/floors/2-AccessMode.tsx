@@ -1,8 +1,16 @@
 import React from 'react'
 import { accessModeTipText } from '../../Options/Component/SiteSettingsManager/AccessModeSetting'
+import { ActionWrap, ActionLink } from '../ActionSwitch'
 
-export default function AccessModeFloor() {
+import './2-AccessMode.css'
+
+export default function AccessModeFloor({ onClickBack }: { onClickBack: () => void }) {
   return (
-    <article>{accessModeTipText}</article>
+    <article className="AccessModeFloor">
+      <ActionWrap>
+        <ActionLink onClick={onClickBack}>⬆ 返回</ActionLink>
+      </ActionWrap>
+      {accessModeTipText}
+    </article>
   )
 }

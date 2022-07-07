@@ -20,6 +20,8 @@ import AccessModeFloor from './floors/2-AccessMode'
 import './Popup.css'
 
 export default function PopupPage () {
+  const [currentFloor, setFloor] = useState(0)
+
   const [ switchState, setSwitchState ] = useState<SwitchState>('NORMAL')
 
   const { preferences, setPreferences, setPreferencesItem } = usePreferences({
@@ -48,8 +50,6 @@ export default function PopupPage () {
       return () => { cancel() }
     }
   }, [switchState])
-
-  const [currentFloor, setFloor] = useState(0)
 
   return (
     <div className="Popup">
@@ -90,7 +90,7 @@ export default function PopupPage () {
           },
           {
             height: 'var(--popup-height)',
-            node: <AccessModeFloor />
+            node: <AccessModeFloor onClickBack={() => setFloor(1)} />
           }
         ]}
       />

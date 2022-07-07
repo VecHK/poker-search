@@ -1,14 +1,21 @@
 
-.action-switch {
+.ActionSwitch {
   position: relative;
   width: 100%;
   height: var(--footer-height);
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  align-content: center;
 }
-.action-switch > [class^="action-"].hide {
+
+.Action.Hide {
   opacity: 0;
   z-index: 0;
 }
-.action-switch > [class^="action-"] {
+
+.Action {
   position: absolute;
   left: 0;
   top: 0;
@@ -18,7 +25,7 @@
   z-index: 1;
 }
 
-.action-switch > [class^="action-"] a {
+.ActionLink {
   color: hsl(219deg 59% 46%);
   text-decoration: none;
 
