@@ -25,6 +25,13 @@
   z-index: 1;
 }
 
+.ActionLink:hover {
+  color: hsl(219deg 59% 46% / 75%);
+}
+.ActionLink:active {
+  background-color: rgba(0, 0, 0, 0.05);
+  border-radius: 4px;
+}
 .ActionLink {
   color: hsl(219deg 59% 46%);
   text-decoration: none;
