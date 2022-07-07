@@ -55,7 +55,6 @@ export default function usePreferences({ autoSave, onSaved }: {
     return RequireCloseControlWindow(setPreferencesItem(f))
   }, [setPreferencesItem])
 
-  // const { autoSave, onSaved } = opts
   useEffect(() => {
     if (autoSave) {
       if (preferences !== undefined) {
