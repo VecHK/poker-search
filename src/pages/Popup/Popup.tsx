@@ -1,5 +1,5 @@
 import { reverse } from 'ramda'
-import React, { CSSProperties, ReactNode, useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 
 import { AlarmSetTimeout } from '../../utils/chrome-alarms'
 import { getCurrentDisplayLimit, Limit } from '../../core/base/limit'
@@ -10,12 +10,14 @@ import { generateSiteSettingsRow } from '../../preferences/site-settings'
 import usePreferences from '../Options/hooks/usePreferences'
 import useMaxWindowPerLine from '../../hooks/useMaxWindowPerLine'
 
+import { FloorLayout } from './FloorLayout'
 import { SwitchState } from './ActionSwitch'
-import PopupMain from './PopupMain'
-import PopupBackground from './PopupBackground'
+
+import Search from './floors/0-Search'
+import AddToPoker from './floors/1-AddToPoker'
+import AccessModeFloor from './floors/2-AccessMode'
 
 import './Popup.css'
-import { accessModeTipText } from '../Options/Component/SiteSettingsManager/AccessModeSetting'
 
 export default function PopupPage () {
   const [ switchState, setSwitchState ] = useState<SwitchState>('NORMAL')
@@ -56,12 +58,12 @@ export default function PopupPage () {
         floors={[
           {
             height: 'var(--main-height)',
-            node: <PopupMain isOpenBackground={switchState === 'BACKGROUND'} />,
+            node: <Search isOpenBackground={switchState === 'BACKGROUND'} />,
           },
           {
             height: 'var(--popup-height)',
             node: (
-              <PopupBackground
+              <AddToPoker
                 switchState={switchState}
                 onClickAddToPoker={() => {
                   setSwitchState('BACKGROUND')
@@ -88,54 +90,10 @@ export default function PopupPage () {
           },
           {
             height: 'var(--popup-height)',
-            node: (
-              <article>{accessModeTipText}</article>
-            )
+            node: <AccessModeFloor />
           }
         ]}
       />
-    </div>
-  )
-}
-
-type FloorHeight = Exclude<CSSProperties['height'], undefined>
-type Floor = {
-  height: FloorHeight
-  node: ReactNode
-}
-function FloorLayout({ floors, current }: { floors: Floor[]; current: number }) {
-  const currentTop = useMemo(() => {
-    if (floors.length === 0) {
-      throw Error('floors.length is 0')
-    }
-    else if (current === 0) {
-      return '0px'
-    }
-
-    const previousFloors = floors.filter((_, floorNumber) => {
-      return floorNumber < current
-    })
-
-    const previousFloorsHeight = previousFloors.map(f => f.height)
-
-    return `calc(-1 * (${previousFloorsHeight.join(' + ')}))`
-  }, [current, floors])
-
-  console.log('currentTop', currentTop)
-
-  return (
-    <div className="FloorLayout">
-      <div className="FloorLayoutInner" style={{ top: currentTop }}>
-        {
-          floors.map((floor, idx) => {
-            return (
-              <div key={idx} className='Floor' style={{ height: floor.height }}>
-                {floor.node}
-              </div>
-            )
-          })
-        }
-      </div>
     </div>
   )
 }

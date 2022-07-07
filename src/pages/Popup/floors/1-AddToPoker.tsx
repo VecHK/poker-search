@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react'
 
-import { RenderEditLayout, useEditLayoutSubmit } from '../Options/Component/SiteSettingsManager/EditLayout'
-import { generateExampleOption } from '../../preferences/default'
-import { SiteOption } from '../../preferences'
-import ActionSwitch, { SwitchState } from './ActionSwitch'
+import { RenderEditLayout, useEditLayoutSubmit } from '../../Options/Component/SiteSettingsManager/EditLayout'
+import { generateExampleOption } from '../../../preferences/default'
+import { SiteOption } from '../../../preferences'
+import ActionSwitch, { SwitchState } from '../ActionSwitch'
 
-import './PopupBackground.css'
+import './1-AddToPoker.css'
 
-export default function PopupBackground({
+export default function AddToPoker({
   switchState,
   onSave,
   onClickCancel,
@@ -44,7 +44,7 @@ export default function PopupBackground({
   const [formRef, triggerSubmit] = useEditLayoutSubmit()
 
   return (
-    <footer className="popup-background">
+    <footer className="AddToPoker">
       <ActionSwitch
         state={switchState}
         isPokerSearchIdentifier={isPokerSearchIdentifier}

@@ -1,10 +1,5 @@
 
 .search-form-wrap {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-
-  overflow: hidden;
   height: var(--main-height);
 
   display: flex;
@@ -15,9 +10,6 @@
   box-sizing: border-box;
 }
 
-.popup-main {
-  position: relative;
-  overflow: hidden;
-
+.Search {
   height: var(--main-height);
 }

@@ -1,22 +1,22 @@
 import { Atomic } from 'vait'
 import React, { useEffect, useState } from 'react'
 
-import { controlIsLaunched } from '../../x-state/control-window-launched'
-import { sendMessage } from '../../message'
-import launchControlWindow from '../../Background/modules/launch'
+import { controlIsLaunched } from '../../../x-state/control-window-launched'
+import { sendMessage } from '../../../message'
+import launchControlWindow from '../../../Background/modules/launch'
 
-import { validKeyword } from '../../utils/search'
+import { validKeyword } from '../../../utils/search'
 
-import useCurrentWindow from '../../hooks/useCurrentWindow'
-import useWindowFocus from '../../hooks/useWindowFocus'
+import useCurrentWindow from '../../../hooks/useCurrentWindow'
+import useWindowFocus from '../../../hooks/useWindowFocus'
 
-import SearchForm from '../../components/SearchForm'
+import SearchForm from '../../../components/SearchForm'
 
-import './PopupMain.css'
+import './0-Search.css'
 
 const processing = Atomic()
 
-export default function PopupMain({ isOpenBackground }: { isOpenBackground: boolean }) {
+export default function SearchFormLayout({ isOpenBackground }: { isOpenBackground: boolean }) {
   const [input, setInput] = useState('')
   const current_window_id = useCurrentWindow()?.windowId
   const windowIsFocus = useWindowFocus(true)
@@ -33,7 +33,7 @@ export default function PopupMain({ isOpenBackground }: { isOpenBackground: bool
   }, [])
 
   return (
-    <main className="popup-main">
+    <main className="Search">
       <div className="search-form-wrap">
         <SearchForm
           keyword={input}
