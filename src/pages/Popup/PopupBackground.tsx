@@ -59,6 +59,9 @@ export default function PopupBackground({
             formRef={formRef}
             key={siteOption.id}
             showForceMobileAccessTips={false}
+            onClickForceMobileAccessTipsCircle={() => {
+              alert('click')
+            }}
             siteOption={siteOption}
             onSubmit={(opt) => {
               console.log('onSubmit', opt)

@@ -39,7 +39,10 @@ function AccessModeLabel({
   )
 }
 
-function AccessModeLabelDesc({ preventClick }: { preventClick: boolean }) {
+function AccessModeLabelDesc({ preventClick, onClickCircle }: {
+  preventClick: boolean
+  onClickCircle?: () => void
+}) {
   return (
     <>
       强制使用移动端访问
@@ -50,6 +53,8 @@ function AccessModeLabelDesc({ preventClick }: { preventClick: boolean }) {
             e.preventDefault()
             e.stopPropagation()
           }
+
+          onClickCircle && onClickCircle()
         }}
       >?</span>
     </>
@@ -60,10 +65,12 @@ export default function AccessModeSetting({
   accessMode,
   onChange,
   showForceMobileAccessTips = true,
+  onClickForceMobileAccessTipsCircle,
 }: {
   accessMode: SiteOption['access_mode']
   onChange: (a: SiteOption['access_mode']) => void
   showForceMobileAccessTips?: boolean
+  onClickForceMobileAccessTipsCircle?: () => void
 }) {
   const forceAccessMobileLabel = useMemo(() => {
     const labelNode = (
@@ -71,7 +78,12 @@ export default function AccessModeSetting({
         value={accessMode}
         accessMode='MOBILE-STRONG'
         onClick={onChange}
-        desc={<AccessModeLabelDesc preventClick={!showForceMobileAccessTips} />}
+        desc={
+          <AccessModeLabelDesc
+            preventClick={!showForceMobileAccessTips}
+            onClickCircle={onClickForceMobileAccessTipsCircle}
+          />
+        }
       />
     )
     if (!showForceMobileAccessTips) {
@@ -100,7 +112,7 @@ export default function AccessModeSetting({
         </>
       )
     }
-  }, [accessMode, showForceMobileAccessTips, onChange])
+  }, [accessMode, onChange, onClickForceMobileAccessTipsCircle, showForceMobileAccessTips])
 
   return (
     <div className={s.AccessMode}>
