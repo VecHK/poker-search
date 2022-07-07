@@ -17,8 +17,9 @@ import WarningLine from './WarningLine'
 import Cols from './DragCols'
 import { ManagerContext } from '.'
 
+import useMaxWindowPerLine from '../../../../hooks/useMaxWindowPerLine'
+
 import s from './DragRows.module.css'
-import useMaxWindowPerLine from './hooks/useMaxWindowPerLine'
 
 export const ROW_TRANSITION_DURATION = 382
 
@@ -123,6 +124,7 @@ export default function DragRows() {
     siteSettings,
     edit,
     submitChange,
+    limit,
   } = useContext(ManagerContext)
 
   const onDragEnd = ({ type, source, destination }: DropResult) => {
@@ -144,7 +146,7 @@ export default function DragRows() {
     console.log(...args)
   }
 
-  const maxWindowPerLine = useMaxWindowPerLine()
+  const maxWindowPerLine = useMaxWindowPerLine(limit)
   const hasMaxCol = !siteSettings.every((r) => {
     if (maxWindowPerLine === -1) {
       return false

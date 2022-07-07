@@ -1,97 +1,129 @@
-import { Atomic } from 'vait'
+import { reverse } from 'ramda'
 import React, { useEffect, useState } from 'react'
 
-import { controlIsLaunched } from '../../x-state/control-window-launched'
-import { sendMessage } from '../../message'
-import launchControlWindow from '../../Background/modules/launch'
+import { AlarmSetTimeout } from '../../utils/chrome-alarms'
+import { getCurrentDisplayLimit, Limit } from '../../core/base/limit'
 
-import useCurrentWindow from '../../hooks/useCurrentWindow'
-import useWindowFocus from '../../hooks/useWindowFocus'
+import { load as loadPreferences, SiteSettings, SiteOption } from '../../preferences'
+import { generateSiteSettingsRow } from '../../preferences/site-settings'
 
-import { validKeyword } from '../../utils/search'
+import usePreferences from '../Options/hooks/usePreferences'
+import useMaxWindowPerLine from '../../hooks/useMaxWindowPerLine'
 
-import SearchForm from '../../components/SearchForm'
+import { FloorLayout } from './FloorLayout'
+import { SwitchState } from './ActionSwitch'
+
+import Search from './floors/0-Search'
+import AddToPoker from './floors/1-AddToPoker'
+import AccessModeFloor from './floors/2-AccessMode'
+
 import './Popup.css'
 
-const processing = Atomic()
+export default function PopupPage () {
+  const [currentFloor, setFloor] = useState(0)
 
-const Popup = () => {
+  const [ switchState, setSwitchState ] = useState<SwitchState>('NORMAL')
+
+  const { preferences, setPreferences, setPreferencesItem } = usePreferences({
+    autoSave: true,
+  })
+  const [limit, setLimit] = useState<Limit>()
+
+  const maxWindowPerLine = useMaxWindowPerLine(limit)
+
+  useEffect(() => {
+    getCurrentDisplayLimit()
+      .then(setLimit)
+  }, [])
+
+  useEffect(() => {
+    loadPreferences()
+      .then(setPreferences)
+  }, [setPreferences])
+
+  useEffect(() => {
+    if (switchState === 'SAVED') {
+      const cancel = AlarmSetTimeout(1500, () => {
+        setSwitchState('NORMAL')
+        setFloor(0)
+      })
+
+      return () => { cancel() }
+    }
+  }, [switchState])
+
   return (
-    <div className="App">
-      <AppMain />
-      <AppFooter />
+    <div className="Popup">
+      <FloorLayout
+        current={currentFloor}
+        floors={[
+          {
+            height: 'var(--main-height)',
+            node: <Search isOpenBackground={switchState === 'BACKGROUND'} />,
+          },
+          {
+            height: 'var(--popup-height)',
+            node: (
+              <AddToPoker
+                switchState={switchState}
+                onClickAddToPoker={() => {
+                  setSwitchState('BACKGROUND')
+                  setFloor(1)
+                }}
+                onSave={(opt) => {
+                  console.log('onSave', preferences)
+                  if (preferences) {
+                    setPreferencesItem('site_settings')((latest) => {
+                      setSwitchState('SAVED')
+                      return addToSiteSettings(opt, latest.site_settings, maxWindowPerLine)
+                    })
+                  }
+                }}
+                onClickCancel={() => {
+                  setSwitchState('NORMAL')
+                  setFloor(0)
+                }}
+                onClickForceMobileAccessTipsCircle={() => {
+                  setFloor(2)
+                }}
+              />
+            )
+          },
+          {
+            height: 'var(--popup-height)',
+            node: <AccessModeFloor onClickBack={() => setFloor(1)} />
+          }
+        ]}
+      />
     </div>
   )
 }
 
-function AppMain() {
-  const [input, setInput] = useState('')
-  const current_window_id = useCurrentWindow()?.windowId
-  const windowIsFocus = useWindowFocus(true)
-
-  useEffect(() => {
-    controlIsLaunched()
-      .then(isLaunched => {
-        if (isLaunched) {
-          sendMessage('Refocus', null).finally(() => {
-            window.close()
-          })
-        }
-      })
-  }, [])
-
-  return (
-    <main className="App-main">
-      <SearchForm
-        keyword={input}
-        keywordPlaceholder="请输入搜索词"
-        setKeyword={setInput}
-        submitButtonActive={windowIsFocus}
-        onSubmit={({ keyword: newSearchKeyword }) => {
-          console.log('onSubmit', newSearchKeyword)
-          if (validKeyword(newSearchKeyword)) {
-            if (current_window_id !== undefined) {
-              processing(async () => {
-                if (await controlIsLaunched()) {
-                  console.log('send ChangeSearch message')
-                  sendMessage('ChangeSearch', newSearchKeyword)
-                    .then(() => {
-                      window.close()
-                    })
-                    .catch(err => {
-                      console.warn('send failure:', err)
-                    })
-                } else {
-                  console.log('launchControlWindow')
-                  launchControlWindow({
-                    text: newSearchKeyword,
-                    revert_container_id: current_window_id
-                  })
-                    .then(() => {
-                      window.close()
-                    }).catch(err => {
-                      console.warn('launch failure:', err)
-                    })
-                }
-              })
-            }
-          }
-        }}
-      />
-    </main>
-  )
+function addToSiteSettings(
+  new_site_option: SiteOption,
+  site_settings: SiteSettings,
+  maxWindowPerLine: number
+): SiteSettings {
+  if (site_settings.length === 0) {
+    throw Error('site_settings.length is 0')
+  } else {
+    const [ upper_settings, ...remain_settings ] = reverse(site_settings)
+    const total_column = upper_settings.row.length
+    if (total_column >= maxWindowPerLine) {
+      // 不够放了，就多创个 site setting
+      return reverse([
+        generateSiteSettingsRow([ new_site_option ]),
+        upper_settings,
+        ...remain_settings
+      ])
+    } else {
+      return reverse([
+        {
+          ...upper_settings,
+          row: [new_site_option, ...upper_settings.row]
+        },
+        ...remain_settings
+      ])
+    }
+  }
 }
-
-function AppFooter() {
-  return (
-    <footer className="App-footer">
-      <a
-        href={chrome.runtime.getURL('options.html')}
-        target="_blank"
-        rel="noreferrer"
-      >打开 Poker 设置</a>
-    </footer>
-  )
-}
-
-export default Popup

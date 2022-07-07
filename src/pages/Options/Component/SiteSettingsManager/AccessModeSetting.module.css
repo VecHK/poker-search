@@ -1,12 +1,14 @@
 
 .AccessModeLabelWrapper {
   position: relative;
+
+  display: flex;
+  align-items: center;
 }
 
 .AccessMode {
   margin-top: 10px;
   display: flex;
-  /* align-items: center; */
 }
 .AccessModePopup {
   display: none;
@@ -30,22 +32,35 @@
 .AccessModeInput {
   margin: 0;
   vertical-align: middle;
+  cursor: pointer;
 }
 .AccessModeDesc {
   vertical-align: middle;
   margin-left: 2px;
+
+  color: rgba(0, 0, 0, 1)
+}
+.AccessModeLabel:hover .AccessModeDesc {
+  text-decoration: underline;
 }
 
+.AccessModeCircle:hover {
+  box-shadow: 0 0 0 1px rgb(0 0 0 / 75%);
+  color: rgb(0 0 0 / 75%);
+}
 .AccessModeCircle {
+  cursor: pointer;
   --AccessModeCircleSize: 15px;
-  color: grey;
+  color: rgb(0 0 0 / 50%);
   width: var(--AccessModeCircleSize);
   height: var(--AccessModeCircleSize);
-  border-radius: var(--AccessModeCircleSize);;
-  box-shadow: 0 0 0 1px;
+  border-radius: var(--AccessModeCircleSize);
+  box-shadow: 0 0 0 1px rgb(0 0 0 / 50%);
   display: inline-block;
   text-align: center;
   vertical-align: text-top;
   line-height: var(--AccessModeCircleSize);
   font-size: 13px;
+
+  margin-left: 4px;
 }

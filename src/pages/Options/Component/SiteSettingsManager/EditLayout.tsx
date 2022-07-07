@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react'
+import React, { ReactNode, useCallback, useMemo, useRef, useState } from 'react'
 import { SiteOption } from '../../../../preferences/site-settings'
 import { getFormItem } from '../../../../utils/form'
 
@@ -44,8 +44,26 @@ type EditLayoutProps = {
   siteOption: SiteOption
   onSubmit(siteOption: SiteOption): void
   onCancel(): void
+  showForceMobileAccessTips?: boolean
+  onClickForceMobileAccessTipsCircle?: () => void
 }
-export default function EditLayout({ siteOption, onSubmit, onCancel }: EditLayoutProps) {
+
+export function RenderEditLayout({
+  formRef,
+  siteOption,
+  onSubmit,
+  onCancel,
+  children: renderProp,
+  showForceMobileAccessTips = true,
+  onClickForceMobileAccessTipsCircle
+}: EditLayoutProps & {
+  formRef?: React.RefObject<HTMLFormElement>
+  children: (p: {
+    formFields: ReactNode,
+    buttonGroup: ReactNode,
+    failureNode: ReactNode,
+  }) => ReactNode
+}) {
   const [failure, setFailure] = useState<Error | null>(null)
   const [urlPattern, setUrlPattern] = useState(siteOption.url_pattern)
   const [accessMode, setAccessMode] = useState(siteOption.access_mode)
@@ -61,6 +79,7 @@ export default function EditLayout({ siteOption, onSubmit, onCancel }: EditLayou
   return (
     <form
       className={s.EditLayout}
+      ref={formRef}
       onSubmit={(e) => {
         e.preventDefault()
         try {
@@ -82,26 +101,61 @@ export default function EditLayout({ siteOption, onSubmit, onCancel }: EditLayou
         }
       }}
     >
-      <div>
-        <label>
-          <span>URL</span>
-          <input
-            className={s.UrlPatternInput}
-            value={ urlPattern }
-            onChange={(e) => setUrlPattern(e.target.value)}
-            name="url_pattern"
-          />
-        </label>
-        <AccessModeSetting
-          accessMode={accessMode}
-          onChange={setAccessMode}
-        />
-      </div>
-      <div className={s.ButtonGroup}>
-        <button className={s.Button} type="submit">确定</button>
-        <button className={s.Button} type="button" onClick={onCancel}>取消</button>
-      </div>
-      {failureNode}
+      { renderProp({
+          formFields: (
+            <div>
+              <label>
+                <span>URL</span>
+                <input
+                  className={s.UrlPatternInput}
+                  value={ urlPattern }
+                  onChange={(e) => setUrlPattern(e.target.value)}
+                  name="url_pattern"
+                />
+              </label>
+              <AccessModeSetting
+                accessMode={accessMode}
+                onChange={setAccessMode}
+                showForceMobileAccessTips={showForceMobileAccessTips}
+                onClickForceMobileAccessTipsCircle={onClickForceMobileAccessTipsCircle}
+              />
+            </div>
+          ),
+          buttonGroup: (
+            <div className={s.ButtonGroup}>
+              <button className={s.Button} type="submit">确定</button>
+              <button className={s.Button} type="button" onClick={onCancel}>取消</button>
+            </div>
+          ),
+          failureNode
+      }) }
     </form>
   )
+}
+
+export default function EditLayout(props: EditLayoutProps) {
+  return (
+    <RenderEditLayout {...props}>{
+      ({ formFields, buttonGroup, failureNode }) => (
+        <>
+          {formFields}
+          {buttonGroup}
+          {failureNode}
+        </>
+      )
+    }</RenderEditLayout>
+  )
+}
+
+export function useEditLayoutSubmit() {
+  const formRef = useRef<HTMLFormElement>(null)
+
+  const triggerSubmit = useCallback(() => {
+    const formEl = formRef.current
+    if (formEl !== null) {
+      formEl.requestSubmit()
+    }
+  }, [])
+
+  return [ formRef, triggerSubmit ] as const
 }

@@ -9,7 +9,8 @@ import { generateExampleOption } from '../../../../preferences/default'
 import SiteWindow from './SiteWindow'
 import { Edit, ManagerContext } from '.'
 import AddSiteOption from './AddSiteOption'
-import useMaxWindowPerLine from './hooks/useMaxWindowPerLine'
+
+import useMaxWindowPerLine from '../../../../hooks/useMaxWindowPerLine'
 
 import s from './DragCols.module.css'
 
@@ -146,11 +147,11 @@ export default function Cols(props: {
   edit: Edit
   isEditMode: boolean
 }) {
-  const { appendSiteOption, updateRow, adjustWidth } = useContext(ManagerContext)
+  const { appendSiteOption, updateRow, adjustWidth, limit } = useContext(ManagerContext)
   const [enableRemoveAnimation, setEnableRemoveAnimation] = useState(false)
   const { settingsRow, rowNum } = props
 
-  const maxWindowPerLine = useMaxWindowPerLine()
+  const maxWindowPerLine = useMaxWindowPerLine(limit)
   const showAddButton = settingsRow.row.length < maxWindowPerLine
   const addSiteIcon = useMemo(() => {
     return (

@@ -1,7 +1,7 @@
 import { curry } from 'ramda'
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
-import { Preferences } from '../../../preferences'
+import { Preferences, save as savePreferences } from '../../../preferences'
 import { controlIsLaunched } from '../../../x-state/control-window-launched'
 import { sendMessage } from '../../../message'
 
@@ -20,21 +20,31 @@ const RequireCloseControlWindow = <A extends unknown[]>(
   }
 )
 
-export default function usePreferences() {
+export default function usePreferences({ autoSave, onSaved }: {
+  autoSave?: boolean
+  onSaved?(): void
+}) {
   const [preferences, setPreferences] = useState<Preferences | undefined>(undefined)
 
   const setPreferencesItem = curry(
     useCallback(function <F extends SafelyPreferencesKeys>(
       field: F,
-      new_value: Preferences[F]
+      getNewPreferences: Preferences[F] | ((p: Preferences) => Preferences[F]),
     ) {
       setPreferences((latest) => {
         if (latest === undefined) {
           return undefined
         } else {
-          return {
-            ...latest,
-            [field]: new_value
+          if (typeof getNewPreferences === 'function') {
+            return {
+              ...latest,
+              [field]: getNewPreferences(latest)
+            }
+          } else {
+            return {
+              ...latest,
+              [field]: getNewPreferences
+            }
           }
         }
       })
@@ -45,5 +55,15 @@ export default function usePreferences() {
     return RequireCloseControlWindow(setPreferencesItem(f))
   }, [setPreferencesItem])
 
-  return { preferences, setPreferences, HandleSettingFieldChange }
+  useEffect(() => {
+    if (autoSave) {
+      if (preferences !== undefined) {
+        savePreferences(preferences).then(() => {
+          onSaved && onSaved()
+        })
+      }
+    }
+  }, [autoSave, onSaved, preferences])
+
+  return { preferences, setPreferences, HandleSettingFieldChange, setPreferencesItem }
 }

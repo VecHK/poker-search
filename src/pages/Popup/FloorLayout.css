@@ -1,0 +1,15 @@
+.FloorLayout {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.FloorLayoutInner {
+  position: absolute;
+  width: 100%;
+  transition: top 500ms;
+}
+
+.Floor {
+  width: inherit;
+}

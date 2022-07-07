@@ -1,0 +1,33 @@
+
+.ActionSwitch {
+  position: relative;
+  width: 100%;
+  height: var(--footer-height);
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  align-content: center;
+}
+
+.Action.Hide {
+  opacity: 0;
+  z-index: 0;
+}
+
+.Action {
+  position: absolute;
+  left: 0;
+  top: 0;
+  opacity: 1;
+  transition: opacity 382ms;
+  width: 100%;
+  z-index: 1;
+}
+
+.ActionLink {
+  color: hsl(219deg 59% 46%);
+  text-decoration: none;
+
+  padding: 0 12px;
+}
