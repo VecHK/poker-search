@@ -45,6 +45,7 @@ export default function PopupPage () {
     if (switchState === 'SAVED') {
       const cancel = AlarmSetTimeout(1500, () => {
         setSwitchState('NORMAL')
+        setFloor(0)
       })
 
       return () => { cancel() }
