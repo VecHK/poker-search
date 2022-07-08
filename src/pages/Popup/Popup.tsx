@@ -24,7 +24,7 @@ export default function PopupPage () {
 
   const [ switchState, setSwitchState ] = useState<SwitchState>('NORMAL')
 
-  const { preferences, setPreferences, setPreferencesItem } = usePreferences({
+  const { preferences, setPreferences, updatePreferencesField } = usePreferences({
     autoSave: true,
   })
   const [limit, setLimit] = useState<Limit>()
@@ -73,7 +73,7 @@ export default function PopupPage () {
                 onSave={(opt) => {
                   console.log('onSave', preferences)
                   if (preferences) {
-                    setPreferencesItem('site_settings')((latest) => {
+                    updatePreferencesField('site_settings')((latest) => {
                       setSwitchState('SAVED')
                       return addToSiteSettings(opt, latest.site_settings, maxWindowPerLine)
                     })

@@ -96,7 +96,7 @@ function useKey() {
 }
 
 export default function OptionsPage() {
-  const { preferences, setPreferences, HandleSettingFieldChange, setPreferencesItem } = usePreferences({
+  const { preferences, setPreferences, HandleSettingFieldChange, updatePreferencesField } = usePreferences({
     autoSave: true
   })
   const [limit, setLimit] = useState<Limit>()
@@ -177,7 +177,7 @@ export default function OptionsPage() {
                         description="在网页空白处点击右键，将会有「启动Poker」菜单项"
                         value={Boolean(preferences.launch_poker_contextmenu)}
                         onChange={(value) => {
-                          setPreferencesItem('launch_poker_contextmenu')(() => {
+                          updatePreferencesField('launch_poker_contextmenu')(() => {
                             sendMessage('ChangeLaunchContextMenu', value)
                             return value
                           })
@@ -263,7 +263,7 @@ export default function OptionsPage() {
               </>
             )
           }
-        }, [HandleSettingFieldChange, adjustWidth, failure, handleSiteSettingsChange, limit, managerKey, platform, preferences, refreshManagerKey, setPreferences, setPreferencesItem])
+        }, [HandleSettingFieldChange, adjustWidth, failure, handleSiteSettingsChange, limit, managerKey, platform, preferences, refreshManagerKey, setPreferences, updatePreferencesField])
       }</div>
     </div>
   )
