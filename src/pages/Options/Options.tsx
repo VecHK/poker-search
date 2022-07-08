@@ -176,10 +176,10 @@ export default function OptionsPage() {
                         title="右键菜单栏「启动Poker」"
                         description="在网页空白处点击右键，将会有「启动Poker」菜单项"
                         value={Boolean(preferences.launch_poker_contextmenu)}
-                        onChange={(value) => {
-                          updatePreferencesField('launch_poker_contextmenu')(() => {
-                            sendMessage('ChangeLaunchContextMenu', value)
-                            return value
+                        onChange={(new_value) => {
+                          updatePreferencesField('launch_poker_contextmenu', () => {
+                            sendMessage('ChangeLaunchContextMenu', new_value)
+                            return new_value
                           })
                         }}
                       />
