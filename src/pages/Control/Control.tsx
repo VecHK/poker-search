@@ -21,6 +21,7 @@ import SearchForm from '../../components/SearchForm'
 import ArrowButtonGroup from './components/ArrowGroup'
 
 import './Control.css'
+import FloorFilter from './components/FloorFilter'
 
 function useChangeRowShortcutKey(props: {
   onPressUp: () => void
@@ -154,6 +155,7 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
     <div className="container">
       {isLoading ? <Loading /> : (
         <>
+          <FloorFilter filteredFloor={[]} totalFloor={5} />
           <SearchForm
             keywordPlaceholder={`请输入搜索词`}
             keyword={keywordInput}
