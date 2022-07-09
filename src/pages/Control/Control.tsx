@@ -155,7 +155,6 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
     <div className="container">
       {isLoading ? <Loading /> : (
         <>
-          <FloorFilter filteredFloor={[]} totalFloor={5} />
           <SearchForm
             keywordPlaceholder={`请输入搜索词`}
             keyword={keywordInput}
@@ -166,6 +165,8 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
             }}
           />
           <ArrowButtonGroup onClick={changeRow} />
+
+          <FloorFilter filteredFloor={[]} totalFloor={5} />
         </>
       )}
     </div>

@@ -3,6 +3,10 @@
   margin: 10px 0;
   position: relative;
 
+  --active-color: #4472c4;
+  --unactive-color: #a6a6a6;
+
+  --filter-background-color: #f4f4f4;
 
   --text-height: 14px;
   --text-width: 64px;
@@ -10,20 +14,20 @@
 
   --track-height: 5px;
 
-  --TrackLayoutBottom: calc((var(--point-size) - var(--track-height)) / 2);
-  --TextLayoutBottom: calc((var(--point-size) + 2px));
-  --PointLayoutBottom: 0px;
+  --TrackLayoutTop: calc((var(--point-size) - var(--track-height)) / 2);
+  --TextLayoutTop: calc((var(--point-size) + 4px));
+  --PointLayoutTop: 0px;
 
-  /* height: calc(var(--track-height) + var(--text-height) + var(--point-size)); */
+  height: calc(var(--track-height) + var(--text-height) + var(--point-size));
   user-select: none;
 }
 
 .SelectedContainer {
   width: 100%;
-  background-color: #a6a6a6;
+  background-color: var(--unactive-color);
   height: var(--track-height);
   position: absolute;
-  bottom: var(--TrackLayoutBottom);
+  top: var(--TrackLayoutTop);
   left: 0;
 }
 .Selected {
@@ -32,7 +36,7 @@
   left: 0;
   height: 100%;
   /* width: 32px; */
-  background-color: #4472c4;
+  background-color: var(--active-color);
 }
 
 .FloorTextLayout {
@@ -42,7 +46,7 @@
 
 .FloorText {
   position: absolute;
-  bottom: var(--TextLayoutBottom);
+  top: var(--TextLayoutTop);
 
   cursor: default;
 
@@ -63,13 +67,15 @@
 
 .FloorPoint {
   position: absolute;
-  bottom: var(--PointLayoutBottom);
+  top: var(--PointLayoutTop);
 
   text-align: center;
 
-  background-color: #4472c4;
+  background-color: var(--filter-background-color);
 
   width: var(--point-size);
   height: var(--point-size);
   border-radius: var(--point-size);
+  box-sizing: border-box;
+  border: solid var(--unactive-color) 3px;
 }
