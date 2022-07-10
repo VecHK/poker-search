@@ -1,7 +1,7 @@
 <img src="src/assets/img/icon-logo.png" width="100"/>
 
 ![Platform](https://img.shields.io/badge/Platform-macOS%20%7C%20Windows-green?color=%235599FF&style=plastic&logo=Google%20Chrome&logoColor=%23F0F0F0)
-![Rating](https://img.shields.io/chrome-web-store/stars/test?color=%235599FF&logoColor=F0F0F0&style=plastic)
+![Rating](https://img.shields.io/chrome-web-store/stars/oojeodibjbmkclnocinjolfaigheengg?color=%235599FF&logoColor=F0F0F0&style=plastic)
 
 ![Build](https://img.shields.io/github/workflow/status/VecHK/poker-search/Build/master?color=%235599FF&label=Build&logo=GitHub%20Actions&logoColor=%23F0F0F0&style=plastic)
 ![Version](https://img.shields.io/github/package-json/v/VecHK/poker-search?color=%235599FF&label=version&logoColor=%23F0F0F0&style=plastic)
