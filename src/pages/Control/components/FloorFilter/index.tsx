@@ -1,5 +1,5 @@
-import { range } from 'ramda'
-import React, { CSSProperties, useEffect, useMemo, useRef, useState } from 'react'
+import { compose, range, remove, sort, uniq } from 'ramda'
+import React, { CSSProperties, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import s from './index.module.css'
 
@@ -56,10 +56,12 @@ function Selected({
   dragStartPoint,
   dragEndPoint,
   intervalWidth,
+  backgroundColor,
 }: {
   dragStartPoint: number
   dragEndPoint: number
   intervalWidth: number
+  backgroundColor?: CSSProperties['backgroundColor']
 }) {
   const direct = useMemo<SelectDirect>(() => {
     if (dragEndPoint > dragStartPoint) {
@@ -83,7 +85,7 @@ function Selected({
   }, [direct, dragEndPoint, dragStartPoint, intervalWidth])
 
   return (
-    <div className={s.SelectedContainer}>
+    <div className={s.SelectedContainer} style={{ backgroundColor }}>
       <div
         className={s.Selected}
         style={{
@@ -177,6 +179,34 @@ function useMouseAction({
   }
 }
 
+function incrementDetecting(p: number, filtered: number[]): number[] {
+  if (filtered.indexOf(p) !== -1) {
+    return [p, ...incrementDetecting(p + 1, filtered)]
+  } else {
+    return []
+  }
+}
+
+type Range = Readonly<[number, number]>
+
+function getSelectedRange(filtered: number[]): Array<Range> {
+  let result: Array<Range> = []
+  let pass: number[] = []
+
+  filtered.forEach((point, idx) => {
+    if (pass.indexOf(idx) === -1) {
+      const detected = incrementDetecting(point, filtered)
+      pass = [...pass, ...detected.map((p) => filtered.indexOf(p))]
+
+      result.push(
+        [ Math.min(...detected),  Math.max(...detected) ] as const
+      )
+    }
+  })
+
+  return result
+}
+
 type FilteredFloor = number[]
 type FloorFilterProps = {
   filteredFloor: FilteredFloor
@@ -196,7 +226,7 @@ export default function FloorFilter({
     return `${interval_width}px`
   }, [interval_width])
 
-  function compose({
+  function composeFiltered({
     filteredFloor,
     drag_start_point,
     drag_end_point
@@ -218,9 +248,16 @@ export default function FloorFilter({
     // filteredFloor
   }, [])
 
-  const selectedRange = useMemo<Readonly<[number, number]>>(() => {
-    return [0, 0]
-  }, [])
+  const selectedRange = useMemo<Array<Range>>(() => {
+    console.log('getSelectedRange(filteredFloor)', getSelectedRange(filteredFloor))
+    return getSelectedRange(filteredFloor)
+  }, [filteredFloor])
+
+  const submitChange = useCallback((filtered: number[]) => {
+    onChange(
+      sort((a, b) => a - b, uniq(filtered))
+    )
+  }, [onChange])
 
   const {
     drag_start_point,
@@ -230,17 +267,20 @@ export default function FloorFilter({
     setDragEndPoint,
   } = useMouseAction({
     interval_width,
+
     onClick(point) {
+      submitChange([ ...filteredFloor, point ])
     },
+
     onDragEnd(drag_start_point, drag_end_point) {
       if (drag_end_point !== drag_start_point) {
         if (drag_end_point > drag_start_point) {
-          onChange([
+          submitChange([
             ...filteredFloor,
             ...range(drag_start_point, drag_end_point + 1),
           ])
         } else {
-          onChange([
+          submitChange([
             ...filteredFloor,
             ...range(drag_end_point, drag_start_point + 1),
           ])
@@ -256,6 +296,18 @@ export default function FloorFilter({
         dragEndPoint={drag_end_point}
         intervalWidth={interval_width}
       />
+
+      {selectedRange.map(([start_point, end_point], idx) => {
+        return (
+          <Selected
+            key={idx}
+            dragStartPoint={start_point}
+            dragEndPoint={end_point}
+            intervalWidth={interval_width}
+            backgroundColor="transparent"
+          />
+        )
+      })}
 
       <PointAndTextLayout
         highlightList={filteredFloor}
