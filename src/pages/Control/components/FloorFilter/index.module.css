@@ -3,8 +3,8 @@
   margin: 10px 0;
   position: relative;
 
-  --active-color: #4472c4;
-  --unactive-color: #a6a6a6;
+  --active-color: #33333c;
+  --unactive-color: #33333c55;
 
   --filter-background-color: #f4f4f4;
 
@@ -35,7 +35,7 @@
   top: 0;
   left: 0;
   height: 100%;
-  /* width: 32px; */
+  width: 0px;
   background-color: var(--active-color);
 }
 
@@ -63,6 +63,10 @@
 .PointLayout {
   width: 100%;
   position: relative;
+}
+
+.FloorPoint.FloorPointHighlight {
+  background-color: var(--active-color);
 }
 
 .FloorPoint {

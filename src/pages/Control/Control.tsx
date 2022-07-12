@@ -151,8 +151,10 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
 
   usePreventEnterFullScreen(controlWindow?.windowId)
 
+  const [filteredFloor, setFilteredFloor] = useState<number[]>([])
+
   return (
-    <div className="container">
+    <main className="control-main">
       {isLoading ? <Loading /> : (
         <>
           <SearchForm
@@ -164,12 +166,20 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
               handleSubmit(keyword)
             }}
           />
+
           <ArrowButtonGroup onClick={changeRow} />
 
-          <FloorFilter filteredFloor={[]} totalFloor={5} />
+          <FloorFilter
+            filteredFloor={filteredFloor}
+            totalFloor={8}
+            onChange={(filtered) => {
+              console.log('filtered onChange', filtered)
+              setFilteredFloor(filtered)
+            }}
+          />
         </>
       )}
-    </div>
+    </main>
   )
 }
 export default ControlApp

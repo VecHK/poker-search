@@ -1,21 +1,23 @@
+import { range } from 'ramda'
 import React, { CSSProperties, useEffect, useMemo, useRef, useState } from 'react'
 
 import s from './index.module.css'
 
-type FloorFilterProps = {
-  filteredFloor: number[]
-  totalFloor: number
-}
-
 function PointAndTextLayout({
   points,
+  highlightList,
   intervalWidth,
-  onMouseDownPoint
+  onMouseDownPoint,
 }: {
   points: number[]
+  highlightList: number[]
   intervalWidth: Exclude<CSSProperties['width'], undefined>
   onMouseDownPoint: (mouse_start_x: number, point: number) => void
 }) {
+  function isHighlight(point: number) {
+    return highlightList.indexOf(point) !== -1
+  }
+
   return (
     <>
       <div className={s.FloorTextLayout}>
@@ -34,7 +36,7 @@ function PointAndTextLayout({
           return (
             <div
               key={point}
-              className={s.FloorPoint}
+              className={`${s.FloorPoint} ${isHighlight(point) ? s.FloorPointHighlight : ''}`}
               style={{ left: `calc(${point} * ${intervalWidth} - ( var(--point-size) / 2 ))`}}
               onMouseDown={e => {
                 e.preventDefault()
@@ -107,7 +109,15 @@ function useOffsetWidth<RefType extends HTMLElement>() {
   return [offset_width, ref] as const
 }
 
-function useMouseAction({ interval_width }: { interval_width: number }) {
+function useMouseAction({
+  interval_width,
+  onClick,
+  onDragEnd,
+}: {
+  interval_width: number
+  onClick: (p: number) => void
+  onDragEnd: (s: number, e: number) => void
+}) {
   const [drag_start_point, setDragStartPoint] = useState(0)
   const [drag_end_point, setDragEndPoint] = useState(0)
 
@@ -142,19 +152,22 @@ function useMouseAction({ interval_width }: { interval_width: number }) {
       const handler = (e: MouseEvent) => {
         if (mouse_move_offset === null) {
           // is click
-          alert(`click is: ${drag_start_point}`)
+          onClick(drag_start_point)
         } else {
-          console.warn('range', drag_start_point, drag_end_point)
           // submit selected
+          console.log('dragend range', drag_start_point, drag_end_point)
+          onDragEnd(drag_start_point, drag_end_point)
         }
 
+        // setDragStartPoint(0)
+        setDragEndPoint(drag_start_point)
         setMouseMoveStart(null)
         setMouseMoveOffset(null)
       }
       window.addEventListener('mouseup', handler)
       return () => window.removeEventListener('mouseup', handler)
     }
-  }, [drag_end_point, drag_start_point, mouse_move_offset, mouse_move_start])
+  }, [drag_end_point, drag_start_point, mouse_move_offset, mouse_move_start, onClick, onDragEnd])
 
   return {
     drag_start_point, setDragStartPoint,
@@ -164,9 +177,17 @@ function useMouseAction({ interval_width }: { interval_width: number }) {
   }
 }
 
+type FilteredFloor = number[]
+type FloorFilterProps = {
+  filteredFloor: FilteredFloor
+  totalFloor: number
+  onChange: (f: FilteredFloor) => void
+}
+
 export default function FloorFilter({
   filteredFloor,
-  totalFloor
+  totalFloor,
+  onChange,
 }: FloorFilterProps) {
   const [offset_width, ref] = useOffsetWidth<HTMLDivElement>()
   const points = Array.from(Array(totalFloor)).map((_, floor) => floor)
@@ -197,12 +218,36 @@ export default function FloorFilter({
     // filteredFloor
   }, [])
 
+  const selectedRange = useMemo<Readonly<[number, number]>>(() => {
+    return [0, 0]
+  }, [])
+
   const {
-    drag_start_point, drag_end_point,
+    drag_start_point,
+    drag_end_point,
     setMouseMoveStart,
     setDragStartPoint,
     setDragEndPoint,
-  } = useMouseAction({ interval_width })
+  } = useMouseAction({
+    interval_width,
+    onClick(point) {
+    },
+    onDragEnd(drag_start_point, drag_end_point) {
+      if (drag_end_point !== drag_start_point) {
+        if (drag_end_point > drag_start_point) {
+          onChange([
+            ...filteredFloor,
+            ...range(drag_start_point, drag_end_point + 1),
+          ])
+        } else {
+          onChange([
+            ...filteredFloor,
+            ...range(drag_end_point, drag_start_point + 1),
+          ])
+        }
+      }
+    },
+  })
 
   return (
     <div ref={ref} className={s.FloorFilter}>
@@ -213,6 +258,7 @@ export default function FloorFilter({
       />
 
       <PointAndTextLayout
+        highlightList={filteredFloor}
         points={points}
         intervalWidth={interval_width_css}
         onMouseDownPoint={(mouse_start, point) => {

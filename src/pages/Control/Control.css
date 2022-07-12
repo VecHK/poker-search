@@ -4,7 +4,7 @@ html, body {
   margin: 0;
   overflow: hidden;
 }
-.container {
+.control-main {
   background-color: rgb(245, 245, 245);
   box-sizing: border-box;
   padding: 0 30px;
