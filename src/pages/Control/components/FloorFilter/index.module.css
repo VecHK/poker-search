@@ -1,3 +1,7 @@
+.FloorFilter.isDragging {
+  cursor: ew-resize;
+}
+
 .FloorFilter {
   width: 100%;
   margin: 10px 0;
@@ -69,6 +73,10 @@
   background-color: var(--active-color);
 }
 
+.FloorFilter.isDragging .FloorPoint {
+  cursor:inherit;
+}
+
 .FloorPoint {
   position: absolute;
   top: var(--PointLayoutTop);
@@ -82,4 +90,6 @@
   border-radius: var(--point-size);
   box-sizing: border-box;
   border: solid var(--unactive-color) 3px;
+
+  cursor: pointer;
 }

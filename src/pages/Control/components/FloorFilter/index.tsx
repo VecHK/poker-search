@@ -322,7 +322,7 @@ export default function FloorFilter({
   }, [drag_end_point, drag_start_point, filteredFloor, getDraggingFilteredFloor, is_dragging])
 
   return (
-    <div ref={ref} className={s.FloorFilter}>
+    <div ref={ref} className={`${s.FloorFilter} ${is_dragging ? s.isDragging : ''}`}>
       <Selected
         dragStartPoint={0}
         dragEndPoint={0}
