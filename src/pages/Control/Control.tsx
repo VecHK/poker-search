@@ -22,6 +22,7 @@ import ArrowButtonGroup from './components/ArrowGroup'
 
 import './Control.css'
 import FloorFilter from './components/FloorFilter'
+import { range } from 'ramda'
 
 function useChangeRowShortcutKey(props: {
   onPressUp: () => void
@@ -152,7 +153,8 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
   usePreventEnterFullScreen(controlWindow?.windowId)
 
   const [filteredFloor, setFilteredFloor] = useState<number[]>([
-    0, 1, 5, 6, 7
+    // 0, 1, 5, 6, 7
+    ...range(0, 8)
   ])
 
   return (

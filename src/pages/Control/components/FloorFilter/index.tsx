@@ -3,7 +3,7 @@ import React, { CSSProperties, useCallback, useEffect, useMemo, useRef, useState
 
 import s from './index.module.css'
 
-function PointAndTextLayout({
+function PointAndText({
   points,
   highlightList,
   intervalWidth,
@@ -111,6 +111,18 @@ function useOffsetWidth<RefType extends HTMLElement>() {
   return [offset_width, ref] as const
 }
 
+function rangeToIdxList(start: number, end: number) {
+  if (Math.abs(end - start) === 0) {
+    return [start]
+  } else {
+    if (end > start) {
+      return range(start, end + 1)
+    } else {
+      return range(end, start + 1)
+    }
+  }
+}
+
 function useMouseDrag({
   interval_width,
   onClick,
@@ -176,6 +188,8 @@ function useMouseDrag({
     drag_end_point, setDragEndPoint,
     mouse_move_start, setMouseMoveStart,
     mouse_move_offset, setMouseMoveOffset,
+
+    is_dragging: mouse_move_start !== null
   }
 }
 
@@ -226,29 +240,28 @@ export default function FloorFilter({
     return `${interval_width}px`
   }, [interval_width])
 
+  const formatFilteredList = compose<[number[]], number[], number[]>(
+    sort((a, b) => a - b),
+    uniq
+  )
+
+  const submitChange = compose<[number[]], number[], void>(
+    onChange,
+    formatFilteredList
+  )
+
   function isSelected(floor: number) {
     return filteredFloor.indexOf(floor) !== -1
   }
 
-  const selectedRange = useMemo<Array<Range>>(() => {
-    console.log('getSelectedRange(filteredFloor)', getSelectedRange(filteredFloor))
-    return getSelectedRange(filteredFloor)
-  }, [filteredFloor])
-
+  const [select_mode, setSelectMode] = useState<'SELECTED' | 'NORMAL'>('NORMAL')
   useEffect(() => {
     console.log('filteredFloor', [...filteredFloor])
     setSelectMode('NORMAL')
   }, [filteredFloor])
 
-  const submitChange = compose<[number[]], number[], number[], void>(
-    onChange,
-    sort((a, b) => a - b),
-    uniq
-  )
-
-  const [select_mode, setSelectMode] = useState<'SELECTED' | 'NORMAL'>('NORMAL')
-
   const {
+    is_dragging,
     drag_start_point,
     drag_end_point,
     setMouseMoveStart,
@@ -270,32 +283,53 @@ export default function FloorFilter({
     },
 
     onDragEnd(drag_start_point, drag_end_point) {
-      console.log('onDragEnd')
+      console.log('onDragEnd', drag_start_point, drag_end_point)
       if (Math.abs(drag_end_point - drag_start_point) !== 0) {
-        if (drag_end_point > drag_start_point) {
-          submitChange([
-            ...filteredFloor,
-            ...range(drag_start_point, drag_end_point + 1),
-          ])
-        } else {
-          submitChange([
-            ...filteredFloor,
-            ...range(drag_end_point, drag_start_point + 1),
-          ])
-        }
+        submitChange(
+          getDraggingFilteredFloor(drag_start_point, drag_end_point)
+        )
       }
     },
   })
 
+  const getDraggingFilteredFloor = useCallback((
+    drag_start: number,
+    drag_end: number
+  ) => {
+    const selected = rangeToIdxList(drag_start, drag_end)
+    console.log('selected', selected)
+
+    if (select_mode === 'NORMAL') {
+      return formatFilteredList([...filteredFloor, ...selected])
+    } else {
+      const res: number[] = []
+      filteredFloor.forEach((f) => {
+        if (selected.indexOf(f) === -1) {
+          res.push(f)
+        }
+      })
+      return res
+    }
+  }, [filteredFloor, formatFilteredList, select_mode])
+
+  const dragging_filtered_floor = useMemo(() => {
+
+    if (!is_dragging) {
+      return filteredFloor
+    } else {
+      return getDraggingFilteredFloor(drag_start_point, drag_end_point)
+    }
+  }, [drag_end_point, drag_start_point, filteredFloor, getDraggingFilteredFloor, is_dragging])
+
   return (
     <div ref={ref} className={s.FloorFilter}>
       <Selected
-        dragStartPoint={drag_start_point}
-        dragEndPoint={drag_end_point}
+        dragStartPoint={0}
+        dragEndPoint={0}
         intervalWidth={interval_width}
       />
 
-      {selectedRange.map(([start_point, end_point], idx) => {
+      {getSelectedRange(dragging_filtered_floor).map(([start_point, end_point], idx) => {
         return (
           <Selected
             key={idx}
@@ -307,8 +341,8 @@ export default function FloorFilter({
         )
       })}
 
-      <PointAndTextLayout
-        highlightList={filteredFloor}
+      <PointAndText
+        highlightList={dragging_filtered_floor}
         points={points}
         intervalWidth={interval_width_css}
         onMouseDownPoint={(mouse_start, floor) => {
