@@ -111,7 +111,7 @@ function useOffsetWidth<RefType extends HTMLElement>() {
   return [offset_width, ref] as const
 }
 
-function useMouseAction({
+function useMouseDrag({
   interval_width,
   onClick,
   onDragEnd,
@@ -220,44 +220,33 @@ export default function FloorFilter({
   onChange,
 }: FloorFilterProps) {
   const [offset_width, ref] = useOffsetWidth<HTMLDivElement>()
-  const points = Array.from(Array(totalFloor)).map((_, floor) => floor)
+  const points = range(0, totalFloor)
   const interval_width = offset_width / (points.length - 1)
   const interval_width_css: Exclude<CSSProperties['width'], undefined> = useMemo(() => {
     return `${interval_width}px`
   }, [interval_width])
 
-  function composeFiltered({
-    filteredFloor,
-    drag_start_point,
-    drag_end_point
-  }: {
-    filteredFloor: number[]
-    drag_start_point: number
-    drag_end_point: number
-  }) {
-    if (drag_end_point < drag_start_point) {
-      const tmp = drag_start_point
-      drag_start_point = drag_end_point
-      drag_end_point = tmp
-    }
-
-    const range = drag_end_point - drag_start_point
+  function isSelected(floor: number) {
+    return filteredFloor.indexOf(floor) !== -1
   }
-
-  useEffect(() => {
-    // filteredFloor
-  }, [])
 
   const selectedRange = useMemo<Array<Range>>(() => {
     console.log('getSelectedRange(filteredFloor)', getSelectedRange(filteredFloor))
     return getSelectedRange(filteredFloor)
   }, [filteredFloor])
 
-  const submitChange = useCallback((filtered: number[]) => {
-    onChange(
-      sort((a, b) => a - b, uniq(filtered))
-    )
-  }, [onChange])
+  useEffect(() => {
+    console.log('filteredFloor', [...filteredFloor])
+    setSelectMode('NORMAL')
+  }, [filteredFloor])
+
+  const submitChange = compose<[number[]], number[], number[], void>(
+    onChange,
+    sort((a, b) => a - b),
+    uniq
+  )
+
+  const [select_mode, setSelectMode] = useState<'SELECTED' | 'NORMAL'>('NORMAL')
 
   const {
     drag_start_point,
@@ -265,15 +254,24 @@ export default function FloorFilter({
     setMouseMoveStart,
     setDragStartPoint,
     setDragEndPoint,
-  } = useMouseAction({
+  } = useMouseDrag({
     interval_width,
 
     onClick(point) {
-      submitChange([ ...filteredFloor, point ])
+      console.log('onClick', point, select_mode)
+
+      if (select_mode === 'SELECTED') {
+        submitChange(
+          remove(filteredFloor.indexOf(point), 1, filteredFloor)
+        )
+      } else {
+        submitChange([ ...filteredFloor, point ])
+      }
     },
 
     onDragEnd(drag_start_point, drag_end_point) {
-      if (drag_end_point !== drag_start_point) {
+      console.log('onDragEnd')
+      if (Math.abs(drag_end_point - drag_start_point) !== 0) {
         if (drag_end_point > drag_start_point) {
           submitChange([
             ...filteredFloor,
@@ -313,10 +311,14 @@ export default function FloorFilter({
         highlightList={filteredFloor}
         points={points}
         intervalWidth={interval_width_css}
-        onMouseDownPoint={(mouse_start, point) => {
+        onMouseDownPoint={(mouse_start, floor) => {
+          if (isSelected(floor)) {
+            setSelectMode('SELECTED')
+          }
+
           setMouseMoveStart(mouse_start)
-          setDragStartPoint(point)
-          setDragEndPoint(point)
+          setDragStartPoint(floor)
+          setDragEndPoint(floor)
         }}
       />
     </div>
