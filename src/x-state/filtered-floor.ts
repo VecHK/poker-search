@@ -30,6 +30,6 @@ export function cleanFilteredFloor() {
   return setStorage([])
 }
 
-export function setFilteredFloor(id_list: IDList) {
+export function saveFilteredFloor(id_list: IDList) {
   return setStorage(id_list)
 }

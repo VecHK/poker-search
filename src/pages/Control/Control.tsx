@@ -22,7 +22,7 @@ import ArrowButtonGroup from './components/ArrowGroup'
 
 import './Control.css'
 import FloorFilter from './components/FloorFilter'
-import { range } from 'ramda'
+import { SiteSettingsRowID } from '../../preferences'
 
 function useChangeRowShortcutKey(props: {
   onPressUp: () => void
@@ -43,9 +43,36 @@ function useChangeRowShortcutKey(props: {
   }, [props])
 }
 
-const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
+function toSelectedFloorIdx(
+  siteSettingsIds: SiteSettingsRowID[],
+  filtered_list: SiteSettingsRowID[],
+): number[] {
+  return siteSettingsIds.filter((id) => {
+    return filtered_list.indexOf(id) === -1
+  }).map((id) => {
+    return siteSettingsIds.indexOf(id)
+  })
+}
+
+const ControlApp: React.FC<{
+  base: Base
+  onSelectedFloorChange: (f: number[]) => void
+}> = ({ base, onSelectedFloorChange }) => {
   const [keywordInput, setKeywordInput] = useState('')
   const [submitedKeyword, submitKeyword] = useState<string | false>(false)
+
+  const [selected_floor_idx, setSelectedFloorIdx] = useState<number[]>(
+    toSelectedFloorIdx(
+      base.preferences.site_settings.map(s => s.id),
+      base.init_filtered_floor
+    )
+  )
+
+  // const selected_floor_ids = useMemo(() => {
+  //   return selected_floor_idx.map(idx => {
+  //     return base.preferences.site_settings[idx].id
+  //   })
+  // }, [base.preferences.site_settings, selected_floor_idx])
 
   const windowIsFocus = useWindowFocus(true)
 
@@ -60,6 +87,10 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
     changeRow: controlChangeRow,
     controlProcessing,
   } = useControl(base)
+
+  usePreventEnterFullScreen(controlWindow?.windowId)
+
+  useReFocusMessage(controlWindowId, control)
 
   const focusControlWindow = useCallback(async () => {
     if (controlWindowId !== undefined) {
@@ -148,15 +179,6 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
     return cancelReceive
   }, [controlWindowId, control, handleSubmit])
 
-  useReFocusMessage(controlWindowId, control)
-
-  usePreventEnterFullScreen(controlWindow?.windowId)
-
-  const [filteredFloor, setFilteredFloor] = useState<number[]>([
-    // 0, 1, 5, 6, 7
-    ...range(0, 8)
-  ])
-
   return (
     <main className="control-main">
       {isLoading ? <Loading /> : (
@@ -174,11 +196,12 @@ const ControlApp: React.FC<{ base: Base }> = ({ base }) => {
           <ArrowButtonGroup onClick={changeRow} />
 
           <FloorFilter
-            filteredFloor={filteredFloor}
-            totalFloor={8}
+            filteredFloor={selected_floor_idx}
+            totalFloor={base.preferences.site_settings.length}
             onChange={(filtered) => {
               console.log('filtered onChange', filtered)
-              setFilteredFloor(filtered)
+              onSelectedFloorChange(filtered)
+              setSelectedFloorIdx(filtered)
             }}
           />
         </>

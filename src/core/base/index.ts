@@ -1,11 +1,21 @@
 import { Memo } from 'vait'
 import cfg from '../../config'
 import { load as loadEnvironment, Environment } from '../../environment'
-import { load as loadPreferences, Preferences } from '../../preferences'
+import { load as loadPreferences, Preferences, SiteSettingsRowID } from '../../preferences'
 import { getCurrentDisplayLimit, Limit } from './limit'
 import { autoAdjustHeight, autoAdjustWidth } from './auto-adjust'
 import { initSearchMatrix, SearchMatrix } from './search-matrix'
 import { getControlWindowHeight } from './control-window-height'
+import { getFilteredFloor } from '../../x-state/filtered-floor'
+
+function selectSiteSettingsByFiltered(
+  source_site_settings: Preferences['site_settings'],
+  filteredFloor: SiteSettingsRowID[]
+) {
+  return source_site_settings.filter(s => {
+    return filteredFloor.indexOf(s.id) === -1
+  })
+}
 
 export type RevertContainerID = number | undefined
 type BaseInfo = {
@@ -25,6 +35,8 @@ export type Base = Readonly<{
 
   control_window_height: number
 
+  init_filtered_floor: SiteSettingsRowID[]
+
   getRevertContainerId: () => RevertContainerID
   setRevertContainerId: (r: RevertContainerID) => void
 }>
@@ -34,12 +46,22 @@ async function initBase(
   preferences: Preferences,
   revert_container_id: RevertContainerID,
 ): Promise<Base> {
-  const control_window_height = getControlWindowHeight(preferences.site_settings)
-
-  const [limit, platform] = await Promise.all([
+  const [
+    limit,
+    platform,
+    init_filtered_floor
+  ] = await Promise.all([
     getCurrentDisplayLimit(),
-    chrome.runtime.getPlatformInfo()
+    chrome.runtime.getPlatformInfo(),
+    getFilteredFloor()
   ])
+
+  // const { site_settings } = preferences
+  const site_settings = selectSiteSettingsByFiltered(
+    preferences.site_settings,
+    init_filtered_floor,
+  )
+  const control_window_height = getControlWindowHeight(site_settings)
 
   const gap_horizontal = cfg.SEARCH_WINDOW_GAP_HORIZONTAL
 
@@ -50,7 +72,7 @@ async function initBase(
   const [
     total_row,
     search_matrix
-  ] = initSearchMatrix(max_window_per_line, preferences.site_settings)
+  ] = initSearchMatrix(max_window_per_line, site_settings)
 
   const { window_height, total_height } = autoAdjustHeight(
     [...cfg.SEARCH_WINDOW_HEIGHT_LIST],
@@ -75,6 +97,8 @@ async function initBase(
 
     getRevertContainerId,
     setRevertContainerId,
+
+    init_filtered_floor,
 
     info: {
       window_height,

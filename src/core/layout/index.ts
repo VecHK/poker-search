@@ -8,6 +8,7 @@ import { selectCol } from '../common'
 
 import TrustedEvents from './events'
 import WindowRevert from './window-revert'
+import { SiteSettingsRowID } from '../../preferences'
 
 export type LayoutInfo = {
   width: number
@@ -25,7 +26,7 @@ export async function CreateSearchLayout({
   onRemovedWindow,
   onRefocusLayoutClose,
 }: {
-  control_window_id: WindowID,
+  control_window_id: WindowID
   base: Base
   keyword: string
   creating_signal: Signal<void>
