@@ -30,13 +30,11 @@ export default function Entrance({
     <Control
       base={base}
       onSelectedFloorChange={(selected_idx_list) => {
-        // alert('selectedchange')
         const s_ids = base.preferences.site_settings.map(s => s.id)
-        saveFilteredFloor(
-          s_ids.filter((_, idx) => {
-            return selected_idx_list.indexOf(idx) === -1
-          })
-        ).then(() => {
+        const filtered_floor = s_ids.filter((_, idx) => {
+          return selected_idx_list.indexOf(idx) === -1
+        })
+        saveFilteredFloor(filtered_floor).then(() => {
           createBase(getRevertContainerId()).then((base) => {
             setBase(base)
           })

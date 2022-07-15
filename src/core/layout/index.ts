@@ -8,7 +8,6 @@ import { selectCol } from '../common'
 
 import TrustedEvents from './events'
 import WindowRevert from './window-revert'
-import { SiteSettingsRowID } from '../../preferences'
 
 export type LayoutInfo = {
   width: number
