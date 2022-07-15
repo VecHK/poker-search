@@ -9,7 +9,7 @@ import { saveFilteredFloor } from '../../x-state/filtered-floor'
 import Control from './Control'
 import './Control.css'
 
-export function getRevertContainerId(): RevertContainerID {
+function getRevertContainerId(): RevertContainerID {
   const revert_container_id_raw = getQuery(cfg.CONTROL_QUERY_REVERT)
   if (revert_container_id_raw === null) {
     return undefined
@@ -48,32 +48,41 @@ function useFilteredFloorTips() {
   ] as const
 }
 
-export default function Entrance({
-  base: firstBase
-}: { base: Base }) {
-  const [base, setBase] = useState<Base>(firstBase)
-
+export default function Entrance() {
   const [showTips, tips_node] = useFilteredFloorTips()
+  const [base, setBase] = useState<Base | undefined>()
 
-  return (
-    <>
-      <Control
-        base={base}
-        onSelectedFloorChange={(selected_idx_list) => {
-          const s_ids = base.preferences.site_settings.map(s => s.id)
-          const filtered_floor = s_ids.filter((_, idx) => {
-            return selected_idx_list.indexOf(idx) === -1
-          })
-          saveFilteredFloor(filtered_floor).then(() => {
-            showTips()
-            createBase(getRevertContainerId()).then((base) => {
-              setBase(base)
+  function refreshBase() {
+    createBase(getRevertContainerId()).then((base) => {
+      setBase(base)
+    })
+  }
+
+  useEffect(() => {
+    refreshBase()
+  }, [])
+
+  if (base === undefined) {
+    return <></>
+  } else {
+    return (
+      <>
+        <Control
+          base={base}
+          onSelectedFloorChange={(selected_idx_list) => {
+            const s_ids = base.preferences.site_settings.map(s => s.id)
+            const filtered_floor = s_ids.filter((_, idx) => {
+              return selected_idx_list.indexOf(idx) === -1
             })
-          })
-        }}
-      />
+            saveFilteredFloor(filtered_floor).then(() => {
+              showTips()
+              refreshBase()
+            })
+          }}
+        />
 
-      {tips_node}
-    </>
-  )
+        {tips_node}
+      </>
+    )
+  }
 }
