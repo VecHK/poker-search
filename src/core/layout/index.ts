@@ -25,7 +25,7 @@ export async function CreateSearchLayout({
   onRemovedWindow,
   onRefocusLayoutClose,
 }: {
-  control_window_id: WindowID,
+  control_window_id: WindowID
   base: Base
   keyword: string
   creating_signal: Signal<void>

@@ -4,7 +4,7 @@ html, body {
   margin: 0;
   overflow: hidden;
 }
-.container {
+.control-main {
   background-color: rgb(245, 245, 245);
   box-sizing: border-box;
   padding: 0 30px;
@@ -15,4 +15,21 @@ html, body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
+}
+
+.filtered-floor-tips.show {
+  opacity: 1;
+  bottom: 0px;
+}
+.filtered-floor-tips {
+  transition: opacity 382ms, bottom 382ms;
+  opacity: 0;
+  position: absolute;
+  bottom: calc(0px - .5em);
+  left: 0;
+  width: 100vw;
+  text-align: center;
+  font-size: 12px;
+  line-height: 1em;
+  color: rgba(0, 0, 0, 0.6);
 }

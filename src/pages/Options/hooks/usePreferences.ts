@@ -26,7 +26,7 @@ export default function usePreferences({ autoSave, onSaved }: {
 }) {
   const [preferences, setPreferences] = useState<Preferences | undefined>(undefined)
 
-  const setPreferencesItem = curry(
+  const updatePreferencesField = curry(
     useCallback(function <F extends SafelyPreferencesKeys>(
       field: F,
       getNewPreferences: Preferences[F] | ((p: Preferences) => Preferences[F]),
@@ -52,8 +52,8 @@ export default function usePreferences({ autoSave, onSaved }: {
   )
 
   const HandleSettingFieldChange = useCallback((f: SafelyPreferencesKeys) => {
-    return RequireCloseControlWindow(setPreferencesItem(f))
-  }, [setPreferencesItem])
+    return RequireCloseControlWindow(updatePreferencesField(f))
+  }, [updatePreferencesField])
 
   useEffect(() => {
     if (autoSave) {
@@ -65,5 +65,5 @@ export default function usePreferences({ autoSave, onSaved }: {
     }
   }, [autoSave, onSaved, preferences])
 
-  return { preferences, setPreferences, HandleSettingFieldChange, setPreferencesItem }
+  return { preferences, setPreferences, HandleSettingFieldChange, updatePreferencesField }
 }

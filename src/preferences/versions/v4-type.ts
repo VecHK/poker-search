@@ -6,8 +6,9 @@ export type SiteOption = {
   url_pattern: URLPattern
   access_mode: 'DESKTOP' | 'MOBILE' | 'MOBILE-STRONG'
 }
+export type SiteSettingsRowID = string
 export type SiteSettingsRow = {
-  id: string
+  id: SiteSettingsRowID
   name: string
   row: Array<SiteOption>
 }

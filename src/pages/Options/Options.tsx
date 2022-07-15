@@ -6,6 +6,8 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { load as loadPreferences, Preferences } from '../../preferences'
 import { SiteSettings } from '../../preferences/site-settings'
 import { getCurrentDisplayLimit, Limit } from '../../core/base/limit'
+import { Base } from '../../core/base'
+import { sendMessage } from '../../message'
 
 import { canUseRefocusWindow } from '../../can-i-use'
 
@@ -24,7 +26,6 @@ import SettingSwitch from './Component/SettingSwitch'
 import SettingItemTitle from './Component/SettingItem/SettingItemTitle'
 
 import s from './Options.module.css'
-import { Base } from '../../core/base'
 
 const [getAdjustTask, setAdjustTask] = Memo<NodeJS.Timeout | null>(null)
 function useAdjustMarginCenter(enable: boolean) {
@@ -95,7 +96,7 @@ function useKey() {
 }
 
 export default function OptionsPage() {
-  const { preferences, setPreferences, HandleSettingFieldChange } = usePreferences({
+  const { preferences, setPreferences, HandleSettingFieldChange, updatePreferencesField } = usePreferences({
     autoSave: true
   })
   const [limit, setLimit] = useState<Limit>()
@@ -175,7 +176,12 @@ export default function OptionsPage() {
                         title="右键菜单栏「启动Poker」"
                         description="在网页空白处点击右键，将会有「启动Poker」菜单项"
                         value={Boolean(preferences.launch_poker_contextmenu)}
-                        onChange={HandleSettingFieldChange('launch_poker_contextmenu')}
+                        onChange={(value) => {
+                          updatePreferencesField('launch_poker_contextmenu', () => {
+                            sendMessage('ChangeLaunchContextMenu', value)
+                            return value
+                          })
+                        }}
                       />
                     </SettingItem>
 
@@ -257,7 +263,7 @@ export default function OptionsPage() {
               </>
             )
           }
-        }, [HandleSettingFieldChange, adjustWidth, failure, handleSiteSettingsChange, limit, managerKey, platform, preferences, refreshManagerKey, setPreferences])
+        }, [HandleSettingFieldChange, adjustWidth, failure, handleSiteSettingsChange, limit, managerKey, platform, preferences, refreshManagerKey, setPreferences, updatePreferencesField])
       }</div>
     </div>
   )

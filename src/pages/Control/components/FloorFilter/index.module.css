@@ -1,0 +1,97 @@
+.FloorFilter.isDragging {
+  cursor: ew-resize;
+}
+
+.FloorFilter {
+  /* width: 100%; */
+  width: calc(100% - (var(--point-size) / 2 * 2));
+  margin: 0;
+  margin-top: 15px;
+  position: relative;
+
+  --active-color: #33333c;
+  --unactive-color: #33333c55;
+
+  --filter-background-color: #f4f4f4;
+
+  --text-height: 14px;
+  --text-width: 64px;
+  --point-size: 12px;
+
+  --track-height: 5px;
+
+  --TrackLayoutTop: calc((var(--point-size) - var(--track-height)) / 2);
+  --TextLayoutTop: calc((var(--point-size) + 4px));
+  --PointLayoutTop: 0px;
+
+  height: calc(var(--track-height) + var(--text-height) + var(--point-size));
+  user-select: none;
+}
+
+.SelectedContainer {
+  width: 100%;
+  background-color: var(--unactive-color);
+  height: var(--track-height);
+  position: absolute;
+  top: var(--TrackLayoutTop);
+  left: 0;
+}
+.Selected {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 0px;
+  background-color: var(--active-color);
+}
+
+.FloorTextLayout {
+  width: 100%;
+  position: relative;
+}
+
+.FloorText {
+  position: absolute;
+  top: var(--TextLayoutTop);
+
+  cursor: default;
+
+  width: var(--text-width);
+  text-align: center;
+
+  font-family: Arial, Helvetica, sans-serif;
+  font-weight: 600;
+  color: rgba(0, 0, 0, 0.65);
+  font-size: 14px;
+  line-height: 1em;
+}
+
+.PointLayout {
+  width: 100%;
+  position: relative;
+}
+
+.FloorPoint.FloorPointHighlight {
+  background-color: var(--active-color);
+}
+
+.FloorFilter.isDragging .FloorPoint {
+  cursor:inherit;
+}
+
+.FloorPoint {
+  position: absolute;
+  top: var(--PointLayoutTop);
+
+  text-align: center;
+
+  background-color: var(--filter-background-color);
+
+  width: var(--point-size);
+  height: var(--point-size);
+  border-radius: var(--point-size);
+  box-sizing: border-box;
+  border: solid var(--unactive-color) 3px;
+
+  cursor: pointer;
+}
