@@ -33,6 +33,8 @@ export type Base = Readonly<{
   layout_width: number
   layout_height: number
 
+  filtered_site_settings: Preferences['site_settings']
+
   control_window_height: number
 
   init_filtered_floor: SiteSettingsRowID[]
@@ -56,12 +58,11 @@ async function initBase(
     getFilteredFloor()
   ])
 
-  // const { site_settings } = preferences
-  const site_settings = selectSiteSettingsByFiltered(
+  const filtered_site_settings = selectSiteSettingsByFiltered(
     preferences.site_settings,
     init_filtered_floor,
   )
-  const control_window_height = getControlWindowHeight(site_settings)
+  const control_window_height = getControlWindowHeight(filtered_site_settings)
 
   const gap_horizontal = cfg.SEARCH_WINDOW_GAP_HORIZONTAL
 
@@ -72,7 +73,7 @@ async function initBase(
   const [
     total_row,
     search_matrix
-  ] = initSearchMatrix(max_window_per_line, site_settings)
+  ] = initSearchMatrix(max_window_per_line, filtered_site_settings)
 
   const { window_height, total_height } = autoAdjustHeight(
     [...cfg.SEARCH_WINDOW_HEIGHT_LIST],
@@ -89,6 +90,8 @@ async function initBase(
     platform,
     preferences,
     search_matrix,
+
+    filtered_site_settings,
 
     layout_width: total_width,
     layout_height: total_height,

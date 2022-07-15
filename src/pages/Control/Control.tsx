@@ -43,13 +43,20 @@ function useChangeRowShortcutKey(props: {
   }, [props])
 }
 
+function toSelectedFloorIds(
+  siteSettingsIds: SiteSettingsRowID[],
+  filtered_list: SiteSettingsRowID[],
+): SiteSettingsRowID[] {
+  return siteSettingsIds.filter((id) => {
+    return filtered_list.indexOf(id) === -1
+  })
+}
+
 function toSelectedFloorIdx(
   siteSettingsIds: SiteSettingsRowID[],
   filtered_list: SiteSettingsRowID[],
 ): number[] {
-  return siteSettingsIds.filter((id) => {
-    return filtered_list.indexOf(id) === -1
-  }).map((id) => {
+  return toSelectedFloorIds(siteSettingsIds, filtered_list).map((id) => {
     return siteSettingsIds.indexOf(id)
   })
 }
@@ -61,18 +68,19 @@ const ControlApp: React.FC<{
   const [keywordInput, setKeywordInput] = useState('')
   const [submitedKeyword, submitKeyword] = useState<string | false>(false)
 
+  const s_ids = base.preferences.site_settings.map(s => s.id)
   const [selected_floor_idx, setSelectedFloorIdx] = useState<number[]>(
     toSelectedFloorIdx(
-      base.preferences.site_settings.map(s => s.id),
+      s_ids,
       base.init_filtered_floor
     )
   )
-
-  // const selected_floor_ids = useMemo(() => {
-  //   return selected_floor_idx.map(idx => {
-  //     return base.preferences.site_settings[idx].id
-  //   })
-  // }, [base.preferences.site_settings, selected_floor_idx])
+  const [disable_search, setDisableSearch] = useState<boolean>(
+    !base.filtered_site_settings.length
+  )
+  useEffect(() => {
+    setDisableSearch(!base.filtered_site_settings.length)
+  }, [base.filtered_site_settings.length])
 
   const windowIsFocus = useWindowFocus(true)
 
@@ -184,12 +192,14 @@ const ControlApp: React.FC<{
       {isLoading ? <Loading /> : (
         <>
           <SearchForm
-            keywordPlaceholder={`请输入搜索词`}
-            keyword={keywordInput}
-            setKeyword={setKeywordInput}
+            keywordPlaceholder={disable_search ? '请选择至少一层的站点配置' : `请输入搜索词`}
+            keyword={disable_search ? '' : keywordInput}
+            setKeyword={disable_search ? () => {} : setKeywordInput}
             submitButtonActive={windowIsFocus}
             onSubmit={({ keyword }) => {
-              handleSubmit(keyword)
+              if (!disable_search) {
+                handleSubmit(keyword)
+              }
             }}
           />
 
