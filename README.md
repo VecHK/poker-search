@@ -6,7 +6,9 @@
 </a>
 
 ![Build](https://img.shields.io/github/workflow/status/VecHK/poker-search/Build/master?color=%235599FF&label=Build&logo=GitHub%20Actions&logoColor=%23F0F0F0&style=plastic)
-![Version](https://img.shields.io/github/package-json/v/VecHK/poker-search?color=%235599FF&label=version&logoColor=%23F0F0F0&style=plastic)
+<a href="https://github.com/VecHK/poker-search/releases/latest">
+  <img src="https://img.shields.io/github/package-json/v/VecHK/poker-search?color=%235599FF&label=version&logoColor=%23F0F0F0&style=plastic" alt="Version" />
+</a>
 
 # Poker - Search
 
