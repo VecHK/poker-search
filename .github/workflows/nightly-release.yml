@@ -78,7 +78,7 @@ jobs:
           ref: nightly
           # force-branch: true
 
-      - name: Latest Release
+      - name: update Nightly Release
         uses: softprops/action-gh-release@v1
         # if: startsWith('nightly', 'refs/tags/')
         with:
