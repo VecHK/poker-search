@@ -7,13 +7,16 @@ import { sendMessage } from '../../../message'
 
 type SafelyPreferencesKeys = Exclude<keyof Preferences, '__is_poker__' | 'version'>
 
+export const requireCloseControlWindowTips = () => {
+  alert('修改这个设置项需要先关闭 Poker 控制窗')
+  sendMessage('Refocus', null)
+}
 const RequireCloseControlWindow = <A extends unknown[]>(
   callback: (...args: A) => void
 ) => (
   async (...args: A) => {
     if (await controlIsLaunched()) {
-      alert('修改这个设置项需要先关闭 Poker 控制窗')
-      sendMessage('Refocus', null)
+      requireCloseControlWindowTips()
     } else {
       return callback(...args)
     }

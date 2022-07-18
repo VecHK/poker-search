@@ -1,7 +1,12 @@
+import { thunkify } from 'ramda'
 import cfg from '../../config'
 import { createBase, RevertContainerID } from '../../core/base'
 import { calcControlWindowPos } from '../../core/layout/control-window'
 import { controlIsLaunched, setControlLaunch } from '../../x-state/control-window-launched'
+
+export const getControlWindowUrl = thunkify(chrome.runtime.getURL)(
+  `/control.html`
+)
 
 function generateUrl({ text, revert_container_id }: {
   text?: string
@@ -17,9 +22,9 @@ function generateUrl({ text, revert_container_id }: {
 
   const param_string = usp.toString()
   if (param_string.length !== 0) {
-    return chrome.runtime.getURL(`/control.html?${param_string}`)
+    return `${getControlWindowUrl()}?${param_string}`
   } else {
-    return chrome.runtime.getURL(`/control.html`)
+    return getControlWindowUrl()
   }
 }
 

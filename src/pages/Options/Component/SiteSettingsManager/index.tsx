@@ -1,4 +1,4 @@
-import React, { createContext, useEffect, useState } from 'react'
+import React, { createContext, useCallback, useEffect, useState } from 'react'
 import { findIndex, map, nth, propEq, reverse, update } from 'ramda'
 
 import cfg from '../../../../config'
@@ -98,13 +98,17 @@ export default function SiteSettingsManager({
   siteSettings: outterSettings,
   limit,
   adjustWidth,
-  onUpdate,
-  onChange: emitChange
+  onChangeOne,
+  onChange: emitChange,
+  readonly = false,
+  onPreventChange,
 }: {
+  readonly?: boolean
+  onPreventChange: () => void
   siteSettings: SiteSettings
   limit: Limit
   adjustWidth: (t: number) => void
-  onUpdate: (id: SiteOption['id'], opt: SiteOption) => void
+  onChangeOne: (id: SiteOption['id'], opt: SiteOption) => void
   onChange: (settings: SiteSettings) => void
 }) {
   const [edit, setEdit] = useState<Edit>(null)
@@ -155,65 +159,90 @@ export default function SiteSettingsManager({
     }
   }
 
-  return (
-    <div className={s.SiteSettingsManager}>
-      <ManagerContext.Provider
-        value={constructContextValue({
-          siteSettings: [...innerSettings].reverse(),
-          limit,
-          adjustWidth,
+  const ProviderCommon = {
+    siteSettings: [...innerSettings].reverse(),
+    limit,
+    adjustWidth,
 
-          edit,
-          setEdit,
+    edit,
+  }
 
-          appendSiteOption(settingsRowId, siteOption) {
-            const row = findIndex(propEq('id', settingsRowId), innerSettings)
-            const settingsRow = nth(row, innerSettings)
-            if (settingsRow === undefined) {
-              throw Error('settingsRow not found')
-            } else {
-              const newR = {
-                ...settingsRow,
-                row: [...settingsRow.row, siteOption]
-              }
+  const callPreventChange = useCallback(() => onPreventChange(), [onPreventChange])
 
-              submitChange(reverse(update(row, newR, innerSettings)))
-              setEdit(siteOption.id)
-            }
-          },
+  if (readonly) {
+    return (
+      <div className={s.SiteSettingsManager}>
+        <ManagerContext.Provider
+          value={constructContextValue({
+            ...ProviderCommon,
+            submitChange: callPreventChange,
+            setEdit: callPreventChange,
+            appendSiteOption: callPreventChange,
+            updateRow: callPreventChange,
+            updateOne() {},
+          })}
+        >
+          <DragRows />
+        </ManagerContext.Provider>
+      </div>
+    )
+  } else {
+    return (
+      <div className={s.SiteSettingsManager}>
+        <ManagerContext.Provider
+          value={constructContextValue({
+            ...ProviderCommon,
 
-          updateRow(rowId, newRow) {
-            const row = findIndex(propEq('id', rowId), innerSettings)
-            if (row === -1) {
-              throw Error('row not found')
-            } else {
-              submitChange(reverse(update(row, newRow, innerSettings)))
-            }
-          },
+            setEdit,
+            submitChange,
 
-          updateOne(updateId, newSiteOption) {
-            onUpdate(updateId, newSiteOption)
-            setInnerSettings(latestSettings => {
-              return map(settings_row => {
-                const row = settings_row.row
-                const find_idx = findIndex(propEq('id', updateId), row)
-                if (find_idx === -1) {
-                  return settings_row
-                } else {
-                  return {
-                    ...settings_row,
-                    row: update(find_idx, newSiteOption, row)
-                  }
+            appendSiteOption(settingsRowId, siteOption) {
+              const row = findIndex(propEq('id', settingsRowId), innerSettings)
+              const settingsRow = nth(row, innerSettings)
+              if (settingsRow === undefined) {
+                throw Error('settingsRow not found')
+              } else {
+                const newR = {
+                  ...settingsRow,
+                  row: [...settingsRow.row, siteOption]
                 }
-              }, latestSettings)
-            })
-          },
 
-          submitChange,
-        })}
-      >
-        <DragRows />
-      </ManagerContext.Provider>
-    </div>
-  )
+                submitChange(reverse(update(row, newR, innerSettings)))
+                setEdit(siteOption.id)
+              }
+            },
+
+            updateRow(rowId, newRow) {
+              const row = findIndex(propEq('id', rowId), innerSettings)
+              if (row === -1) {
+                throw Error('row not found')
+              } else {
+                submitChange(reverse(update(row, newRow, innerSettings)))
+              }
+            },
+
+            updateOne(updateId, newSiteOption) {
+              onChangeOne(updateId, newSiteOption)
+              setInnerSettings(latestSettings => {
+                return map(settings_row => {
+                  const row = settings_row.row
+                  const find_idx = findIndex(propEq('id', updateId), row)
+                  if (find_idx === -1) {
+                    return settings_row
+                  } else {
+                    return {
+                      ...settings_row,
+                      row: update(find_idx, newSiteOption, row)
+                    }
+                  }
+                }, latestSettings)
+              })
+            },
+          })}
+        >
+          <DragRows />
+        </ManagerContext.Provider>
+      </div>
+    )
+  }
 }
