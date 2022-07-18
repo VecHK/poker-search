@@ -31,7 +31,7 @@ function getSelectedRange(selected_index_list: number[]): Array<Range> {
   return result
 }
 
-function rangeToIdxList([start, end]: Range) {
+function rangeToFloors([start, end]: Range) {
   if (Math.abs(end - start) === 0) {
     return [start]
   } else {
@@ -128,44 +128,44 @@ function useMouseDrag({
 }
 
 function PointAndText({
-  points,
+  floors,
   highlightList,
   intervalWidth,
   onMouseDownPoint,
 }: {
-  points: number[]
+  floors: number[]
   highlightList: number[]
   intervalWidth: Exclude<CSSProperties['width'], undefined>
   onMouseDownPoint: (mouse_start_x: number, point: number) => void
 }) {
-  function isHighlight(point: number) {
-    return highlightList.indexOf(point) !== -1
+  function isHighlight(floor_idx: number) {
+    return highlightList.indexOf(floor_idx) !== -1
   }
 
   return (
     <>
       <div className={s.FloorTextLayout}>
-        {points.map(point => {
+        {floors.map(floor_idx => {
           return (
             <div
-              key={point}
-              className={`${s.FloorText} ${isHighlight(point) ? s.FloorTextHighlight : ''}`}
-              style={{ left: `calc(${point} * ${intervalWidth} - ( var(--text-width) / 2 ))`
-            }}>{point + 1}F</div>
+              key={floor_idx}
+              className={`${s.FloorText} ${isHighlight(floor_idx) ? s.FloorTextHighlight : ''}`}
+              style={{ left: `calc(${floor_idx} * ${intervalWidth} - ( var(--text-width) / 2 ))`
+            }}>{floor_idx + 1}F</div>
           )
         })}
       </div>
-      <div className={s.PointLayout}>
-        {points.map(point => {
+      <div className={s.FloorPointLayout}>
+        {floors.map(floor_idx => {
           return (
             <div
-              key={point}
-              className={`${s.FloorPoint} ${isHighlight(point) ? s.FloorPointHighlight : ''}`}
-              style={{ left: `calc(${point} * ${intervalWidth} - ( var(--point-size) / 2 ))`}}
+              key={floor_idx}
+              className={`${s.FloorPoint} ${isHighlight(floor_idx) ? s.FloorPointHighlight : ''}`}
+              style={{ left: `calc(${floor_idx} * ${intervalWidth} - ( var(--point-size) / 2 ))`}}
               onMouseDown={e => {
                 e.preventDefault()
                 e.stopPropagation()
-                onMouseDownPoint(e.clientX, point)
+                onMouseDownPoint(e.clientX, floor_idx)
               }}
             ></div>
           )
@@ -221,44 +221,44 @@ function Selected({
   )
 }
 
-type SelectedIndexList = number[]
+type SelectedFloors = number[]
 type FloorFilterProps = {
-  selectedIndexList: SelectedIndexList
+  selectedFloors: SelectedFloors
   totalFloor: number
-  onChange: (f: SelectedIndexList) => void
+  onChange: (fs: SelectedFloors) => void
 }
 
 export default function FloorFilter({
-  selectedIndexList,
+  selectedFloors,
   totalFloor,
   onChange,
 }: FloorFilterProps) {
   const [offset_width, ref] = useOffsetWidth<HTMLDivElement>()
-  const points = range(0, totalFloor)
-  const interval_width = offset_width / (points.length - 1)
+  const floors = range(0, totalFloor)
+  const interval_width = offset_width / (floors.length - 1)
   const interval_width_css: Exclude<CSSProperties['width'], undefined> = useMemo(() => {
     return `${interval_width}px`
   }, [interval_width])
 
-  const formatIndexList = compose<[number[]], number[], number[]>(
+  const formatFloors = compose<[number[]], number[], number[]>(
     sort((a, b) => a - b),
     uniq
   )
 
   const submitChange = compose<[number[]], number[], void>(
     onChange,
-    formatIndexList
+    formatFloors
   )
 
   function isSelected(floor: number) {
-    return selectedIndexList.indexOf(floor) !== -1
+    return selectedFloors.indexOf(floor) !== -1
   }
 
   const [select_mode, setSelectMode] = useState<'SELECTED' | 'NORMAL'>('NORMAL')
   useEffect(() => {
-    console.log('selectedIndexList', [...selectedIndexList])
+    console.log('selectedFloors', [...selectedFloors])
     setSelectMode('NORMAL')
-  }, [selectedIndexList])
+  }, [selectedFloors])
 
   const {
     is_dragging,
@@ -275,10 +275,10 @@ export default function FloorFilter({
 
       if (select_mode === 'SELECTED') {
         submitChange(
-          remove(selectedIndexList.indexOf(point), 1, selectedIndexList)
+          remove(selectedFloors.indexOf(point), 1, selectedFloors)
         )
       } else {
-        submitChange([ ...selectedIndexList, point ])
+        submitChange([ ...selectedFloors, point ])
       }
     },
 
@@ -286,39 +286,39 @@ export default function FloorFilter({
       console.log('onDragEnd', drag_start_point, drag_end_point)
       if (Math.abs(drag_end_point - drag_start_point) !== 0) {
         submitChange(
-          getDraggingSelectedIndexList(drag_start_point, drag_end_point)
+          getDraggingSelectedFloors(drag_start_point, drag_end_point)
         )
       }
     },
   })
 
-  const getDraggingSelectedIndexList = useCallback((
+  const getDraggingSelectedFloors = useCallback((
     drag_start: number,
     drag_end: number
   ) => {
-    const selected = rangeToIdxList([drag_start, drag_end])
+    const selected = rangeToFloors([drag_start, drag_end])
     console.log('selected', selected)
 
     if (select_mode === 'NORMAL') {
-      return formatIndexList([...selectedIndexList, ...selected])
+      return formatFloors([...selectedFloors, ...selected])
     } else {
       const res: number[] = []
-      selectedIndexList.forEach((f) => {
+      selectedFloors.forEach((f) => {
         if (selected.indexOf(f) === -1) {
           res.push(f)
         }
       })
       return res
     }
-  }, [selectedIndexList, formatIndexList, select_mode])
+  }, [selectedFloors, formatFloors, select_mode])
 
-  const dragging_selected_index_list = useMemo(() => {
+  const dragging_selected_floors = useMemo(() => {
     if (!is_dragging) {
-      return selectedIndexList
+      return selectedFloors
     } else {
-      return getDraggingSelectedIndexList(drag_start_point, drag_end_point)
+      return getDraggingSelectedFloors(drag_start_point, drag_end_point)
     }
-  }, [drag_end_point, drag_start_point, selectedIndexList, getDraggingSelectedIndexList, is_dragging])
+  }, [drag_end_point, drag_start_point, selectedFloors, getDraggingSelectedFloors, is_dragging])
 
   return (
     <div ref={ref} className={`${s.FloorFilter} ${is_dragging ? s.isDragging : ''}`}>
@@ -328,7 +328,7 @@ export default function FloorFilter({
         intervalWidth={interval_width}
       />
 
-      {getSelectedRange(dragging_selected_index_list).map(([start_point, end_point], idx) => {
+      {getSelectedRange(dragging_selected_floors).map(([start_point, end_point], idx) => {
         return (
           <Selected
             key={idx}
@@ -341,8 +341,8 @@ export default function FloorFilter({
       })}
 
       <PointAndText
-        highlightList={dragging_selected_index_list}
-        points={points}
+        highlightList={dragging_selected_floors}
+        floors={floors}
         intervalWidth={interval_width_css}
         onMouseDownPoint={(mouse_start, floor) => {
           if (isSelected(floor)) {
