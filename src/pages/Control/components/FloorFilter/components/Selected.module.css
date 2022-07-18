@@ -1,0 +1,17 @@
+.SelectedContainer {
+  width: 100%;
+  background-color: var(--unselected-color);
+  height: var(--track-height);
+  position: absolute;
+  top: var(--TrackLayoutTop);
+  left: 0;
+}
+
+.Selected {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 0px;
+  background-color: var(--selected-color);
+}
