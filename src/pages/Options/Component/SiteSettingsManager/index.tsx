@@ -4,16 +4,17 @@ import { findIndex, map, nth, propEq, reverse, update } from 'ramda'
 import cfg from '../../../../config'
 import {
   SiteSettings,
-  SiteSettingsRow,
+  SiteSettingFloorID,
+  SiteSettingFloor,
   SiteOption,
-  generateSiteSettingsRow,
+  generateSiteSettingFloor,
   toMatrix
 } from '../../../../preferences/site-settings'
 
 import { Limit } from '../../../../core/base/limit'
 import { autoAdjustWidth } from '../../../../core/base/auto-adjust'
 
-import DragRows, { ROW_TRANSITION_DURATION } from './DragRows'
+import DragFloors, { FLOOR_TRANSITION_DURATION } from './DragFloors'
 
 import s from './index.module.css'
 
@@ -25,8 +26,8 @@ const constructContextValue = (append: {
   limit: Limit,
   edit: Edit
   setEdit: React.Dispatch<React.SetStateAction<Edit>>
-  appendSiteOption(settingsRowId: SiteSettingsRow['id'], siteOption: SiteOption): void
-  updateRow: (id: SiteSettingsRow['id'], row: SiteSettingsRow) => void
+  appendSiteOption(settingsFloorId: SiteSettingFloorID, siteOption: SiteOption): void
+  updateFloor: (id: SiteSettingFloorID, newFloor: SiteSettingFloor) => void
   updateOne: (id: SiteOption['id'], opt: SiteOption) => void
   submitChange: (settings: SiteSettings) => void
 }) => ({ ...append })
@@ -38,32 +39,32 @@ export const ManagerContext = createContext(constructContextValue({
   edit: null,
   setEdit: () => {},
   appendSiteOption: () => {},
-  updateRow: () => {},
+  updateFloor: () => {},
   updateOne: () => {},
   submitChange: () => {},
 }))
 
-function clearEmptyRow(real_settings: SiteSettings) {
-  return real_settings.filter(r => r.row.length)
+function clearEmptyFloor(real_setting_floors: SiteSettings) {
+  return real_setting_floors.filter(f => f.row.length)
 }
 
-function calcMaxColumn(siteSettings: SiteSettings) {
-  return toMatrix(siteSettings).reduce((p, c) => Math.max(p, c.length), 0)
+function calcMaxColumn(setting_floors: SiteSettings) {
+  return toMatrix(setting_floors).reduce((p, c) => Math.max(p, c.length), 0)
 }
 
-function hasEmptyRow(siteSettingsRows: SiteSettings) {
-  return !siteSettingsRows.every(r => r.row.length)
+function hasEmptyFloor(setting_floors: SiteSettings) {
+  return !setting_floors.every(f => f.row.length)
 }
 
 function needAdjustWidth({
   oldSettings,
   newSettings,
-  isAddNewRow,
+  isAddNewFloor,
   limit,
 }: {
   oldSettings: SiteSettings
   newSettings: SiteSettings
-  isAddNewRow: boolean
+  isAddNewFloor: boolean
   limit: Limit
 }): number | false {
   const { max_window_per_line } = autoAdjustWidth(
@@ -84,7 +85,7 @@ function needAdjustWidth({
     (oldCol > max_window_per_line)
 
   if (!isShowOrHideAddIcon || isBig) {
-    if (hasEmptyRow(newSettings) || isAddNewRow) {
+    if (hasEmptyFloor(newSettings) || isAddNewFloor) {
       return 1000
     } else {
       return 500
@@ -95,7 +96,7 @@ function needAdjustWidth({
 }
 
 export default function SiteSettingsManager({
-  siteSettings: outterSettings,
+  siteSettings: outter_settings,
   limit,
   adjustWidth,
   onChangeOne,
@@ -113,45 +114,45 @@ export default function SiteSettingsManager({
 }) {
   const [edit, setEdit] = useState<Edit>(null)
 
-  const [innerSettings, setInnerSettings] = useState([
-    ...outterSettings,
-    generateSiteSettingsRow([], 'N/A')
+  const [inner_settings, setInnerSettings] = useState([
+    ...outter_settings,
+    generateSiteSettingFloor([], 'N/A')
   ])
 
   useEffect(() => {
     const handler = setTimeout(() => {
-      const [first_row, ...remain_reverse_settings] = [...innerSettings].reverse()
+      const [first_floor, ...remain_reverse_settings] = [...inner_settings].reverse()
       const real_settings = [...remain_reverse_settings].reverse()
-      if (hasEmptyRow(real_settings)) {
+      if (hasEmptyFloor(real_settings)) {
         setInnerSettings([
-          ...clearEmptyRow(real_settings),
-          first_row,
+          ...clearEmptyFloor(real_settings),
+          first_floor,
         ])
       } else {
-        if (first_row.row.length !== 0) {
+        if (first_floor.row.length !== 0) {
           setInnerSettings((latestSettings) => {
             return [
               ...latestSettings,
-              generateSiteSettingsRow([], 'N/A')
+              generateSiteSettingFloor([], 'N/A')
             ]
           })
         }
       }
-    }, ROW_TRANSITION_DURATION)
+    }, FLOOR_TRANSITION_DURATION)
 
     return () => clearTimeout(handler)
-  }, [innerSettings])
+  }, [inner_settings])
 
   function submitChange(manageSettings: SiteSettings) {
-    const [new_row, ...remain_manage_settings] = manageSettings
+    const [new_floor, ...remain_manage_settings] = manageSettings
     let realSettings = reverse(remain_manage_settings)
-    emitChange(clearEmptyRow(reverse(manageSettings)))
-    setInnerSettings([...realSettings, new_row])
+    emitChange(clearEmptyFloor(reverse(manageSettings)))
+    setInnerSettings([...realSettings, new_floor])
 
     const adjustTimeout = needAdjustWidth({
-      oldSettings: outterSettings,
+      oldSettings: outter_settings,
       newSettings: realSettings,
-      isAddNewRow: Boolean(new_row.row.length),
+      isAddNewFloor: Boolean(new_floor.row.length),
       limit
     })
     if (adjustTimeout !== false) {
@@ -160,7 +161,7 @@ export default function SiteSettingsManager({
   }
 
   const ProviderCommon = {
-    siteSettings: [...innerSettings].reverse(),
+    siteSettings: [...inner_settings].reverse(),
     limit,
     adjustWidth,
 
@@ -178,11 +179,11 @@ export default function SiteSettingsManager({
             submitChange: callPreventChange,
             setEdit: callPreventChange,
             appendSiteOption: callPreventChange,
-            updateRow: callPreventChange,
+            updateFloor: callPreventChange,
             updateOne() {},
           })}
         >
-          <DragRows />
+          <DragFloors />
         </ManagerContext.Provider>
       </div>
     )
@@ -196,42 +197,42 @@ export default function SiteSettingsManager({
             setEdit,
             submitChange,
 
-            appendSiteOption(settingsRowId, siteOption) {
-              const row = findIndex(propEq('id', settingsRowId), innerSettings)
-              const settingsRow = nth(row, innerSettings)
-              if (settingsRow === undefined) {
+            appendSiteOption(setting_floor_id, site_opt) {
+              const floor_idx = findIndex(propEq('id', setting_floor_id), inner_settings)
+              const settingFloor = nth(floor_idx, inner_settings)
+              if (settingFloor === undefined) {
                 throw Error('settingsRow not found')
               } else {
                 const newR = {
-                  ...settingsRow,
-                  row: [...settingsRow.row, siteOption]
+                  ...settingFloor,
+                  row: [...settingFloor.row, site_opt]
                 }
 
-                submitChange(reverse(update(row, newR, innerSettings)))
-                setEdit(siteOption.id)
+                submitChange(reverse(update(floor_idx, newR, inner_settings)))
+                setEdit(site_opt.id)
               }
             },
 
-            updateRow(rowId, newRow) {
-              const row = findIndex(propEq('id', rowId), innerSettings)
-              if (row === -1) {
+            updateFloor(floor_id, new_floor) {
+              const idx = findIndex(propEq('id', floor_id), inner_settings)
+              if (idx === -1) {
                 throw Error('row not found')
               } else {
-                submitChange(reverse(update(row, newRow, innerSettings)))
+                submitChange(reverse(update(idx, new_floor, inner_settings)))
               }
             },
 
             updateOne(updateId, newSiteOption) {
               onChangeOne(updateId, newSiteOption)
               setInnerSettings(latestSettings => {
-                return map(settings_row => {
-                  const row = settings_row.row
+                return map(setting_floor => {
+                  const row = setting_floor.row
                   const find_idx = findIndex(propEq('id', updateId), row)
                   if (find_idx === -1) {
-                    return settings_row
+                    return setting_floor
                   } else {
                     return {
-                      ...settings_row,
+                      ...setting_floor,
                       row: update(find_idx, newSiteOption, row)
                     }
                   }
@@ -240,7 +241,7 @@ export default function SiteSettingsManager({
             },
           })}
         >
-          <DragRows />
+          <DragFloors />
         </ManagerContext.Provider>
       </div>
     )
