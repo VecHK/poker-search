@@ -25,7 +25,7 @@ function PointAndText({
           return (
             <div
               key={point}
-              className={s.FloorText}
+              className={`${s.FloorText} ${isHighlight(point) ? s.FloorTextHighlight : ''}`}
               style={{ left: `calc(${point} * ${intervalWidth} - ( var(--text-width) / 2 ))`
             }}>{point + 1}F</div>
           )
