@@ -216,7 +216,7 @@ export default function OptionsPage() {
                       limit={limit}
                       adjustWidth={adjustWidth}
                       siteSettings={preferences.site_settings}
-                      onUpdate={(updateId, newSiteOption) => {
+                      onChangeOne={(updateId, newSiteOption) => {
                         setPreferences(latestPreferences => {
                           if (!latestPreferences) {
                             return undefined

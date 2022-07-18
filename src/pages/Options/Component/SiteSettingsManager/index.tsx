@@ -98,13 +98,13 @@ export default function SiteSettingsManager({
   siteSettings: outterSettings,
   limit,
   adjustWidth,
-  onUpdate,
+  onChangeOne,
   onChange: emitChange
 }: {
   siteSettings: SiteSettings
   limit: Limit
   adjustWidth: (t: number) => void
-  onUpdate: (id: SiteOption['id'], opt: SiteOption) => void
+  onChangeOne: (id: SiteOption['id'], opt: SiteOption) => void
   onChange: (settings: SiteSettings) => void
 }) {
   const [edit, setEdit] = useState<Edit>(null)
@@ -192,7 +192,7 @@ export default function SiteSettingsManager({
           },
 
           updateOne(updateId, newSiteOption) {
-            onUpdate(updateId, newSiteOption)
+            onChangeOne(updateId, newSiteOption)
             setInnerSettings(latestSettings => {
               return map(settings_row => {
                 const row = settings_row.row
