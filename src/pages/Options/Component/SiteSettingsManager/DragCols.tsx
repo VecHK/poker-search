@@ -35,7 +35,7 @@ export const getColListStyle = (isDraggingOver: boolean): React.CSSProperties =>
 })
 
 function SiteOptionDragItem(props: {
-  settingsRow: SiteSettingFloor
+  settingFloor: SiteSettingFloor
   option: SiteOption
   isEditMode: boolean
   edit: Edit
@@ -88,7 +88,7 @@ function SiteOptionDragItem(props: {
 
 function SiteOptionList(props: {
   enableRemoveAnimation: boolean
-  settingsRow: SiteSettingFloor
+  settingFloor: SiteSettingFloor
   isEditMode: boolean
   edit: Edit
   // rowNum: number,
@@ -100,7 +100,7 @@ function SiteOptionList(props: {
       <SiteOptionDragItem
         key={option.id}
         option={option}
-        settingsRow={props.settingsRow}
+        settingFloor={props.settingFloor}
         isEditMode={props.isEditMode}
         edit={props.edit}
         colNum={colNum}
@@ -115,7 +115,7 @@ function SiteOptionList(props: {
       <TransitionGroup
         className={s.SiteOptionList}
       >
-        {props.settingsRow.row.map((col, colNum) => (
+        {props.settingFloor.row.map((col, colNum) => (
           <CSSTransition
             key={col.id}
             onExited={props.onRemoveAnimationEnd}
@@ -136,7 +136,7 @@ function SiteOptionList(props: {
     )
   } else {
     return <>
-      {props.settingsRow.row.map(renderDragItem)}
+      {props.settingFloor.row.map(renderDragItem)}
     </>
   }
 }
@@ -175,7 +175,7 @@ export default function Cols(props: {
           style={getColListStyle(snapshot.isDraggingOver)}
         >
           <SiteOptionList
-            settingsRow={settingFloor}
+            settingFloor={settingFloor}
             edit={props.edit}
             isEditMode={props.isEditMode}
             enableRemoveAnimation={enableRemoveAnimation}

@@ -201,7 +201,7 @@ export default function SiteSettingsManager({
               const floor_idx = findIndex(propEq('id', setting_floor_id), inner_settings)
               const settingFloor = nth(floor_idx, inner_settings)
               if (settingFloor === undefined) {
-                throw Error('settingsRow not found')
+                throw Error('settingsFloor not found')
               } else {
                 const newR = {
                   ...settingFloor,
