@@ -5,7 +5,7 @@ import { AlarmSetTimeout } from '../../utils/chrome-alarms'
 import { getCurrentDisplayLimit, Limit } from '../../core/base/limit'
 
 import { load as loadPreferences, SiteSettings, SiteOption } from '../../preferences'
-import { generateSiteSettingsRow } from '../../preferences/site-settings'
+import { generateSiteSettingFloor } from '../../preferences/site-settings'
 
 import usePreferences from '../Options/hooks/usePreferences'
 import useMaxWindowPerLine from '../../hooks/useMaxWindowPerLine'
@@ -112,7 +112,7 @@ function addToSiteSettings(
     if (total_column >= maxWindowPerLine) {
       // 不够放了，就多创个 site setting
       return reverse([
-        generateSiteSettingsRow([ new_site_option ]),
+        generateSiteSettingFloor([ new_site_option ]),
         upper_settings,
         ...remain_settings
       ])

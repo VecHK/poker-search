@@ -6,13 +6,13 @@ export type SiteOption = {
   url_pattern: URLPattern
   access_mode: 'DESKTOP' | 'MOBILE' | 'MOBILE-STRONG'
 }
-export type SiteSettingsRowID = string
-export type SiteSettingsRow = {
-  id: SiteSettingsRowID
+export type SiteSettingFloorID = string
+export type SiteSettingFloor = {
+  id: SiteSettingFloorID
   name: string
   row: Array<SiteOption>
 }
-export type SiteSettings = Array<SiteSettingsRow>
+export type SiteSettings = Array<SiteSettingFloor>
 
 export type PreferencesV4 = Readonly<{
   __is_poker__: true,

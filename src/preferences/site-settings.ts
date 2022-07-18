@@ -2,17 +2,17 @@ import cfg from '../config'
 import { Matrix } from '../core/common'
 import generateId from '../utils/generate-id'
 
-import { SiteOption, SiteSettings, URLPattern, SiteSettingsRow } from './versions/'
-export { SiteOption, SiteSettings, URLPattern, SiteSettingsRow }
+import { SiteOption, SiteSettings, URLPattern, SiteSettingFloor, SiteSettingFloorID } from './versions/'
+export { SiteOption, SiteSettings, URLPattern, SiteSettingFloor, SiteSettingFloorID }
 
 export function toMatrix(s: SiteSettings): Matrix<SiteOption> {
   return s.map(u => u.row)
 }
 
-export function generateSiteSettingsRow(
+export function generateSiteSettingFloor(
   row: SiteOption[],
   name: string = cfg.DEFAULT_SITE_OPTION_NAME
-): SiteSettingsRow {
+): SiteSettingFloor {
   return {
     id: generateId(),
     name,

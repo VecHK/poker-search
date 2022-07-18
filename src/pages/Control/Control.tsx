@@ -22,7 +22,7 @@ import ArrowButtonGroup from './components/ArrowGroup'
 
 import './Control.css'
 import FloorFilter from './components/FloorFilter'
-import { SiteSettingsRowID } from '../../preferences'
+import { SiteSettingFloorID } from '../../preferences'
 
 function useChangeRowShortcutKey(props: {
   onPressUp: () => void
@@ -44,20 +44,20 @@ function useChangeRowShortcutKey(props: {
 }
 
 function toSelectedFloorIds(
-  siteSettingsIds: SiteSettingsRowID[],
-  filtered_list: SiteSettingsRowID[],
-): SiteSettingsRowID[] {
-  return siteSettingsIds.filter((id) => {
+  floor_ids: SiteSettingFloorID[],
+  filtered_list: SiteSettingFloorID[],
+): SiteSettingFloorID[] {
+  return floor_ids.filter((id) => {
     return filtered_list.indexOf(id) === -1
   })
 }
 
 function toSelectedFloorIdx(
-  siteSettingsIds: SiteSettingsRowID[],
-  filtered_list: SiteSettingsRowID[],
+  floor_ids: SiteSettingFloorID[],
+  filtered_list: SiteSettingFloorID[],
 ): number[] {
-  return toSelectedFloorIds(siteSettingsIds, filtered_list).map((id) => {
-    return siteSettingsIds.indexOf(id)
+  return toSelectedFloorIds(floor_ids, filtered_list).map((id) => {
+    return floor_ids.indexOf(id)
   })
 }
 

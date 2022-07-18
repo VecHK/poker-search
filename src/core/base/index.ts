@@ -1,7 +1,7 @@
 import { Memo } from 'vait'
 import cfg from '../../config'
 import { load as loadEnvironment, Environment } from '../../environment'
-import { load as loadPreferences, Preferences, SiteSettingsRowID } from '../../preferences'
+import { load as loadPreferences, Preferences, SiteSettingFloorID } from '../../preferences'
 import { getCurrentDisplayLimit, Limit } from './limit'
 import { autoAdjustHeight, autoAdjustWidth } from './auto-adjust'
 import { initSearchMatrix, SearchMatrix } from './search-matrix'
@@ -10,7 +10,7 @@ import { getFilteredFloor } from '../../x-state/filtered-floor'
 
 function selectSiteSettingsByFiltered(
   source_site_settings: Preferences['site_settings'],
-  filteredFloor: SiteSettingsRowID[]
+  filteredFloor: SiteSettingFloorID[]
 ) {
   return source_site_settings.filter(s => {
     return filteredFloor.indexOf(s.id) === -1
@@ -37,7 +37,7 @@ export type Base = Readonly<{
 
   control_window_height: number
 
-  init_filtered_floor: SiteSettingsRowID[]
+  init_filtered_floor: SiteSettingFloorID[]
 
   getRevertContainerId: () => RevertContainerID
   setRevertContainerId: (r: RevertContainerID) => void
