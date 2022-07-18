@@ -78,6 +78,7 @@
 
 .FloorPoint.FloorPointHighlight:before {
   box-shadow: inset 0 1px 1px var(--unactive-color);
+  background: var(--filter-background-color);
 }
 .FloorPoint.FloorPointHighlight {
   background: hsl(240deg 8% 35%);
@@ -92,11 +93,9 @@
 .FloorPoint:before {
   content: " ";
   display: block;
-  width: calc(var(--point-size) - (3px * 2));
-  height: calc(var(--point-size) - (3px * 2));
+  width: calc(var(--point-size) - (3px * 2 + 1px));
+  height: calc(var(--point-size) - (3px * 2 + 1px));
   border-radius: var(--point-size);
-  background: var(--filter-background-color);
-  box-shadow: 0 0 0 1px rgb(0 0 0 / 5%);
 }
 .FloorPoint {
   position: absolute;
@@ -108,13 +107,12 @@
 
   text-align: center;
 
-  background: var(--filter-background-color);
-
   width: var(--point-size);
   height: var(--point-size);
   border-radius: var(--point-size);
   box-sizing: border-box;
-  background: var(--unselected-color);
+
+  background: var(--filter-background-color);
   box-shadow:
     inset 0 0px 2px rgb(0 0 0 / 20%),
     inset 0 2px 2px rgb(0 0 0 / 20%)
