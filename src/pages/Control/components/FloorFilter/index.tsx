@@ -3,6 +3,130 @@ import React, { CSSProperties, useCallback, useEffect, useMemo, useRef, useState
 
 import s from './index.module.css'
 
+function incrementDetecting(p: number, filtered: number[]): number[] {
+  if (filtered.indexOf(p) !== -1) {
+    return [p, ...incrementDetecting(p + 1, filtered)]
+  } else {
+    return []
+  }
+}
+
+type Range = Readonly<[number, number]>
+
+function getSelectedRange(selected_index_list: number[]): Array<Range> {
+  let result: Array<Range> = []
+  let pass: number[] = []
+
+  selected_index_list.forEach((point, idx) => {
+    if (pass.indexOf(idx) === -1) {
+      const detected = incrementDetecting(point, selected_index_list)
+      pass = [...pass, ...detected.map((p) => selected_index_list.indexOf(p))]
+
+      result.push(
+        [ Math.min(...detected),  Math.max(...detected) ] as const
+      )
+    }
+  })
+
+  return result
+}
+
+function rangeToIdxList([start, end]: Range) {
+  if (Math.abs(end - start) === 0) {
+    return [start]
+  } else {
+    if (end > start) {
+      return range(start, end + 1)
+    } else {
+      return range(end, start + 1)
+    }
+  }
+}
+
+function useOffsetWidth<RefType extends HTMLElement>() {
+  const ref = useRef<RefType>(null)
+  const [offset_width, setOffsetWidth] = useState(0)
+
+  useEffect(() => {
+    const el = ref.current
+    if (el) {
+      setOffsetWidth(el.offsetWidth)
+    }
+  }, [])
+
+  return [offset_width, ref] as const
+}
+
+function useMouseDrag({
+  interval_width,
+  onClick,
+  onDragEnd,
+}: {
+  interval_width: number
+  onClick: (p: number) => void
+  onDragEnd: (s: number, e: number) => void
+}) {
+  const [drag_start_point, setDragStartPoint] = useState(0)
+  const [drag_end_point, setDragEndPoint] = useState(0)
+
+  const [mouse_move_start, setMouseMoveStart] = useState<number | null>(null)
+  const [mouse_move_offset, setMouseMoveOffset] = useState<number | null>(null)
+
+  useEffect(() => {
+    if (mouse_move_start !== null) {
+      const handler = (e: MouseEvent) => setMouseMoveOffset( e.clientX - mouse_move_start )
+      window.addEventListener('mousemove', handler)
+      return () => window.removeEventListener('mousemove', handler)
+    }
+  }, [mouse_move_start])
+
+  useEffect(() => {
+    if (mouse_move_offset !== null) {
+      console.log('mouse_move_offset', mouse_move_offset)
+
+      const abs_mouse_move_offset = Math.abs(mouse_move_offset)
+
+      const point_offset = Math.floor(abs_mouse_move_offset / interval_width)
+      if (mouse_move_offset > 0) {
+        setDragEndPoint(drag_start_point + point_offset)
+      } else {
+        setDragEndPoint(drag_start_point - point_offset)
+      }
+    }
+  }, [drag_start_point, interval_width, mouse_move_offset])
+
+  useEffect(() => {
+    if (mouse_move_start !== null) {
+      const handler = (e: MouseEvent) => {
+        if (mouse_move_offset === null) {
+          // is click
+          onClick(drag_start_point)
+        } else {
+          // submit selected
+          console.log('dragend range', drag_start_point, drag_end_point)
+          onDragEnd(drag_start_point, drag_end_point)
+        }
+
+        // setDragStartPoint(0)
+        setDragEndPoint(drag_start_point)
+        setMouseMoveStart(null)
+        setMouseMoveOffset(null)
+      }
+      window.addEventListener('mouseup', handler)
+      return () => window.removeEventListener('mouseup', handler)
+    }
+  }, [drag_end_point, drag_start_point, mouse_move_offset, mouse_move_start, onClick, onDragEnd])
+
+  return {
+    drag_start_point, setDragStartPoint,
+    drag_end_point, setDragEndPoint,
+    mouse_move_start, setMouseMoveStart,
+    mouse_move_offset, setMouseMoveOffset,
+
+    is_dragging: mouse_move_start !== null
+  }
+}
+
 function PointAndText({
   points,
   highlightList,
@@ -97,139 +221,15 @@ function Selected({
   )
 }
 
-function useOffsetWidth<RefType extends HTMLElement>() {
-  const ref = useRef<RefType>(null)
-  const [offset_width, setOffsetWidth] = useState(0)
-
-  useEffect(() => {
-    const el = ref.current
-    if (el) {
-      setOffsetWidth(el.offsetWidth)
-    }
-  }, [])
-
-  return [offset_width, ref] as const
-}
-
-function rangeToIdxList(start: number, end: number) {
-  if (Math.abs(end - start) === 0) {
-    return [start]
-  } else {
-    if (end > start) {
-      return range(start, end + 1)
-    } else {
-      return range(end, start + 1)
-    }
-  }
-}
-
-function useMouseDrag({
-  interval_width,
-  onClick,
-  onDragEnd,
-}: {
-  interval_width: number
-  onClick: (p: number) => void
-  onDragEnd: (s: number, e: number) => void
-}) {
-  const [drag_start_point, setDragStartPoint] = useState(0)
-  const [drag_end_point, setDragEndPoint] = useState(0)
-
-  const [mouse_move_start, setMouseMoveStart] = useState<number | null>(null)
-  const [mouse_move_offset, setMouseMoveOffset] = useState<number | null>(null)
-
-  useEffect(() => {
-    if (mouse_move_start !== null) {
-      const handler = (e: MouseEvent) => setMouseMoveOffset( e.clientX - mouse_move_start )
-      window.addEventListener('mousemove', handler)
-      return () => window.removeEventListener('mousemove', handler)
-    }
-  }, [mouse_move_start])
-
-  useEffect(() => {
-    if (mouse_move_offset !== null) {
-      console.log('mouse_move_offset', mouse_move_offset)
-
-      const abs_mouse_move_offset = Math.abs(mouse_move_offset)
-
-      const point_offset = Math.floor(abs_mouse_move_offset / interval_width)
-      if (mouse_move_offset > 0) {
-        setDragEndPoint(drag_start_point + point_offset)
-      } else {
-        setDragEndPoint(drag_start_point - point_offset)
-      }
-    }
-  }, [drag_start_point, interval_width, mouse_move_offset])
-
-  useEffect(() => {
-    if (mouse_move_start !== null) {
-      const handler = (e: MouseEvent) => {
-        if (mouse_move_offset === null) {
-          // is click
-          onClick(drag_start_point)
-        } else {
-          // submit selected
-          console.log('dragend range', drag_start_point, drag_end_point)
-          onDragEnd(drag_start_point, drag_end_point)
-        }
-
-        // setDragStartPoint(0)
-        setDragEndPoint(drag_start_point)
-        setMouseMoveStart(null)
-        setMouseMoveOffset(null)
-      }
-      window.addEventListener('mouseup', handler)
-      return () => window.removeEventListener('mouseup', handler)
-    }
-  }, [drag_end_point, drag_start_point, mouse_move_offset, mouse_move_start, onClick, onDragEnd])
-
-  return {
-    drag_start_point, setDragStartPoint,
-    drag_end_point, setDragEndPoint,
-    mouse_move_start, setMouseMoveStart,
-    mouse_move_offset, setMouseMoveOffset,
-
-    is_dragging: mouse_move_start !== null
-  }
-}
-
-function incrementDetecting(p: number, filtered: number[]): number[] {
-  if (filtered.indexOf(p) !== -1) {
-    return [p, ...incrementDetecting(p + 1, filtered)]
-  } else {
-    return []
-  }
-}
-
-type Range = Readonly<[number, number]>
-
-function getSelectedRange(filtered: number[]): Array<Range> {
-  let result: Array<Range> = []
-  let pass: number[] = []
-
-  filtered.forEach((point, idx) => {
-    if (pass.indexOf(idx) === -1) {
-      const detected = incrementDetecting(point, filtered)
-      pass = [...pass, ...detected.map((p) => filtered.indexOf(p))]
-
-      result.push(
-        [ Math.min(...detected),  Math.max(...detected) ] as const
-      )
-    }
-  })
-
-  return result
-}
-
-type FilteredFloor = number[]
+type SelectedIndexList = number[]
 type FloorFilterProps = {
-  filteredFloor: FilteredFloor
+  selectedIndexList: SelectedIndexList
   totalFloor: number
-  onChange: (f: FilteredFloor) => void
+  onChange: (f: SelectedIndexList) => void
 }
 
 export default function FloorFilter({
-  filteredFloor,
+  selectedIndexList,
   totalFloor,
   onChange,
 }: FloorFilterProps) {
@@ -240,25 +240,25 @@ export default function FloorFilter({
     return `${interval_width}px`
   }, [interval_width])
 
-  const formatFilteredList = compose<[number[]], number[], number[]>(
+  const formatIndexList = compose<[number[]], number[], number[]>(
     sort((a, b) => a - b),
     uniq
   )
 
   const submitChange = compose<[number[]], number[], void>(
     onChange,
-    formatFilteredList
+    formatIndexList
   )
 
   function isSelected(floor: number) {
-    return filteredFloor.indexOf(floor) !== -1
+    return selectedIndexList.indexOf(floor) !== -1
   }
 
   const [select_mode, setSelectMode] = useState<'SELECTED' | 'NORMAL'>('NORMAL')
   useEffect(() => {
-    console.log('filteredFloor', [...filteredFloor])
+    console.log('selectedIndexList', [...selectedIndexList])
     setSelectMode('NORMAL')
-  }, [filteredFloor])
+  }, [selectedIndexList])
 
   const {
     is_dragging,
@@ -275,10 +275,10 @@ export default function FloorFilter({
 
       if (select_mode === 'SELECTED') {
         submitChange(
-          remove(filteredFloor.indexOf(point), 1, filteredFloor)
+          remove(selectedIndexList.indexOf(point), 1, selectedIndexList)
         )
       } else {
-        submitChange([ ...filteredFloor, point ])
+        submitChange([ ...selectedIndexList, point ])
       }
     },
 
@@ -286,40 +286,39 @@ export default function FloorFilter({
       console.log('onDragEnd', drag_start_point, drag_end_point)
       if (Math.abs(drag_end_point - drag_start_point) !== 0) {
         submitChange(
-          getDraggingFilteredFloor(drag_start_point, drag_end_point)
+          getDraggingSelectedIndexList(drag_start_point, drag_end_point)
         )
       }
     },
   })
 
-  const getDraggingFilteredFloor = useCallback((
+  const getDraggingSelectedIndexList = useCallback((
     drag_start: number,
     drag_end: number
   ) => {
-    const selected = rangeToIdxList(drag_start, drag_end)
+    const selected = rangeToIdxList([drag_start, drag_end])
     console.log('selected', selected)
 
     if (select_mode === 'NORMAL') {
-      return formatFilteredList([...filteredFloor, ...selected])
+      return formatIndexList([...selectedIndexList, ...selected])
     } else {
       const res: number[] = []
-      filteredFloor.forEach((f) => {
+      selectedIndexList.forEach((f) => {
         if (selected.indexOf(f) === -1) {
           res.push(f)
         }
       })
       return res
     }
-  }, [filteredFloor, formatFilteredList, select_mode])
+  }, [selectedIndexList, formatIndexList, select_mode])
 
-  const dragging_filtered_floor = useMemo(() => {
-
+  const dragging_selected_index_list = useMemo(() => {
     if (!is_dragging) {
-      return filteredFloor
+      return selectedIndexList
     } else {
-      return getDraggingFilteredFloor(drag_start_point, drag_end_point)
+      return getDraggingSelectedIndexList(drag_start_point, drag_end_point)
     }
-  }, [drag_end_point, drag_start_point, filteredFloor, getDraggingFilteredFloor, is_dragging])
+  }, [drag_end_point, drag_start_point, selectedIndexList, getDraggingSelectedIndexList, is_dragging])
 
   return (
     <div ref={ref} className={`${s.FloorFilter} ${is_dragging ? s.isDragging : ''}`}>
@@ -329,7 +328,7 @@ export default function FloorFilter({
         intervalWidth={interval_width}
       />
 
-      {getSelectedRange(dragging_filtered_floor).map(([start_point, end_point], idx) => {
+      {getSelectedRange(dragging_selected_index_list).map(([start_point, end_point], idx) => {
         return (
           <Selected
             key={idx}
@@ -342,7 +341,7 @@ export default function FloorFilter({
       })}
 
       <PointAndText
-        highlightList={dragging_filtered_floor}
+        highlightList={dragging_selected_index_list}
         points={points}
         intervalWidth={interval_width_css}
         onMouseDownPoint={(mouse_start, floor) => {

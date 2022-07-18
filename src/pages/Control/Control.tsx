@@ -206,7 +206,7 @@ const ControlApp: React.FC<{
           <ArrowButtonGroup onClick={changeRow} />
 
           <FloorFilter
-            filteredFloor={selected_floor_idx}
+            selectedIndexList={selected_floor_idx}
             totalFloor={base.preferences.site_settings.length}
             onChange={(filtered) => {
               console.log('filtered onChange', filtered)
