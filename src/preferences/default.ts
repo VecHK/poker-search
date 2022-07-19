@@ -2,7 +2,7 @@ import cfg from '../config'
 import { mapMatrix } from '../core/common'
 import generateId from '../utils/generate-id'
 import { SiteSettings, Preferences, SiteOption } from './'
-import { generateSiteSettingsRow } from './site-settings'
+import { generateSiteSettingFloor } from './site-settings'
 
 type AppendPreferences = Omit<
   Partial<Preferences>,
@@ -34,7 +34,7 @@ function getDefaultSiteSettings(): SiteSettings {
       access_mode: 'MOBILE'
     })
   ).map(row => {
-    return generateSiteSettingsRow(row)
+    return generateSiteSettingFloor(row)
   })
 }
 

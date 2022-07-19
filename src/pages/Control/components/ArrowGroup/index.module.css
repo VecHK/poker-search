@@ -1,16 +1,57 @@
+.IconArrow:active {
+  box-shadow: none;
+}
 .IconArrow {
   width: 40px;
   height: 40px;
   margin: 0 16px;
   cursor: pointer;
+
+  user-select: none;
+  border-radius: 100%;
+  box-shadow: 0 4px 4px -2px rgb(0 0 0 / 50%);
+
+  padding: 0;
+  border: 0;
 }
+
 .IconArrowImg {
   width: 100%;
   height: 100%;
+  border-radius: 100%;
+
+  --press-shadow-color: rgba(0, 0, 0, 0.9);
+
+  --broder-color: hsl(240deg 9% 25%);
+  --highlight-color: rgba(255, 255, 255, 0.618);
+}
+
+.IconArrow:active .type-previus {
+  transform: translateY(1px);
+  box-shadow:
+    inset 0 4px 4px var(--press-shadow-color),
+    inset 0 4px 10px -2px var(--highlight-color),
+  ;
 }
 .type-previus {
+  box-shadow:
+    inset 0 -1px 1px 1px var(--broder-color),
+    inset 0 4px 10px -2px var(--highlight-color),
+  ;
+}
+
+.IconArrow:active .type-next {
+  transform: rotate(180deg) translateY(-1px);
+  box-shadow:
+    inset 0 -4px 4px var(--press-shadow-color),
+    inset 0 -4px 10px -2px var(--highlight-color),
+  ;
 }
 .type-next {
+  box-shadow:
+    inset 0 1px 1px 1px var(--broder-color),
+    inset 0 -4px 10px -2px var(--highlight-color),
+  ;
   transform: rotate(180deg);
 }
 

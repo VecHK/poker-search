@@ -19,9 +19,9 @@ import { ManagerContext } from '.'
 
 import useMaxWindowPerLine from '../../../../hooks/useMaxWindowPerLine'
 
-import s from './DragRows.module.css'
+import s from './DragFloors.module.css'
 
-export const ROW_TRANSITION_DURATION = 382
+export const FLOOR_TRANSITION_DURATION = 382
 
 function TransitionList({ nodes }: { nodes: Array<{ id: string; node: ReactNode }> }) {
   return (
@@ -30,7 +30,7 @@ function TransitionList({ nodes }: { nodes: Array<{ id: string; node: ReactNode 
         return (
           <CSSTransition
             key={e.id}
-            timeout={ROW_TRANSITION_DURATION}
+            timeout={FLOOR_TRANSITION_DURATION}
             classNames={{
               enter: s.TransitionItemEnter,
               enterActive: s.TransitionItemEnterActive,
@@ -48,7 +48,7 @@ function TransitionList({ nodes }: { nodes: Array<{ id: string; node: ReactNode 
   )
 }
 
-const getRowListStyle = (isDraggingOver: boolean): React.CSSProperties => ({
+const getFloorListStyle = (isDraggingOver: boolean): React.CSSProperties => ({
   // background: isDraggingOver ? "lightblue" : "lightgrey",
   // padding: 8,
   // width: "480px"
@@ -102,24 +102,24 @@ function reorderCols(
   }
 }
 
-const ROW_DROP = 'ROW_DROP'
-const isRowDrop = all(equals(ROW_DROP))
+const FLOOR_DROP = 'FLOOR_DROP'
+const isFloorDrop = all(equals(FLOOR_DROP))
 
-function reorderRows(
+function reorderFloors(
   site_settings: SiteSettings,
   source: DraggableLocation,
   destination: DraggableLocation,
 ): SiteSettings {
-  if (!isRowDrop([source.droppableId, destination.droppableId])) {
-    throw new Error('current drop is not ROW_DROP')
+  if (!isFloorDrop([source.droppableId, destination.droppableId])) {
+    throw new Error(`current drop is not ${FLOOR_DROP}`)
   } else {
-    const sRowNum = Number(source.index)
-    const dRowNum = Number(destination.index)
-    return move(sRowNum, dRowNum, site_settings)
+    const s_floor_idx = Number(source.index)
+    const d_floor_idx = Number(destination.index)
+    return move(s_floor_idx, d_floor_idx, site_settings)
   }
 }
 
-export default function DragRows() {
+export default function DragFloors() {
   const {
     siteSettings,
     edit,
@@ -130,13 +130,14 @@ export default function DragRows() {
   const onDragEnd = ({ type, source, destination }: DropResult) => {
     if (!destination) {
       // no change
-    } else if (type === "ROWS") {
-      const newSettings = reorderRows(siteSettings, source, destination)
-      console.log('newSettings', newSettings)
-      submitChange(newSettings)
+    } else if (type === 'FLOORS') {
+      submitChange(
+        reorderFloors(siteSettings, source, destination)
+      )
     } else if (type === 'COLS') {
-      const newSettings = reorderCols(siteSettings, source, destination)
-      submitChange(newSettings)
+      submitChange(
+        reorderCols(siteSettings, source, destination)
+      )
     } else {
       throw Error('unknown result.type')
     }
@@ -147,50 +148,50 @@ export default function DragRows() {
   }
 
   const maxWindowPerLine = useMaxWindowPerLine(limit)
-  const hasMaxCol = !siteSettings.every((r) => {
+  const hasMaxCol = !siteSettings.every((f) => {
     if (maxWindowPerLine === -1) {
       return false
     } else {
-      return r.row.length <= maxWindowPerLine
+      return f.row.length <= maxWindowPerLine
     }
   })
 
   return (
-    <div className={s.DragRows}>
+    <div className={s.DragFloors}>
       <DragDropContext
         onDragEnd={onDragEnd}
         onDragUpdate={handleDragUpdate}
       >
         <div className={s.DragDropContextInner}>
-          <Droppable droppableId={ROW_DROP} type="ROWS">
-            {(provided, rowSnapshot) => (
+          <Droppable droppableId={FLOOR_DROP} type="FLOORS">
+            {(provided, floor_snapshot) => (
               <div
                 ref={provided.innerRef}
-                style={getRowListStyle(rowSnapshot.isDraggingOver)}
+                style={getFloorListStyle(floor_snapshot.isDraggingOver)}
               >
                 <TransitionList
                   nodes={
-                    siteSettings.map((settingsRow, rowNum) => ({
-                      id: settingsRow.id,
+                    siteSettings.map((setting_floor, floor_row) => ({
+                      id: setting_floor.id,
                       node: (
                         <Draggable
-                          key={settingsRow.id}
-                          draggableId={settingsRow.id}
-                          index={rowNum}
+                          key={setting_floor.id}
+                          draggableId={setting_floor.id}
+                          index={floor_row}
                           isDragDisabled={Boolean(edit)}
                         >
                           {(provided, snapshot) => (
                             <div
                               ref={provided.innerRef}
                               {...provided.draggableProps}
-                              className={s.DragRowDnD}
+                              className={s.DragFloorDnD}
                               style={getItemStyle(
                                 snapshot.isDragging,
                                 provided.draggableProps.style
                               )}
                             >
-                              <SettingItem className={s.RowSettingItem} disableMargin>
-                                <div className={s.DragRowInner}>
+                              <SettingItem className={s.FloorSettingItem} disableMargin>
+                                <div className={s.DragFloorInner}>
                                   <div {...provided.dragHandleProps}>
                                     <div className={s.Handler}>
                                       <div className={s.HandlerLine}></div>
@@ -199,13 +200,13 @@ export default function DragRows() {
                                     </div>
                                   </div>
                                   <Cols
-                                    rowNum={rowNum}
-                                    settingsRow={settingsRow}
+                                    rowNum={floor_row}
+                                    settingFloor={setting_floor}
                                     edit={edit}
                                     isEditMode={edit !== null}
                                   />
                                 </div>
-                                <div className={`${s.Floor} ${rowSnapshot.isDraggingOver ? s.isDraggingOver : ''}`}>{siteSettings.length - (rowNum + 1) + 1}F</div>
+                                <div className={`${s.Floor} ${floor_snapshot.isDraggingOver ? s.isDraggingOver : ''}`}>{siteSettings.length - (floor_row + 1) + 1}F</div>
                               </SettingItem>
                             </div>
                           )}

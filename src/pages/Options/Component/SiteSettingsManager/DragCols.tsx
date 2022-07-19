@@ -3,7 +3,7 @@ import React, { useContext, useMemo, useState } from 'react'
 import { CSSTransition, TransitionGroup } from 'react-transition-group'
 import { Droppable, Draggable, DraggingStyle, NotDraggingStyle } from 'react-beautiful-dnd'
 
-import { SiteOption, SiteSettingsRow } from '../../../../preferences/site-settings'
+import { SiteOption, SiteSettingFloor } from '../../../../preferences/site-settings'
 import { generateExampleOption } from '../../../../preferences/default'
 
 import SiteWindow from './SiteWindow'
@@ -35,7 +35,7 @@ export const getColListStyle = (isDraggingOver: boolean): React.CSSProperties =>
 })
 
 function SiteOptionDragItem(props: {
-  settingsRow: SiteSettingsRow
+  settingFloor: SiteSettingFloor
   option: SiteOption
   isEditMode: boolean
   edit: Edit
@@ -88,7 +88,7 @@ function SiteOptionDragItem(props: {
 
 function SiteOptionList(props: {
   enableRemoveAnimation: boolean
-  settingsRow: SiteSettingsRow
+  settingFloor: SiteSettingFloor
   isEditMode: boolean
   edit: Edit
   // rowNum: number,
@@ -100,7 +100,7 @@ function SiteOptionList(props: {
       <SiteOptionDragItem
         key={option.id}
         option={option}
-        settingsRow={props.settingsRow}
+        settingFloor={props.settingFloor}
         isEditMode={props.isEditMode}
         edit={props.edit}
         colNum={colNum}
@@ -115,7 +115,7 @@ function SiteOptionList(props: {
       <TransitionGroup
         className={s.SiteOptionList}
       >
-        {props.settingsRow.row.map((col, colNum) => (
+        {props.settingFloor.row.map((col, colNum) => (
           <CSSTransition
             key={col.id}
             onExited={props.onRemoveAnimationEnd}
@@ -136,36 +136,36 @@ function SiteOptionList(props: {
     )
   } else {
     return <>
-      {props.settingsRow.row.map(renderDragItem)}
+      {props.settingFloor.row.map(renderDragItem)}
     </>
   }
 }
 
 export default function Cols(props: {
   rowNum: number,
-  settingsRow: SiteSettingsRow,
+  settingFloor: SiteSettingFloor,
   edit: Edit
   isEditMode: boolean
 }) {
-  const { appendSiteOption, updateRow, adjustWidth, limit } = useContext(ManagerContext)
+  const { appendSiteOption, updateFloor, adjustWidth, limit } = useContext(ManagerContext)
   const [enableRemoveAnimation, setEnableRemoveAnimation] = useState(false)
-  const { settingsRow, rowNum } = props
+  const { settingFloor, rowNum } = props
 
   const maxWindowPerLine = useMaxWindowPerLine(limit)
-  const showAddButton = settingsRow.row.length < maxWindowPerLine
+  const showAddButton = settingFloor.row.length < maxWindowPerLine
   const addSiteIcon = useMemo(() => {
     return (
       <AddSiteOption
         show={showAddButton}
         disable={props.isEditMode}
         onClickAdd={() => {
-          appendSiteOption(settingsRow.id, generateExampleOption())
+          appendSiteOption(settingFloor.id, generateExampleOption())
         }}
         onEntered={() => adjustWidth(500)}
         onExited={() => adjustWidth(500)}
       />
     )
-  }, [adjustWidth, appendSiteOption, props.isEditMode, settingsRow.id, showAddButton])
+  }, [adjustWidth, appendSiteOption, props.isEditMode, settingFloor.id, showAddButton])
 
   return (
     <Droppable droppableId={`${rowNum}`} type="COLS" direction="horizontal">
@@ -175,7 +175,7 @@ export default function Cols(props: {
           style={getColListStyle(snapshot.isDraggingOver)}
         >
           <SiteOptionList
-            settingsRow={settingsRow}
+            settingFloor={settingFloor}
             edit={props.edit}
             isEditMode={props.isEditMode}
             enableRemoveAnimation={enableRemoveAnimation}
@@ -183,9 +183,9 @@ export default function Cols(props: {
             onClickRemove={(colNum) => {
               setEnableRemoveAnimation(true)
               setTimeout(() => {
-                updateRow(settingsRow.id, {
-                  ...settingsRow,
-                  row: remove(colNum, 1, settingsRow.row)
+                updateFloor(settingFloor.id, {
+                  ...settingFloor,
+                  row: remove(colNum, 1, settingFloor.row)
                 })
               })
             }}

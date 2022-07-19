@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
 import cfg from '../../config'
 
@@ -22,7 +22,8 @@ import ArrowButtonGroup from './components/ArrowGroup'
 
 import './Control.css'
 import FloorFilter from './components/FloorFilter'
-import { SiteSettingsRowID } from '../../preferences'
+import { SiteSettingFloorID } from '../../preferences'
+import { compose, prop } from 'ramda'
 
 function useChangeRowShortcutKey(props: {
   onPressUp: () => void
@@ -44,20 +45,20 @@ function useChangeRowShortcutKey(props: {
 }
 
 function toSelectedFloorIds(
-  siteSettingsIds: SiteSettingsRowID[],
-  filtered_list: SiteSettingsRowID[],
-): SiteSettingsRowID[] {
-  return siteSettingsIds.filter((id) => {
+  floor_ids: SiteSettingFloorID[],
+  filtered_list: SiteSettingFloorID[],
+): SiteSettingFloorID[] {
+  return floor_ids.filter((id) => {
     return filtered_list.indexOf(id) === -1
   })
 }
 
 function toSelectedFloorIdx(
-  siteSettingsIds: SiteSettingsRowID[],
-  filtered_list: SiteSettingsRowID[],
+  floor_ids: SiteSettingFloorID[],
+  filtered_list: SiteSettingFloorID[],
 ): number[] {
-  return toSelectedFloorIds(siteSettingsIds, filtered_list).map((id) => {
-    return siteSettingsIds.indexOf(id)
+  return toSelectedFloorIds(floor_ids, filtered_list).map((id) => {
+    return floor_ids.indexOf(id)
   })
 }
 
@@ -187,26 +188,45 @@ const ControlApp: React.FC<{
     return cancelReceive
   }, [controlWindowId, control, handleSubmit])
 
+  const searchFormNode = useMemo(() => {
+    if (disable_search) {
+      return (
+        <SearchForm
+          keywordPlaceholder={'请选择至少一层的站点配置'}
+          keyword={''}
+          setKeyword={() => {}}
+          submitButtonActive={windowIsFocus}
+          onSubmit={() => {}}
+        />
+      )
+    } else {
+      return (
+        <SearchForm
+          keywordPlaceholder={'请输入搜索词'}
+          keyword={keywordInput}
+          setKeyword={setKeywordInput}
+          submitButtonActive={windowIsFocus}
+          onSubmit={
+            compose(
+              handleSubmit,
+              prop<'keyword', string>('keyword')
+            )
+          }
+        />
+      )
+    }
+  }, [disable_search, handleSubmit, keywordInput, windowIsFocus])
+
   return (
     <main className="control-main">
       {isLoading ? <Loading /> : (
         <>
-          <SearchForm
-            keywordPlaceholder={disable_search ? '请选择至少一层的站点配置' : `请输入搜索词`}
-            keyword={disable_search ? '' : keywordInput}
-            setKeyword={disable_search ? () => {} : setKeywordInput}
-            submitButtonActive={windowIsFocus}
-            onSubmit={({ keyword }) => {
-              if (!disable_search) {
-                handleSubmit(keyword)
-              }
-            }}
-          />
+          {searchFormNode}
 
           <ArrowButtonGroup onClick={changeRow} />
 
           <FloorFilter
-            filteredFloor={selected_floor_idx}
+            selectedFloors={selected_floor_idx}
             totalFloor={base.preferences.site_settings.length}
             onChange={(filtered) => {
               console.log('filtered onChange', filtered)

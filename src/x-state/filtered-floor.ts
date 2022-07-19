@@ -1,7 +1,7 @@
-import { SiteSettingsRowID } from '../preferences'
+import { SiteSettingFloorID } from '../preferences'
 import Storage, { StorageError } from '../utils/storage'
 
-type IDList = SiteSettingsRowID[]
+type IDList = SiteSettingFloorID[]
 
 const [ getStorage, setStorage ] = Storage<IDList>('X-FilteredFloor')
 

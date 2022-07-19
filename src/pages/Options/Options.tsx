@@ -11,7 +11,8 @@ import { sendMessage } from '../../message'
 
 import { canUseRefocusWindow } from '../../can-i-use'
 
-import usePreferences from './hooks/usePreferences'
+import usePreferences, { requireCloseControlWindowTips } from './hooks/usePreferences'
+import useControlWindowExists from '../../hooks/useControlWindowExists'
 
 import SettingHeader from './Component/SettingHeader'
 import SiteSettingsManager from './Component/SiteSettingsManager'
@@ -146,6 +147,8 @@ export default function OptionsPage() {
 
   const [innerEl, adjustWidth] = useAdjustMarginCenter(isReady)
 
+  const has_control_window = useControlWindowExists()
+
   return (
     <div className={s.OptionsContainer}>
       <div ref={innerEl} className={s.OptionsInner}>{
@@ -212,11 +215,15 @@ export default function OptionsPage() {
                   <div className={s.OptionsCol}>
                     <SettingItemTitle>站点配置</SettingItemTitle>
                     <SiteSettingsManager
+                      readonly={has_control_window}
+                      onPreventChange={() => {
+                        requireCloseControlWindowTips()
+                      }}
                       key={managerKey}
                       limit={limit}
                       adjustWidth={adjustWidth}
                       siteSettings={preferences.site_settings}
-                      onUpdate={(updateId, newSiteOption) => {
+                      onChangeOne={(updateId, newSiteOption) => {
                         setPreferences(latestPreferences => {
                           if (!latestPreferences) {
                             return undefined
@@ -263,7 +270,7 @@ export default function OptionsPage() {
               </>
             )
           }
-        }, [HandleSettingFieldChange, adjustWidth, failure, handleSiteSettingsChange, limit, managerKey, platform, preferences, refreshManagerKey, setPreferences, updatePreferencesField])
+        }, [HandleSettingFieldChange, adjustWidth, failure, handleSiteSettingsChange, has_control_window, limit, managerKey, platform, preferences, refreshManagerKey, setPreferences, updatePreferencesField])
       }</div>
     </div>
   )
