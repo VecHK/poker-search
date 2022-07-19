@@ -13,19 +13,19 @@ const getLeftPoint = (start_p: number, end_p: number) => (
 )
 
 export default function Selected({
-  dragStartPoint,
-  dragEndPoint,
+  startPoint,
+  endPoint,
   intervalWidth,
   backgroundColor,
 }: {
-  dragStartPoint: number
-  dragEndPoint: number
+  startPoint: number
+  endPoint: number
   intervalWidth: number
   backgroundColor?: CSSProperties['backgroundColor']
 }) {
   const multiInterval = (n: number) => intervalWidth * n
-  const left = multiInterval( getLeftPoint(dragStartPoint, dragEndPoint) )
-  const width = multiInterval( Math.abs(dragStartPoint - dragEndPoint) )
+  const left = multiInterval( getLeftPoint(startPoint, endPoint) )
+  const width = multiInterval( Math.abs(startPoint - endPoint) )
 
   return (
     <div className={s.SelectedContainer} style={{ backgroundColor }}>

@@ -150,8 +150,8 @@ export default function FloorFilter({
   return (
     <div ref={ref} className={`${s.FloorFilter} ${is_dragging ? s.isDragging : ''}`}>
       <Selected
-        dragStartPoint={0}
-        dragEndPoint={0}
+        startPoint={0}
+        endPoint={0}
         intervalWidth={interval_width}
       />
 
@@ -159,8 +159,8 @@ export default function FloorFilter({
         return (
           <Selected
             key={idx}
-            dragStartPoint={start_point}
-            dragEndPoint={end_point}
+            startPoint={start_point}
+            endPoint={end_point}
             intervalWidth={interval_width}
             backgroundColor="transparent"
           />
