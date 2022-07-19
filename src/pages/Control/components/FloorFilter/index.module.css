@@ -14,7 +14,7 @@
   --selected-color: hsl(240deg 9% 50%);
   --unselected-color: hsl(240deg 9% 85%);
 
-  --filter-background-color: #f4f4f4;
+  --filter-background-color: white;
 
   --text-height: 14px;
   --text-width: 64px;
