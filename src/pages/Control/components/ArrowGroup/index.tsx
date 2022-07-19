@@ -4,17 +4,16 @@ import s from './index.module.css'
 import IconArrowSrc from './arrow.svg'
 
 type Type = 'previus' | 'next'
-const ArrowButton: React.FC<{ 
+const ArrowButton: React.FC<{
   type: Type
   onClick?: () => void
 }> = ({ type, onClick }) => (
-  <div className={s.IconArrow} onClick={onClick}>
-    <img
-      alt={`${type} page`}
-      src={IconArrowSrc}
+  <button className={s.IconArrow} onClick={onClick}>
+    <div
+      style={{ background: `url(${IconArrowSrc})` }}
       className={`${s.IconArrowImg} ${s['type-' + type]}`}
     />
-  </div>
+  </button>
 )
 
 const ArrowButtonGroup: React.FC<{
