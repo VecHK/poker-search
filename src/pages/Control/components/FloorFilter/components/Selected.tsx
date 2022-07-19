@@ -1,14 +1,13 @@
-import { compose, equals, multiply, subtract } from 'ramda'
 import React, { CSSProperties } from 'react'
 
 import s from './Selected.module.css'
 
-type Direct = 'LEFT' | 'RIGHT'
-const getDirect = (start: number, end: number): Direct => (
-  end > start ? 'RIGHT' : 'LEFT'
+const getDirect = (start_p: number, end_p: number) => (
+  end_p > start_p ? 'RIGHT' : 'LEFT'
 )
-
-const isLeftDirect = compose( equals('LEFT'), getDirect )
+const isLeftDirect = (start_p: number, end_p: number) => (
+  getDirect(start_p, end_p) === 'LEFT'
+)
 const getLeftPoint = (start_p: number, end_p: number) => (
   isLeftDirect(start_p, end_p) ? end_p : start_p
 )
@@ -24,19 +23,15 @@ export default function Selected({
   intervalWidth: number
   backgroundColor?: CSSProperties['backgroundColor']
 }) {
-  const multiIntervalWidth = multiply(intervalWidth)
-  const getLeft = compose(multiIntervalWidth, getLeftPoint)
-  const getWidth = compose<[number, number], number, number, number>(
-    multiIntervalWidth,
-    Math.abs,
-    subtract
-  )
+  const multiInterval = (n: number) => intervalWidth * n
+  const left = multiInterval( getLeftPoint(dragStartPoint, dragEndPoint) )
+  const width = multiInterval( Math.abs(dragStartPoint - dragEndPoint) )
 
   return (
     <div className={s.SelectedContainer} style={{ backgroundColor }}>
       <div className={s.Selected} style={{
-        left: `${getLeft(dragStartPoint, dragEndPoint)}px`,
-        width: `${getWidth(dragEndPoint, dragStartPoint)}px`,
+        left: `${left}px`,
+        width: `${width}px`,
       }}></div>
     </div>
   )
