@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react'
+import CacheImage from '../../../../components/CacheImage'
 import Loading from '../../../../components/Loading'
 import cfg from '../../../../config'
 import useMount from '../../../../hooks/useMount'
@@ -65,7 +66,7 @@ export default function SiteIcon({
     } else if (src === null) {
       return <img alt="SiteIcon" style={{ width: '100%' }} src={cfg.DEFAULT_SITE_ICON} />
     } else {
-      return <img alt="SiteIcon" style={{ width: '100%' }} src={src} />
+      return <CacheImage alt="SiteIcon" style={{ width: '100%' }} src={src} />
     }
   }, [isStartLoading, loading, src])
 
