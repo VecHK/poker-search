@@ -1,8 +1,10 @@
+import { compose, prop } from 'ramda'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
 import cfg from '../../config'
 
 import { Base } from '../../core/base'
+import { SiteSettingFloorID } from '../../preferences'
 import { calcControlWindowPos } from '../../core/layout/control-window'
 import { WindowID } from '../../core/layout/window'
 import { MessageEvent } from '../../message'
@@ -19,11 +21,11 @@ import usePreventEnterFullScreen from '../../hooks/usePreventEnterFullScreen'
 import Loading from '../../components/Loading'
 import SearchForm from '../../components/SearchForm'
 import ArrowButtonGroup from './components/ArrowGroup'
+import FloorFilter from './components/FloorFilter'
+
+import BGSrc from '../../assets/control-bg.png'
 
 import './Control.css'
-import FloorFilter from './components/FloorFilter'
-import { SiteSettingFloorID } from '../../preferences'
-import { compose, prop } from 'ramda'
 
 function useChangeRowShortcutKey(props: {
   onPressUp: () => void
@@ -218,7 +220,7 @@ const ControlApp: React.FC<{
   }, [disable_search, handleSubmit, keywordInput, windowIsFocus])
 
   return (
-    <main className="control-main">
+    <main className="control-main" style={{ background: `url(${BGSrc})` }}>
       {isLoading ? <Loading /> : (
         <>
           {searchFormNode}
