@@ -1,52 +1,14 @@
 import { compose, range, remove, sort, uniq } from 'ramda'
 import React, { CSSProperties, useCallback, useEffect, useMemo, useState } from 'react'
 
+import { getSelectedRange, rangeToFloors } from './utils'
+
 import PointAndText from './components/PointAndText'
 import Selected from './components/Selected'
 import useMouseDrag from './hooks/useMouseDrag'
 import useOffsetWidth from './hooks/useOffsetWidth'
 
 import s from './index.module.css'
-
-function incrementDetecting(p: number, filtered: number[]): number[] {
-  if (filtered.indexOf(p) !== -1) {
-    return [p, ...incrementDetecting(p + 1, filtered)]
-  } else {
-    return []
-  }
-}
-
-type Range = Readonly<[number, number]>
-
-function getSelectedRange(selected_index_list: number[]): Array<Range> {
-  let result: Array<Range> = []
-  let pass: number[] = []
-
-  selected_index_list.forEach((point, idx) => {
-    if (pass.indexOf(idx) === -1) {
-      const detected = incrementDetecting(point, selected_index_list)
-      pass = [...pass, ...detected.map((p) => selected_index_list.indexOf(p))]
-
-      result.push(
-        [ Math.min(...detected),  Math.max(...detected) ] as const
-      )
-    }
-  })
-
-  return result
-}
-
-function rangeToFloors([start, end]: Range) {
-  if (Math.abs(end - start) === 0) {
-    return [start]
-  } else {
-    if (end > start) {
-      return range(start, end + 1)
-    } else {
-      return range(end, start + 1)
-    }
-  }
-}
 
 type SelectedFloors = number[]
 type FloorFilterProps = {

@@ -4,7 +4,6 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import cfg from '../../config'
 
 import { Base } from '../../core/base'
-import { SiteSettingFloorID } from '../../preferences'
 import { calcControlWindowPos } from '../../core/layout/control-window'
 import { WindowID } from '../../core/layout/window'
 import { MessageEvent } from '../../message'
@@ -25,6 +24,7 @@ import FloorFilter from '../../components/FloorFilter'
 import BGSrc from '../../assets/control-bg.png'
 
 import './Control.css'
+import useSelectedFloorIdx from '../../components/FloorFilter/useSelectedFloorIdx'
 
 function useChangeRowShortcutKey(props: {
   onPressUp: () => void
@@ -45,24 +45,6 @@ function useChangeRowShortcutKey(props: {
   }, [props])
 }
 
-function toSelectedFloorIds(
-  floor_ids: SiteSettingFloorID[],
-  filtered_list: SiteSettingFloorID[],
-): SiteSettingFloorID[] {
-  return floor_ids.filter((id) => {
-    return filtered_list.indexOf(id) === -1
-  })
-}
-
-function toSelectedFloorIdx(
-  floor_ids: SiteSettingFloorID[],
-  filtered_list: SiteSettingFloorID[],
-): number[] {
-  return toSelectedFloorIds(floor_ids, filtered_list).map((id) => {
-    return floor_ids.indexOf(id)
-  })
-}
-
 const ControlApp: React.FC<{
   base: Base
   controlWindowId: WindowID
@@ -71,13 +53,8 @@ const ControlApp: React.FC<{
   const [keywordInput, setKeywordInput] = useState('')
   const [submitedKeyword, submitKeyword] = useState<string | false>(false)
 
-  const s_ids = base.preferences.site_settings.map(s => s.id)
-  const [selected_floor_idx, setSelectedFloorIdx] = useState<number[]>(
-    toSelectedFloorIdx(
-      s_ids,
-      base.init_filtered_floor
-    )
-  )
+  const [selected_floor_idx, setSelectedFloorIdx] = useSelectedFloorIdx(base)
+
   const [disable_search, setDisableSearch] = useState<boolean>(
     !base.filtered_site_settings.length
   )

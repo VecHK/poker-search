@@ -8,6 +8,19 @@
   width: 100%;
   padding: 0 var(--main-padding-horizontal);
   box-sizing: border-box;
+
+  padding-top: 10px;
+  width: var(--popup-width);
+  height: var(--main-height);
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.search-interval {
+  height: 12px;
 }
 
 .Search {
