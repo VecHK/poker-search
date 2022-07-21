@@ -99,15 +99,19 @@ async function getCurrentTabPageUrl() {
   }
 }
 
-const match_search_keyword = `poker`
+const match_search_keyword_list = [`poker`, `Poker`]
 function hasPokerSearchIdentifier(url: string) {
-  const has_keyword_query = url.indexOf(encodeURIComponent(match_search_keyword)) !== -1
-  const has_keyword_base64 = url.indexOf(btoa(match_search_keyword)) !== -1
-  return has_keyword_query || has_keyword_base64
+  return match_search_keyword_list.some((match_search_keyword) => {
+    const has_keyword_query = url.indexOf(encodeURIComponent(match_search_keyword)) !== -1
+    const has_keyword_base64 = url.indexOf(btoa(match_search_keyword)) !== -1
+    return has_keyword_query || has_keyword_base64
+  })
 }
 
-function replaceAsUrlPattern(url: string) {
-  return url
-    .replaceAll(encodeURIComponent(match_search_keyword), '%poker%')
-    .replaceAll(btoa(match_search_keyword), '%poker%')
+function replaceAsUrlPattern(url: string): string {
+  return match_search_keyword_list.reduce((url, match_search_keyword) => (
+    url
+      .replaceAll(encodeURIComponent(match_search_keyword), '%poker%')
+      .replaceAll(btoa(match_search_keyword), '%poker%')
+  ), url)
 }
