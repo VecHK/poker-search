@@ -20,7 +20,7 @@ import useReFocusMessage from '../../hooks/useReFocusMessage'
 import Loading from '../../components/Loading'
 import SearchForm from '../../components/SearchForm'
 import ArrowButtonGroup from './components/ArrowGroup'
-import FloorFilter from './components/FloorFilter'
+import FloorFilter from '../../components/FloorFilter'
 
 import BGSrc from '../../assets/control-bg.png'
 
