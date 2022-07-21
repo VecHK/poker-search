@@ -1,5 +1,5 @@
 import React from 'react'
-import { accessModeTipText } from '../../Options/Component/SiteSettingsManager/AccessModeSetting'
+import { accessModeTipText } from '../../Options/components/SiteSettingsManager/AccessModeSetting'
 import { ActionWrap, ActionLink } from '../ActionSwitch'
 
 import './2-AccessMode.css'

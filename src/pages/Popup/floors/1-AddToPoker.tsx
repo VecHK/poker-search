@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 
 import cfg from '../../../config'
 
-import { RenderEditLayout, useEditLayoutSubmit } from '../../Options/Component/SiteSettingsManager/EditLayout'
+import { RenderEditLayout, useEditLayoutSubmit } from '../../Options/components/SiteSettingsManager/EditLayout'
 import { generateExampleOption } from '../../../preferences/default'
 import { SiteOption } from '../../../preferences'
 import ActionSwitch, { SwitchState } from '../ActionSwitch'
