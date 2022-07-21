@@ -1,4 +1,4 @@
-import { compose, prop } from 'ramda'
+import { compose, equals, prop } from 'ramda'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
 import cfg from '../../config'
@@ -96,6 +96,7 @@ const ControlApp: React.FC<{
     setLoading,
     control,
     setControl,
+    cleanControl,
     refreshWindows,
     changeRow: controlChangeRow,
     controlProcessing,
@@ -118,15 +119,23 @@ const ControlApp: React.FC<{
       base.limit
     )
     const win = await chrome.windows.get(id)
-    await animatingWindow(id, 382, {
-      top: win.top,
-      left: win.left,
-      height: win.height,
-    }, {
-      top,
-      left,
-      height: base.control_window_height,
-    })
+
+    const not_move = equals(
+      [win.top, win.left, win.height],
+      [top, left, base.control_window_height]
+    )
+
+    if (!not_move) {
+      await animatingWindow(id, 382, {
+        top: win.top,
+        left: win.left,
+        height: win.height,
+      }, {
+        top,
+        left,
+        height: base.control_window_height,
+      })
+    }
   }, [base.control_window_height, base.layout_height, base.limit])
 
   function changeRow(act: 'previus' | 'next') {
@@ -142,16 +151,13 @@ const ControlApp: React.FC<{
     if (controlWindowId !== undefined) {
       if (submitedKeyword !== false) {
         if (control === null) {
-          setLoading(true)
-          moveControlWindow(controlWindowId).then(() => {
-            refreshWindows(controlWindowId, submitedKeyword).finally(() => {
-              focusControlWindow()
-            })
+          refreshWindows(controlWindowId, submitedKeyword).finally(() => {
+            focusControlWindow()
           })
         }
       }
     }
-  }, [control, controlWindowId, focusControlWindow, moveControlWindow, refreshWindows, setLoading, submitedKeyword])
+  }, [cleanControl, control, controlWindowId, focusControlWindow, refreshWindows, submitedKeyword])
 
   useEffect(function focusControlWindowAfterLoad() {
     focusControlWindow()
@@ -174,19 +180,23 @@ const ControlApp: React.FC<{
 
       controlProcessing(async () => {
         console.log('onSubmit', newSearchKeyword)
-        if (control === null) {
-          submitKeyword(newSearchKeyword)
-        } else {
-          setControl(() => {
-            // 写成这样是处理提交同样搜索词的时候的处理
-            // 因为是用 useEffect 来判断的，如果是相同的值就不会触发更新了
-            submitKeyword(newSearchKeyword)
-            return null
+        if (controlWindowId) {
+          setLoading(true)
+          if (control) {
+            await cleanControl(control)
+          }
+          moveControlWindow(controlWindowId).then(() => {
+            setControl(() => {
+              // 写成这样是处理提交同样搜索词的时候的处理
+              // 因为是用 useEffect 来判断的，如果是相同的值就不会触发更新了
+              submitKeyword(newSearchKeyword)
+              return null
+            })
           })
         }
       })
     }
-  }, [control, controlProcessing, setControl])
+  }, [cleanControl, control, controlProcessing, controlWindowId, moveControlWindow, setControl, setLoading])
 
   useEffect(function receiveChangeSearchMessage() {
     const [ applyReceive, cancelReceive ] = MessageEvent('ChangeSearch', (new_keyword) => {
