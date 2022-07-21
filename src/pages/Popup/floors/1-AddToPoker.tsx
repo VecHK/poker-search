@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react'
 
+import cfg from '../../../config'
+
 import { RenderEditLayout, useEditLayoutSubmit } from '../../Options/Component/SiteSettingsManager/EditLayout'
 import { generateExampleOption } from '../../../preferences/default'
 import { SiteOption } from '../../../preferences'
@@ -111,7 +113,7 @@ function hasPokerSearchIdentifier(url: string) {
 function replaceAsUrlPattern(url: string): string {
   return match_search_keyword_list.reduce((url, match_search_keyword) => (
     url
-      .replaceAll(encodeURIComponent(match_search_keyword), '%poker%')
-      .replaceAll(btoa(match_search_keyword), '%poker%')
+      .replaceAll(encodeURIComponent(match_search_keyword), cfg.KEYWORD_REPLACEHOLDER)
+      .replaceAll(btoa(match_search_keyword), cfg.KEYWORD_REPLACEHOLDER)
   ), url)
 }
