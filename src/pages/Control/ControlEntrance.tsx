@@ -3,6 +3,8 @@ import { useMemo } from 'react'
 import { useEffect } from 'react'
 import cfg from '../../config'
 import { Base, createBase, RevertContainerID } from '../../core/base'
+import useCurrentWindow from '../../hooks/useCurrentWindow'
+import usePreventEnterFullScreen from '../../hooks/usePreventEnterFullScreen'
 import getQuery from '../../utils/get-query'
 import { saveFilteredFloor } from '../../x-state/filtered-floor'
 
@@ -49,6 +51,9 @@ function useFilteredFloorTips() {
 }
 
 export default function Entrance() {
+  const controlWindow = useCurrentWindow()
+  usePreventEnterFullScreen(controlWindow?.windowId)
+
   const [showTips, tips_node] = useFilteredFloorTips()
   const [base, setBase] = useState<Base | undefined>()
 
@@ -62,13 +67,14 @@ export default function Entrance() {
     refreshBase()
   }, [])
 
-  if (base === undefined) {
+  if (!base || !controlWindow) {
     return <></>
   } else {
     return (
       <>
         <Control
           base={base}
+          controlWindowId={controlWindow.windowId}
           onSelectedFloorChange={(selected_idx_list) => {
             const s_ids = base.preferences.site_settings.map(s => s.id)
             const filtered_floor = s_ids.filter((_, idx) => {

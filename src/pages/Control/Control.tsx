@@ -14,10 +14,8 @@ import { validKeyword } from '../../utils/search'
 import animatingWindow from '../../utils/animating-window'
 
 import useWindowFocus from '../../hooks/useWindowFocus'
-import useCurrentWindow from '../../hooks/useCurrentWindow'
 import useControl from '../../hooks/useControl'
 import useReFocusMessage from '../../hooks/useReFocusMessage'
-import usePreventEnterFullScreen from '../../hooks/usePreventEnterFullScreen'
 
 import Loading from '../../components/Loading'
 import SearchForm from '../../components/SearchForm'
@@ -67,8 +65,9 @@ function toSelectedFloorIdx(
 
 const ControlApp: React.FC<{
   base: Base
+  controlWindowId: WindowID
   onSelectedFloorChange: (f: number[]) => void
-}> = ({ base, onSelectedFloorChange }) => {
+}> = ({ base, controlWindowId, onSelectedFloorChange }) => {
   const [keywordInput, setKeywordInput] = useState('')
   const [submitedKeyword, submitKeyword] = useState<string | false>(false)
 
@@ -88,9 +87,6 @@ const ControlApp: React.FC<{
 
   const windowIsFocus = useWindowFocus(true)
 
-  const controlWindow = useCurrentWindow()
-  const controlWindowId = controlWindow?.windowId
-
   const {
     isLoading,
     setLoading,
@@ -102,15 +98,11 @@ const ControlApp: React.FC<{
     controlProcessing,
   } = useControl(base)
 
-  usePreventEnterFullScreen(controlWindow?.windowId)
+  const focusControlWindow = useCallback(async () => {
+    return chrome.windows.update(controlWindowId, { focused: true })
+  }, [controlWindowId])
 
   useReFocusMessage(controlWindowId, control)
-
-  const focusControlWindow = useCallback(async () => {
-    if (controlWindowId !== undefined) {
-      return chrome.windows.update(controlWindowId, { focused: true })
-    }
-  }, [controlWindowId])
 
   const moveControlWindow = useCallback(async (id: WindowID) => {
     const [ top, left ] = calcControlWindowPos(
@@ -148,13 +140,11 @@ const ControlApp: React.FC<{
 
   useEffect(function openSearchWindows() {
     console.log('openSearchWindows', controlWindowId, submitedKeyword)
-    if (controlWindowId !== undefined) {
-      if (submitedKeyword !== false) {
-        if (control === null) {
-          refreshWindows(controlWindowId, submitedKeyword).finally(() => {
-            focusControlWindow()
-          })
-        }
+    if (submitedKeyword !== false) {
+      if (control === null) {
+        refreshWindows(controlWindowId, submitedKeyword).finally(() => {
+          focusControlWindow()
+        })
       }
     }
   }, [cleanControl, control, controlWindowId, focusControlWindow, refreshWindows, submitedKeyword])
@@ -180,20 +170,18 @@ const ControlApp: React.FC<{
 
       controlProcessing(async () => {
         console.log('onSubmit', newSearchKeyword)
-        if (controlWindowId) {
-          setLoading(true)
-          if (control) {
-            await cleanControl(control)
-          }
-          moveControlWindow(controlWindowId).then(() => {
-            setControl(() => {
-              // 写成这样是处理提交同样搜索词的时候的处理
-              // 因为是用 useEffect 来判断的，如果是相同的值就不会触发更新了
-              submitKeyword(newSearchKeyword)
-              return null
-            })
-          })
+        setLoading(true)
+        if (control) {
+          await cleanControl(control)
         }
+        moveControlWindow(controlWindowId).then(() => {
+          setControl(() => {
+            // 写成这样是处理提交同样搜索词的时候的处理
+            // 因为是用 useEffect 来判断的，如果是相同的值就不会触发更新了
+            submitKeyword(newSearchKeyword)
+            return null
+          })
+        })
       })
     }
   }, [cleanControl, control, controlProcessing, controlWindowId, moveControlWindow, setControl, setLoading])
@@ -202,11 +190,9 @@ const ControlApp: React.FC<{
     const [ applyReceive, cancelReceive ] = MessageEvent('ChangeSearch', (new_keyword) => {
       control?.cancelAllEvent()
 
-      if (controlWindowId !== undefined) {
-        chrome.windows.update(controlWindowId, { focused: true }).then(() => {
-          handleSubmit(new_keyword)
-        })
-      }
+      chrome.windows.update(controlWindowId, { focused: true }).then(() => {
+        handleSubmit(new_keyword)
+      })
     })
     applyReceive()
 
