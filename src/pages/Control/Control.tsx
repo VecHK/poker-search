@@ -11,6 +11,7 @@ import { MessageEvent } from '../../message'
 
 import getQuery from '../../utils/get-query'
 import { validKeyword } from '../../utils/search'
+import animatingWindow from '../../utils/animating-window'
 
 import useWindowFocus from '../../hooks/useWindowFocus'
 import useCurrentWindow from '../../hooks/useCurrentWindow'
@@ -92,6 +93,7 @@ const ControlApp: React.FC<{
 
   const {
     isLoading,
+    setLoading,
     control,
     setControl,
     refreshWindows,
@@ -115,7 +117,16 @@ const ControlApp: React.FC<{
       base.layout_height,
       base.limit
     )
-    await chrome.windows.update(id, { top, left })
+    const win = await chrome.windows.get(id)
+    await animatingWindow(id, 382, {
+      top: win.top,
+      left: win.left,
+      height: win.height,
+    }, {
+      top,
+      left,
+      height: base.control_window_height,
+    })
   }, [base.control_window_height, base.layout_height, base.limit])
 
   function changeRow(act: 'previus' | 'next') {
@@ -131,14 +142,16 @@ const ControlApp: React.FC<{
     if (controlWindowId !== undefined) {
       if (submitedKeyword !== false) {
         if (control === null) {
-          moveControlWindow(controlWindowId)
-          refreshWindows(controlWindowId, submitedKeyword).finally(() => {
-            focusControlWindow()
+          setLoading(true)
+          moveControlWindow(controlWindowId).then(() => {
+            refreshWindows(controlWindowId, submitedKeyword).finally(() => {
+              focusControlWindow()
+            })
           })
         }
       }
     }
-  }, [control, controlWindowId, focusControlWindow, moveControlWindow, refreshWindows, submitedKeyword])
+  }, [control, controlWindowId, focusControlWindow, moveControlWindow, refreshWindows, setLoading, submitedKeyword])
 
   useEffect(function focusControlWindowAfterLoad() {
     focusControlWindow()
