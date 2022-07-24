@@ -57,11 +57,9 @@ export default function OmniboxEvent() {
           return f.row
         })
           .flat()
-          .find(site_opt => {
-            if (site_opt.url_pattern.indexOf(site) !== -1) {
-              return site_opt
-            }
-          })
+          .find(site_opt => (
+            site_opt.url_pattern.indexOf(site) !== -1
+          ))
 
         const keyword = remain_text.join(' ')
 
