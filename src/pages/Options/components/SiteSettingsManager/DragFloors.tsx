@@ -173,6 +173,19 @@ export default function DragFloors() {
                               }}
                             >
                               <SettingItem className={s.FloorSettingItem} disableMargin>
+                                <input
+                                  value={setting_floor.name}
+                                  onChange={(el) => {
+                                    el.preventDefault()
+                                    const new_name = el.target.value
+                                    submitChange(
+                                      update(floor_row, {
+                                        ...setting_floor,
+                                        name: new_name
+                                      }, siteSettings)
+                                    )
+                                  }}
+                                />
                                 <div className={s.DragFloorInner}>
                                   <div {...provided.dragHandleProps}>
                                     <div className={s.Handler}>
@@ -188,7 +201,7 @@ export default function DragFloors() {
                                     isEditMode={edit !== null}
                                   />
                                 </div>
-                                <div className={`${s.Floor} ${floor_snapshot.isDraggingOver ? s.isDraggingOver : ''}`}>{siteSettings.length - (floor_row + 1) + 1}F</div>
+                                {/* <div className={`${s.Floor} ${floor_snapshot.isDraggingOver ? s.isDraggingOver : ''}`}>{siteSettings.length - (floor_row + 1) + 1}F</div> */}
                               </SettingItem>
                             </div>
                           )}
