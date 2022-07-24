@@ -21,6 +21,8 @@
   font-size: 14px;
   line-height: 1em;
   height: 1em;
+
+  --interval-top: 7px;
 }
 .Height {
   height: 0px;
@@ -28,13 +30,13 @@
   background: red;
   position: absolute;
   left: 50%;
-  top: 0.5em;
+  top: var(--interval-top);
 }
 
 .FloorTextInner {
   display: block;
   position: absolute;
-  top: calc(-1em + 0.5em);
+  top: calc(-1em + var(--interval-top));
   left: calc(50% + 0em);
   word-break: keep-all;
 

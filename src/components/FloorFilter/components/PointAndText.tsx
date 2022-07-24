@@ -36,10 +36,7 @@ export default forwardRef<number, Props>(function PointAndText({
 
   return (
     <>
-      <div
-        className={s.FloorTextLayout}
-        // style={{ height: `${max_height}px` }}
-      >
+      <div className={s.FloorTextLayout}>
         {floorIndexList.map(floor_idx => {
           return (
             <FloorText
@@ -105,9 +102,13 @@ const FloorText = forwardRef<number, FloorTextProps>(({
     calcHeight(deg(angle), offsetWidth)
   ), [offsetWidth])
 
+  const interval_top = 7
+
   useEffect(() => {
     if (typeof ref === 'function') {
-      ref(height)
+      ref(height + interval_top)
+    } else if (ref) {
+      ref.current = height + interval_top
     }
   }, [height, ref])
 
@@ -117,10 +118,11 @@ const FloorText = forwardRef<number, FloorTextProps>(({
       style={{
         left: `calc(${floorIdx} * ${intervalWidth} - ( var(--text-width) / 2 ))`,
         '--deg': `${angle}deg`,
+        '--interval-top': `${interval_top}px`
       } as CSSProperties}
     >
-      <div className={s.Height} style={{ height: `${height}px` }}></div>
-      <span ref={innerTextRef} className={s.FloorTextInner}>{ text }</span>
+      {/* <div className={s.Height} style={{ height: `${height}px` }}></div> */}
+      <span ref={innerTextRef} className={s.FloorTextInner}>{ text.length ? text : `${floorIdx + 1}F` }</span>
     </div>
   )
 })

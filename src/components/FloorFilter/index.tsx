@@ -115,13 +115,13 @@ export default function FloorFilter({
   const PointAndText_height_ref = useRef<number>(null)
 
 
-  const [ex_height, setHeight] = useState(
+  const [text_height, setTextHeight] = useState(
     PointAndText_height_ref.current || 0
   )
 
   // eslint-disable-next-line
   useEffect(() => {
-    setHeight(
+    setTextHeight(
       PointAndText_height_ref.current || 0
     )
   })
@@ -130,7 +130,7 @@ export default function FloorFilter({
     <div
       ref={ref}
       className={`${s.FloorFilter} ${is_dragging ? s.isDragging : ''}`}
-      style={{ '--ex-height': `${ex_height}px` } as CSSProperties}
+      style={{ '--text-height': `${text_height}px` } as CSSProperties}
     >
       <Selected
         startPoint={0}
