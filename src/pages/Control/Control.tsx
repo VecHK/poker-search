@@ -211,18 +211,22 @@ const ControlApp: React.FC<{
         <>
           {searchFormNode}
 
-          <ArrowButtonGroup onClick={changeRow} />
+          <div className="button-group-wrapper">
+            <ArrowButtonGroup onClick={changeRow} />
+          </div>
 
-          <FloorFilter
-            siteSettings={base.preferences.site_settings}
-            selectedFloors={selected_floor_idx}
-            totalFloor={base.preferences.site_settings.length}
-            onChange={(filtered) => {
-              console.log('filtered onChange', filtered)
-              onSelectedFloorChange(filtered)
-              setSelectedFloorIdx(filtered)
-            }}
-          />
+          <div className="floor-filter-wrapper">
+            <FloorFilter
+              siteSettings={base.preferences.site_settings}
+              selectedFloors={selected_floor_idx}
+              totalFloor={base.preferences.site_settings.length}
+              onChange={(filtered) => {
+                console.log('filtered onChange', filtered)
+                onSelectedFloorChange(filtered)
+                setSelectedFloorIdx(filtered)
+              }}
+            />
+          </div>
         </>
       )}
     </main>

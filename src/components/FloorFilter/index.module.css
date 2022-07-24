@@ -5,7 +5,6 @@
 .FloorFilter {
   width: calc(100% - (var(--point-size) / 2 * 2));
   margin: 0;
-  margin-top: 15px;
   position: relative;
 
   --active-color: #3a3a45;

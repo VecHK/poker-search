@@ -5,6 +5,8 @@ html, body {
   overflow: hidden;
 }
 .control-main {
+  --interval: 12px;
+
   background-color: rgb(245, 245, 245);
   box-sizing: border-box;
   padding: 0 40px;
@@ -19,6 +21,15 @@ html, body {
   align-items: center;
   justify-content: center;
   background-repeat: repeat;
+}
+
+.button-group-wrapper {
+  margin-top: var(--interval);
+}
+
+.floor-filter-wrapper {
+  width: 100%;
+  margin-top: var(--interval);
 }
 
 .filtered-floor-tips.show {
