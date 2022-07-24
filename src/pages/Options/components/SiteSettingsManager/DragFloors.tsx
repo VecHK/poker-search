@@ -1,5 +1,5 @@
 import { all, compose, equals, insert, move, nth, remove, update } from 'ramda'
-import React, { ReactNode, useContext } from 'react'
+import React, { useContext } from 'react'
 import {
   DragDropContext,
   Droppable,
@@ -9,7 +9,6 @@ import {
   NotDraggingStyle,
   DraggableLocation
 } from 'react-beautiful-dnd'
-import { CSSTransition, TransitionGroup } from 'react-transition-group'
 
 import { SiteSettings } from '../../../../preferences/site-settings'
 import SettingItem from '../SettingItem'
@@ -20,33 +19,9 @@ import { ManagerContext } from '.'
 import useMaxWindowPerLine from '../../../../hooks/useMaxWindowPerLine'
 
 import s from './DragFloors.module.css'
+import TransitionList from './TransitionList'
 
 export const FLOOR_TRANSITION_DURATION = 382
-
-function TransitionList({ nodes }: { nodes: Array<{ id: string; node: ReactNode }> }) {
-  return (
-    <TransitionGroup>
-      {nodes.map((e) => {
-        return (
-          <CSSTransition
-            key={e.id}
-            timeout={FLOOR_TRANSITION_DURATION}
-            classNames={{
-              enter: s.TransitionItemEnter,
-              enterActive: s.TransitionItemEnterActive,
-              enterDone: s.TransitionItemEnterDone,
-              exit: s.TransitionItemExit,
-              exitActive: s.TransitionItemExitActive,
-              exitDone: s.TransitionItemExitDone,
-            }}
-          >
-            <div className={s.TransitionItem}>{e.node}</div>
-          </CSSTransition>
-        )
-      })}
-    </TransitionGroup>
-  )
-}
 
 const getFloorListStyle = (isDraggingOver: boolean): React.CSSProperties => ({
   // background: isDraggingOver ? "lightblue" : "lightgrey",
@@ -156,6 +131,8 @@ export default function DragFloors() {
     }
   })
 
+  const list_item_margin_bottom = 12
+
   return (
     <div className={s.DragFloors}>
       <DragDropContext
@@ -170,6 +147,8 @@ export default function DragFloors() {
                 style={getFloorListStyle(floor_snapshot.isDraggingOver)}
               >
                 <TransitionList
+                  duration={FLOOR_TRANSITION_DURATION}
+                  marginBottom={list_item_margin_bottom}
                   nodes={
                     siteSettings.map((setting_floor, floor_row) => ({
                       id: setting_floor.id,
@@ -185,10 +164,13 @@ export default function DragFloors() {
                               ref={provided.innerRef}
                               {...provided.draggableProps}
                               className={s.DragFloorDnD}
-                              style={getItemStyle(
-                                snapshot.isDragging,
-                                provided.draggableProps.style
-                              )}
+                              style={{
+                                ...getItemStyle(
+                                  snapshot.isDragging,
+                                  provided.draggableProps.style
+                                ),
+                                marginBottom: `${list_item_margin_bottom}px`,
+                              }}
                             >
                               <SettingItem className={s.FloorSettingItem} disableMargin>
                                 <div className={s.DragFloorInner}>

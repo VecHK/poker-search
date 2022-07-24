@@ -91,7 +91,7 @@ function useAdjustMarginCenter(enable: boolean) {
   return [ref, (timeout: number) => adjust(ref, timeout)] as const
 }
 
-function useKey() {
+function useRandomKey() {
   const [key, setKey] = useState(`${Date.now()}`)
   return [key, function updateKey() { setKey(`${Date.now()}`) }] as const
 }
@@ -103,7 +103,7 @@ export default function OptionsPage() {
   const [limit, setLimit] = useState<Limit>()
   const [platform, setPlatform] = useState<Base['platform']>()
   const [failure, setFailure] = useState<Error>()
-  const [managerKey, refreshManagerKey] = useKey()
+  const [managerKey, refreshManagerKey] = useRandomKey()
 
   const isReady = Boolean(preferences) && Boolean(limit) && Boolean(platform)
 

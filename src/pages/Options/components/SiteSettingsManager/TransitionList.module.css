@@ -1,0 +1,36 @@
+.TransitionItem {
+  --timing: 382ms;
+  --inner-height: 0px;
+  --margin-bottom: 0px;
+
+  --total-height: calc(
+    var(--inner-height) +
+    var(--margin-bottom)
+  );
+}
+.TransitionItemEnter {
+  transition: opacity var(--timing), height var(--timing);
+  height: 0;
+  opacity: 0;
+}
+.TransitionItemEnterActive {
+  height: var(--total-height);
+  opacity: 1;
+}
+.TransitionItemEnterDone {
+  height: unset;
+  opacity: 1;
+}
+.TransitionItemExit {
+  transition: opacity var(--timing), height var(--timing);
+  height: var(--total-height);
+}
+.TransitionItemExitActive {
+  opacity: 0;
+  height: 0;
+}
+.TransitionItemExitDone {
+  opacity: 0;
+  height: 0;
+  display: none;
+}
