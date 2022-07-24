@@ -5,7 +5,7 @@
   --footer-shadow-size: 3px;
   --footer-shadow-color: rgba(0, 0, 0, .1);
 
-  --main-padding-horizontal: 30px;
+  --main-padding-horizontal: 40px;
   --main-height: calc(var(--popup-height) - var(--footer-height));
 
   position: absolute;

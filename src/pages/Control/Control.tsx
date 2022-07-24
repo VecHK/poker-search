@@ -1,3 +1,4 @@
+import { compose, equals, prop } from 'ramda'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
 import cfg from '../../config'
@@ -9,21 +10,21 @@ import { MessageEvent } from '../../message'
 
 import getQuery from '../../utils/get-query'
 import { validKeyword } from '../../utils/search'
+import animatingWindow from '../../utils/animating-window'
 
 import useWindowFocus from '../../hooks/useWindowFocus'
-import useCurrentWindow from '../../hooks/useCurrentWindow'
 import useControl from '../../hooks/useControl'
 import useReFocusMessage from '../../hooks/useReFocusMessage'
-import usePreventEnterFullScreen from '../../hooks/usePreventEnterFullScreen'
 
 import Loading from '../../components/Loading'
 import SearchForm from '../../components/SearchForm'
 import ArrowButtonGroup from './components/ArrowGroup'
+import FloorFilter from '../../components/FloorFilter'
+
+import BGSrc from '../../assets/control-bg.png'
 
 import './Control.css'
-import FloorFilter from './components/FloorFilter'
-import { SiteSettingFloorID } from '../../preferences'
-import { compose, prop } from 'ramda'
+import useSelectedFloorIdx from '../../components/FloorFilter/useSelectedFloorIdx'
 
 function useChangeRowShortcutKey(props: {
   onPressUp: () => void
@@ -44,38 +45,16 @@ function useChangeRowShortcutKey(props: {
   }, [props])
 }
 
-function toSelectedFloorIds(
-  floor_ids: SiteSettingFloorID[],
-  filtered_list: SiteSettingFloorID[],
-): SiteSettingFloorID[] {
-  return floor_ids.filter((id) => {
-    return filtered_list.indexOf(id) === -1
-  })
-}
-
-function toSelectedFloorIdx(
-  floor_ids: SiteSettingFloorID[],
-  filtered_list: SiteSettingFloorID[],
-): number[] {
-  return toSelectedFloorIds(floor_ids, filtered_list).map((id) => {
-    return floor_ids.indexOf(id)
-  })
-}
-
 const ControlApp: React.FC<{
   base: Base
+  controlWindowId: WindowID
   onSelectedFloorChange: (f: number[]) => void
-}> = ({ base, onSelectedFloorChange }) => {
+}> = ({ base, controlWindowId, onSelectedFloorChange }) => {
   const [keywordInput, setKeywordInput] = useState('')
   const [submitedKeyword, submitKeyword] = useState<string | false>(false)
 
-  const s_ids = base.preferences.site_settings.map(s => s.id)
-  const [selected_floor_idx, setSelectedFloorIdx] = useState<number[]>(
-    toSelectedFloorIdx(
-      s_ids,
-      base.init_filtered_floor
-    )
-  )
+  const [selected_floor_idx, setSelectedFloorIdx] = useSelectedFloorIdx(base)
+
   const [disable_search, setDisableSearch] = useState<boolean>(
     !base.filtered_site_settings.length
   )
@@ -85,27 +64,22 @@ const ControlApp: React.FC<{
 
   const windowIsFocus = useWindowFocus(true)
 
-  const controlWindow = useCurrentWindow()
-  const controlWindowId = controlWindow?.windowId
-
   const {
     isLoading,
+    setLoading,
     control,
     setControl,
+    cleanControl,
     refreshWindows,
     changeRow: controlChangeRow,
     controlProcessing,
   } = useControl(base)
 
-  usePreventEnterFullScreen(controlWindow?.windowId)
+  const focusControlWindow = useCallback(async () => {
+    return chrome.windows.update(controlWindowId, { focused: true })
+  }, [controlWindowId])
 
   useReFocusMessage(controlWindowId, control)
-
-  const focusControlWindow = useCallback(async () => {
-    if (controlWindowId !== undefined) {
-      return chrome.windows.update(controlWindowId, { focused: true })
-    }
-  }, [controlWindowId])
 
   const moveControlWindow = useCallback(async (id: WindowID) => {
     const [ top, left ] = calcControlWindowPos(
@@ -113,7 +87,24 @@ const ControlApp: React.FC<{
       base.layout_height,
       base.limit
     )
-    await chrome.windows.update(id, { top, left })
+    const win = await chrome.windows.get(id)
+
+    const not_move = equals(
+      [win.top, win.left, win.height],
+      [top, left, base.control_window_height]
+    )
+
+    if (!not_move) {
+      await animatingWindow(id, 382, {
+        top: win.top,
+        left: win.left,
+        height: win.height,
+      }, {
+        top,
+        left,
+        height: base.control_window_height,
+      })
+    }
   }, [base.control_window_height, base.layout_height, base.limit])
 
   function changeRow(act: 'previus' | 'next') {
@@ -126,17 +117,14 @@ const ControlApp: React.FC<{
 
   useEffect(function openSearchWindows() {
     console.log('openSearchWindows', controlWindowId, submitedKeyword)
-    if (controlWindowId !== undefined) {
-      if (submitedKeyword !== false) {
-        if (control === null) {
-          moveControlWindow(controlWindowId)
-          refreshWindows(controlWindowId, submitedKeyword).finally(() => {
-            focusControlWindow()
-          })
-        }
+    if (submitedKeyword !== false) {
+      if (control === null) {
+        refreshWindows(controlWindowId, submitedKeyword).finally(() => {
+          focusControlWindow()
+        })
       }
     }
-  }, [control, controlWindowId, focusControlWindow, moveControlWindow, refreshWindows, submitedKeyword])
+  }, [cleanControl, control, controlWindowId, focusControlWindow, refreshWindows, submitedKeyword])
 
   useEffect(function focusControlWindowAfterLoad() {
     focusControlWindow()
@@ -159,29 +147,29 @@ const ControlApp: React.FC<{
 
       controlProcessing(async () => {
         console.log('onSubmit', newSearchKeyword)
-        if (control === null) {
-          submitKeyword(newSearchKeyword)
-        } else {
+        setLoading(true)
+        if (control) {
+          await cleanControl(control)
+        }
+        moveControlWindow(controlWindowId).then(() => {
           setControl(() => {
             // 写成这样是处理提交同样搜索词的时候的处理
             // 因为是用 useEffect 来判断的，如果是相同的值就不会触发更新了
             submitKeyword(newSearchKeyword)
             return null
           })
-        }
+        })
       })
     }
-  }, [control, controlProcessing, setControl])
+  }, [cleanControl, control, controlProcessing, controlWindowId, moveControlWindow, setControl, setLoading])
 
   useEffect(function receiveChangeSearchMessage() {
     const [ applyReceive, cancelReceive ] = MessageEvent('ChangeSearch', (new_keyword) => {
       control?.cancelAllEvent()
 
-      if (controlWindowId !== undefined) {
-        chrome.windows.update(controlWindowId, { focused: true }).then(() => {
-          handleSubmit(new_keyword)
-        })
-      }
+      chrome.windows.update(controlWindowId, { focused: true }).then(() => {
+        handleSubmit(new_keyword)
+      })
     })
     applyReceive()
 
@@ -218,22 +206,27 @@ const ControlApp: React.FC<{
   }, [disable_search, handleSubmit, keywordInput, windowIsFocus])
 
   return (
-    <main className="control-main">
+    <main className="control-main" style={{ background: `url(${BGSrc})` }}>
       {isLoading ? <Loading /> : (
         <>
           {searchFormNode}
 
-          <ArrowButtonGroup onClick={changeRow} />
+          <div className="button-group-wrapper">
+            <ArrowButtonGroup onClick={changeRow} />
+          </div>
 
-          <FloorFilter
-            selectedFloors={selected_floor_idx}
-            totalFloor={base.preferences.site_settings.length}
-            onChange={(filtered) => {
-              console.log('filtered onChange', filtered)
-              onSelectedFloorChange(filtered)
-              setSelectedFloorIdx(filtered)
-            }}
-          />
+          <div className="floor-filter-wrapper">
+            <FloorFilter
+              siteSettings={base.preferences.site_settings}
+              selectedFloors={selected_floor_idx}
+              totalFloor={base.preferences.site_settings.length}
+              onChange={(filtered) => {
+                console.log('filtered onChange', filtered)
+                onSelectedFloorChange(filtered)
+                setSelectedFloorIdx(filtered)
+              }}
+            />
+          </div>
         </>
       )}
     </main>

@@ -29,15 +29,6 @@ export default function useControl(base: Base) {
     }
   }, [])
 
-  useEffect(function controlEffect() {
-    if (control !== null) {
-      control.applyAllEvent()
-      return () => {
-        cleanControl(control)
-      }
-    }
-  }, [cleanControl, control])
-
   useEffect(function closeAllWindowBeforeUnload() {
     const handler = () => {
       stop_creating_signal.trigger()
@@ -96,6 +87,7 @@ export default function useControl(base: Base) {
     setLoading,
     control,
     setControl,
+    cleanControl,
     refreshWindows,
     controlProcessing,
     changeRow: useChangeRow(base, control),

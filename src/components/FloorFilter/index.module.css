@@ -5,7 +5,6 @@
 .FloorFilter {
   width: calc(100% - (var(--point-size) / 2 * 2));
   margin: 0;
-  margin-top: 15px;
   position: relative;
 
   --active-color: #3a3a45;
@@ -19,6 +18,7 @@
   --text-height: 14px;
   --text-width: 64px;
   --point-size: 12px;
+  --ex-height: 0px;
 
   --track-height: 5px;
 
@@ -26,6 +26,11 @@
   --TextLayoutTop: calc((var(--point-size) + 4px));
   --PointLayoutTop: 0px;
 
-  height: calc(var(--track-height) + var(--text-height) + var(--point-size));
+  height: calc(
+    var(--track-height) +
+    var(--text-height) +
+    var(--point-size) +
+    var(--ex-height)
+  );
   user-select: none;
 }

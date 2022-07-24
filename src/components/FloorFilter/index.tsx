@@ -1,61 +1,26 @@
 import { compose, range, remove, sort, uniq } from 'ramda'
-import React, { CSSProperties, useCallback, useEffect, useMemo, useState } from 'react'
+import React, { CSSProperties, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+
+import { getSelectedRange, rangeToFloors } from './utils'
 
 import PointAndText from './components/PointAndText'
 import Selected from './components/Selected'
 import useMouseDrag from './hooks/useMouseDrag'
 import useOffsetWidth from './hooks/useOffsetWidth'
+import { SiteSettings } from '../../preferences'
 
 import s from './index.module.css'
-
-function incrementDetecting(p: number, filtered: number[]): number[] {
-  if (filtered.indexOf(p) !== -1) {
-    return [p, ...incrementDetecting(p + 1, filtered)]
-  } else {
-    return []
-  }
-}
-
-type Range = Readonly<[number, number]>
-
-function getSelectedRange(selected_index_list: number[]): Array<Range> {
-  let result: Array<Range> = []
-  let pass: number[] = []
-
-  selected_index_list.forEach((point, idx) => {
-    if (pass.indexOf(idx) === -1) {
-      const detected = incrementDetecting(point, selected_index_list)
-      pass = [...pass, ...detected.map((p) => selected_index_list.indexOf(p))]
-
-      result.push(
-        [ Math.min(...detected),  Math.max(...detected) ] as const
-      )
-    }
-  })
-
-  return result
-}
-
-function rangeToFloors([start, end]: Range) {
-  if (Math.abs(end - start) === 0) {
-    return [start]
-  } else {
-    if (end > start) {
-      return range(start, end + 1)
-    } else {
-      return range(end, start + 1)
-    }
-  }
-}
 
 type SelectedFloors = number[]
 type FloorFilterProps = {
   selectedFloors: SelectedFloors
   totalFloor: number
+  siteSettings: SiteSettings
   onChange: (fs: SelectedFloors) => void
 }
 
 export default function FloorFilter({
+  siteSettings,
   selectedFloors,
   totalFloor,
   onChange,
@@ -147,8 +112,26 @@ export default function FloorFilter({
     }
   }, [drag_end_point, drag_start_point, selectedFloors, getDraggingSelectedFloors, is_dragging])
 
+  const PointAndText_height_ref = useRef<number>(null)
+
+
+  const [text_height, setTextHeight] = useState(
+    PointAndText_height_ref.current || 0
+  )
+
+  // eslint-disable-next-line
+  useEffect(() => {
+    setTextHeight(
+      PointAndText_height_ref.current || 0
+    )
+  })
+
   return (
-    <div ref={ref} className={`${s.FloorFilter} ${is_dragging ? s.isDragging : ''}`}>
+    <div
+      ref={ref}
+      className={`${s.FloorFilter} ${is_dragging ? s.isDragging : ''}`}
+      style={{ '--text-height': `${text_height}px` } as CSSProperties}
+    >
       <Selected
         startPoint={0}
         endPoint={0}
@@ -168,8 +151,14 @@ export default function FloorFilter({
       })}
 
       <PointAndText
+        ref={PointAndText_height_ref}
         highlightList={dragging_selected_floors}
-        floors={floors}
+        textList={
+          siteSettings.map(f => {
+            return f.name
+          })
+        }
+        floorIndexList={floors}
         intervalWidth={interval_width_css}
         onMouseDownPoint={(mouse_start, floor) => {
           if (isSelected(floor)) {

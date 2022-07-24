@@ -13,13 +13,38 @@
   cursor: default;
 
   width: var(--text-width);
-  text-align: center;
+  text-align: left;
 
   font-family: Arial, Helvetica, sans-serif;
   font-weight: 600;
   color: var(--unactive-color);
   font-size: 14px;
   line-height: 1em;
+  height: 1em;
+
+  --interval-top: 7px;
+}
+.Height {
+  height: 0px;
+  width: 1px;
+  background: red;
+  position: absolute;
+  left: 50%;
+  top: var(--interval-top);
+}
+
+.FloorTextInner {
+  display: block;
+  position: absolute;
+  top: calc(-1em + var(--interval-top));
+  left: calc(50% + 0em);
+  word-break: keep-all;
+
+  transform: rotate(var(--deg));
+  transform-origin: bottom left;
+
+  transition: transform 382ms, left 382ms;
+  height: 1em;
 }
 
 .FloorPointLayout {

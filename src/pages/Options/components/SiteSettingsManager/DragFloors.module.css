@@ -6,8 +6,6 @@
 }
 
 .DragFloorDnD {
-  /* padding: 10px 0; */
-  margin-bottom: 12px;
 }
 
 ._1FTips {
@@ -20,11 +18,24 @@
   position: relative;
 }
 
+.FloorSettingName:focus {
+  border-bottom: solid 1px #3a3a45;
+}
+.FloorSettingName {
+  border: 0;
+  border-bottom: solid 1px rgba(0, 0, 0, 0.2);
+  color: #3a3a45;
+  outline: none;
+  font-size: 14px;
+  padding-bottom: 4px;
+}
+
 .DragFloorInner {
   display: flex;
   align-items: center;
   width: 100%;
   position: relative;
+  margin-top: 8px;
 }
 
 .Floor.isDraggingOver {
@@ -74,43 +85,4 @@
   width: 14px;
   background-color: rgba(0, 0, 0, 0.3);
   margin: 2px 0;
-}
-
-.TransitionItem {
-  --timing: 382ms;
-  --inner-height: 160px;
-  --padding-vertical: 15px;
-  --margin-bottom: 12px;
-
-  --total-height: calc(
-    var(--inner-height) +
-    (var(--padding-vertical) * 2) +
-    var(--margin-bottom)
-  );
-}
-.TransitionItemEnter {
-  transition: opacity var(--timing), height var(--timing);
-  height: 0;
-  opacity: 0;
-}
-.TransitionItemEnterActive {
-  height: var(--total-height);
-  opacity: 1;
-}
-.TransitionItemEnterDone {
-  height: unset;
-  opacity: 1;
-}
-.TransitionItemExit {
-  transition: opacity var(--timing), height var(--timing);
-  height: var(--total-height);
-}
-.TransitionItemExitActive {
-  opacity: 0;
-  height: 0;
-}
-.TransitionItemExitDone {
-  opacity: 0;
-  height: 0;
-  display: none;
 }

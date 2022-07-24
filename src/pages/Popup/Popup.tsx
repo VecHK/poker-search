@@ -19,7 +19,7 @@ import AccessModeFloor from './floors/2-AccessMode'
 
 import './Popup.css'
 
-export default function PopupPage () {
+export default function PopupPage() {
   const [currentFloor, setFloor] = useState(0)
 
   const [ switchState, setSwitchState ] = useState<SwitchState>('NORMAL')

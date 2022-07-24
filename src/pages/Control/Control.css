@@ -5,16 +5,31 @@ html, body {
   overflow: hidden;
 }
 .control-main {
+  --interval: 12px;
+
   background-color: rgb(245, 245, 245);
   box-sizing: border-box;
-  padding: 0 30px;
+  padding: 0 40px;
   padding-top: 4px;
   width: 100vw;
   height: 100vh;
+
+  min-height: 182px;
+
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  background-repeat: repeat;
+}
+
+.button-group-wrapper {
+  margin-top: var(--interval);
+}
+
+.floor-filter-wrapper {
+  width: 100%;
+  margin-top: var(--interval);
 }
 
 .filtered-floor-tips.show {

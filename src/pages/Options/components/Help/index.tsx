@@ -1,4 +1,7 @@
 import React from 'react'
+
+import cfg from '../../../../config'
+
 import { ChromeLink } from '../../../../components/ChromeLink'
 import ShortcutsKey from '../../../../components/Shortcut'
 import SettingItem from '../SettingItem'
@@ -27,11 +30,11 @@ export default function Help() {
 
         <p></p>
         <p>
-          添加新网站时，在 URL 中把想要搜索的关键字替换为 <b style={{ color: '#d22a44' }}>%poker%</b><br />
+          添加新网站时，在 URL 中把想要搜索的关键字替换为 <b style={{ color: '#d22a44' }}>{cfg.KEYWORD_REPLACEHOLDER}</b><br />
           例：<br />
-          https://www.google.com/search?q=<b style={{ color: '#d22a44' }}>%poker%</b><br />
-          https://www.youtube.com/results?search_query=<b style={{ color: '#d22a44' }}>%poker%</b><br />
-          https://github.com/search?q=<b style={{ color: '#d22a44' }}>%poker%</b><br />
+          https://www.google.com/search?q=<b style={{ color: '#d22a44' }}>{cfg.KEYWORD_REPLACEHOLDER}</b><br />
+          https://www.youtube.com/results?search_query=<b style={{ color: '#d22a44' }}>{cfg.KEYWORD_REPLACEHOLDER}</b><br />
+          https://github.com/search?q=<b style={{ color: '#d22a44' }}>{cfg.KEYWORD_REPLACEHOLDER}</b><br />
         </p>
       </section>
     </SettingItem>

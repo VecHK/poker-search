@@ -1,11 +1,12 @@
 import React from 'react'
 import { render } from 'react-dom'
 
-import Popup from './Popup'
+import PopupEntrance from './PopupEntrance'
+
 import './index.css'
 
 render(
-  React.createElement(Popup, {}),
+  React.createElement(PopupEntrance, {}),
   window.document.querySelector('#app-container')
 )
 

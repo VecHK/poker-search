@@ -14,17 +14,17 @@ import { canUseRefocusWindow } from '../../can-i-use'
 import usePreferences, { requireCloseControlWindowTips } from './hooks/usePreferences'
 import useControlWindowExists from '../../hooks/useControlWindowExists'
 
-import SettingHeader from './Component/SettingHeader'
-import SiteSettingsManager from './Component/SiteSettingsManager'
+import SettingHeader from './components/SettingHeader'
+import SiteSettingsManager from './components/SiteSettingsManager'
 import Loading from '../../components/Loading'
-import Failure from './Component/Failure'
-import ImportExport from './Component/ImportExport'
+import Failure from './components/Failure'
+import ImportExport from './components/ImportExport'
 
-import Help from './Component/Help'
-import About from './Component/About'
-import SettingItem from './Component/SettingItem'
-import SettingSwitch from './Component/SettingSwitch'
-import SettingItemTitle from './Component/SettingItem/SettingItemTitle'
+import Help from './components/Help'
+import About from './components/About'
+import SettingItem from './components/SettingItem'
+import SettingSwitch from './components/SettingSwitch'
+import SettingItemTitle from './components/SettingItem/SettingItemTitle'
 
 import s from './Options.module.css'
 
@@ -91,7 +91,7 @@ function useAdjustMarginCenter(enable: boolean) {
   return [ref, (timeout: number) => adjust(ref, timeout)] as const
 }
 
-function useKey() {
+function useRandomKey() {
   const [key, setKey] = useState(`${Date.now()}`)
   return [key, function updateKey() { setKey(`${Date.now()}`) }] as const
 }
@@ -103,7 +103,7 @@ export default function OptionsPage() {
   const [limit, setLimit] = useState<Limit>()
   const [platform, setPlatform] = useState<Base['platform']>()
   const [failure, setFailure] = useState<Error>()
-  const [managerKey, refreshManagerKey] = useKey()
+  const [managerKey, refreshManagerKey] = useRandomKey()
 
   const isReady = Boolean(preferences) && Boolean(limit) && Boolean(platform)
 
