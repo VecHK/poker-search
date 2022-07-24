@@ -19,6 +19,7 @@
   --text-height: 14px;
   --text-width: 64px;
   --point-size: 12px;
+  --ex-height: 0px;
 
   --track-height: 5px;
 
@@ -26,6 +27,11 @@
   --TextLayoutTop: calc((var(--point-size) + 4px));
   --PointLayoutTop: 0px;
 
-  height: calc(var(--track-height) + var(--text-height) + var(--point-size));
+  height: calc(
+    var(--track-height) +
+    var(--text-height) +
+    var(--point-size) +
+    var(--ex-height)
+  );
   user-select: none;
 }

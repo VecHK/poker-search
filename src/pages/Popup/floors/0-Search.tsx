@@ -110,6 +110,7 @@ function SearchLayout({ base, current_window_id, onSelectedFloorChange }: {
       <div className="search-interval"></div>
 
       <FloorFilter
+        siteSettings={base.preferences.site_settings}
         selectedFloors={selected_floor_idx}
         totalFloor={base.preferences.site_settings.length}
         onChange={(filtered) => {
