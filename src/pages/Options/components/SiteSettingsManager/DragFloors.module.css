@@ -18,11 +18,24 @@
   position: relative;
 }
 
+.FloorSettingName:focus {
+  border-bottom: solid 1px #3a3a45;
+}
+.FloorSettingName {
+  border: 0;
+  border-bottom: solid 1px rgba(0, 0, 0, 0.2);
+  color: #3a3a45;
+  outline: none;
+  font-size: 14px;
+  padding-bottom: 4px;
+}
+
 .DragFloorInner {
   display: flex;
   align-items: center;
   width: 100%;
   position: relative;
+  margin-top: 8px;
 }
 
 .Floor.isDraggingOver {

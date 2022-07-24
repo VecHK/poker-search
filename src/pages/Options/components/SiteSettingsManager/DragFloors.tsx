@@ -174,6 +174,8 @@ export default function DragFloors() {
                             >
                               <SettingItem className={s.FloorSettingItem} disableMargin>
                                 <input
+                                  className={s.FloorSettingName}
+                                  placeholder="请输入楼层名"
                                   value={setting_floor.name}
                                   onChange={(el) => {
                                     el.preventDefault()
@@ -201,7 +203,7 @@ export default function DragFloors() {
                                     isEditMode={edit !== null}
                                   />
                                 </div>
-                                {/* <div className={`${s.Floor} ${floor_snapshot.isDraggingOver ? s.isDraggingOver : ''}`}>{siteSettings.length - (floor_row + 1) + 1}F</div> */}
+                                <div className={`${s.Floor} ${floor_snapshot.isDraggingOver ? s.isDraggingOver : ''}`}>{siteSettings.length - (floor_row + 1) + 1}F</div>
                               </SettingItem>
                             </div>
                           )}
