@@ -24,7 +24,8 @@
 
 .SettingItemInner {
   box-sizing: border-box;
-  padding: 15px 18px;
+  padding: 10px 18px;
+  padding-bottom: 20px;
   background-color: white;
 
   border-radius: 2px;
