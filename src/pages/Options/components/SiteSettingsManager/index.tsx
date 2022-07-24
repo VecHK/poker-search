@@ -116,7 +116,7 @@ export default function SiteSettingsManager({
 
   const [inner_settings, setInnerSettings] = useState([
     ...outter_settings,
-    generateSiteSettingFloor([], 'N/A')
+    generateSiteSettingFloor([], '')
   ])
 
   useEffect(() => {
@@ -133,7 +133,7 @@ export default function SiteSettingsManager({
           setInnerSettings((latestSettings) => {
             return [
               ...latestSettings,
-              generateSiteSettingFloor([], 'N/A')
+              generateSiteSettingFloor([], '')
             ]
           })
         }
