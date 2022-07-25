@@ -1,10 +1,9 @@
 import { always, andThen, inc, map, objOf, pipe, prop, values } from 'ramda'
 import { Memo } from 'vait'
+import cfg from '../../config'
 import { TabID } from './window'
 
 const { ResourceType, RuleActionType } = chrome.declarativeNetRequest
-
-const MOBILE_USER_AGNET = 'Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Mobile/15E148 Safari/604.1'
 
 const [ getID, setID ] = Memo(0)
 const incrementID = pipe(
@@ -20,7 +19,7 @@ const getDNRAction = always({
     {
       header: "user-agent",
       operation: chrome.declarativeNetRequest.HeaderOperation.SET,
-      value: MOBILE_USER_AGNET
+      value: cfg.MOBILE_USER_AGNET
     }
   ]
 })
