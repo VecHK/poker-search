@@ -1,7 +1,7 @@
 import { always, andThen, inc, map, objOf, pipe, prop, values } from 'ramda'
 import { Memo } from 'vait'
-import cfg from '../../config'
-import { TabID } from './window'
+import cfg from '../config'
+import { TabID } from '../core/layout/window'
 
 const { ResourceType, RuleActionType } = chrome.declarativeNetRequest
 
@@ -13,11 +13,11 @@ const incrementID = pipe(
   getID,
 )
 
-const getDNRAction = always({
+export const getMobileUAHeaderAction = always({
   type: RuleActionType['MODIFY_HEADERS'],
   requestHeaders: [
     {
-      header: "user-agent",
+      header: 'user-agent',
       operation: chrome.declarativeNetRequest.HeaderOperation.SET,
       value: cfg.MOBILE_USER_AGNET
     }
@@ -31,7 +31,7 @@ const getRule = (tabIds: TabID[]) => ({
     tabIds,
     resourceTypes: values(ResourceType)
   },
-  action: getDNRAction()
+  action: getMobileUAHeaderAction()
 })
 
 const getSessionRuleIds = pipe(

@@ -5,7 +5,7 @@ import { calcRealPos } from './pos'
 import { isCurrentRow } from './matrix'
 import { renderMatrix } from './render'
 import { Signal } from 'vait'
-import { removeAllFakeUARules, setFakeUA } from './fake-ua'
+import { removeAllFakeUARules, setFakeUA } from '../../utils/fake-ua'
 
 type PlainUnit = null
 type Unit = PlainUnit | {
