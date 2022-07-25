@@ -3,29 +3,25 @@ import { Memo } from 'vait'
 import cfg from '../config'
 import { TabID } from '../core/layout/window'
 
+const arrayOf = <T>(v: T) => [ v ]
+
 const { ResourceType, RuleActionType } = chrome.declarativeNetRequest
 
 const [ getID, setID ] = Memo(0)
-const incrementID = pipe(
-  getID,
-  inc,
-  setID,
-  getID,
-)
+const incrementID = pipe( getID, inc )
+const generateID = pipe( incrementID, setID, getID )
 
 export const getMobileUAHeaderAction = always({
   type: RuleActionType['MODIFY_HEADERS'],
-  requestHeaders: [
-    {
-      header: 'user-agent',
-      operation: chrome.declarativeNetRequest.HeaderOperation.SET,
-      value: cfg.MOBILE_USER_AGNET
-    }
-  ]
+  requestHeaders: arrayOf({
+    header: 'user-agent',
+    operation: chrome.declarativeNetRequest.HeaderOperation.SET,
+    value: cfg.MOBILE_USER_AGNET
+  })
 })
 
-const getRule = (tabIds: TabID[]) => ({
-  id: incrementID(),
+const createTabsRule = (tabIds: TabID[]) => ({
+  id: generateID(),
   priority: 1,
   condition: {
     tabIds,
@@ -33,21 +29,19 @@ const getRule = (tabIds: TabID[]) => ({
   },
   action: getMobileUAHeaderAction()
 })
+const createTabRules = pipe( (v: TabID) => v, arrayOf, createTabsRule, arrayOf )
 
-const getSessionRuleIds = pipe(
-  chrome.declarativeNetRequest.getSessionRules,
-  andThen(
-    map( prop('id') )
-  ),
+export const setFakeUA = pipe(
+  createTabRules,
+  objOf('addRules'),
+  chrome.declarativeNetRequest.updateSessionRules,
 )
 
-export async function setFakeUA(
-  tabId: TabID
-) {
-  await chrome.declarativeNetRequest.updateSessionRules({
-    addRules: [ getRule([ tabId ]) ]
-  })
-}
+const mapId = map( prop('id') )
+const getSessionRuleIds = pipe(
+  chrome.declarativeNetRequest.getSessionRules,
+  andThen( mapId ),
+)
 
 export const removeAllFakeUARules = pipe(
   getSessionRuleIds,
@@ -56,5 +50,5 @@ export const removeAllFakeUARules = pipe(
       objOf('removeRuleIds'),
       chrome.declarativeNetRequest.updateSessionRules
     )
-  )
+  ),
 )
