@@ -5,6 +5,7 @@ import { calcRealPos } from './pos'
 import { isCurrentRow } from './matrix'
 import { renderMatrix } from './render'
 import { Signal } from 'vait'
+import { removeAllFakeUARules, setFakeUA } from './fake-ua'
 
 type PlainUnit = null
 type Unit = PlainUnit | {
@@ -123,6 +124,8 @@ export async function constructSearchWindowsFast(
   }
   stop_creating_signal.receive(stopCreatingHandler)
 
+  await removeAllFakeUARules()
+
   for (const [row, create_row] of [...create_matrix].reverse().entries()) {
     const new_row: SearchWindowRow = []
     new_matrix.push(new_row)
@@ -144,11 +147,13 @@ export async function constructSearchWindowsFast(
         const [win, p] = OpenSearchWindow(create_opt.url, {
           ...create_opt.window_data
         })
-
         await p
         const windowId = win.getWindowId()
         const tabId = win.getTabId()
         created_window_ids.push(windowId)
+
+        await setFakeUA(tabId)
+
         const { search_option } = create_opt
         const is_debugger_attach = (search_option?.site_option?.access_mode === 'MOBILE-STRONG')
         new_row.push({
