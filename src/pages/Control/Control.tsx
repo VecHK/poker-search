@@ -69,7 +69,7 @@ const ControlApp: React.FC<{
     setLoading,
     control,
     setControl,
-    cleanControl,
+    closeSearchWindows,
     refreshWindows,
     changeRow: controlChangeRow,
     controlProcessing,
@@ -124,7 +124,7 @@ const ControlApp: React.FC<{
         })
       }
     }
-  }, [cleanControl, control, controlWindowId, focusControlWindow, refreshWindows, submitedKeyword])
+  }, [control, controlWindowId, focusControlWindow, refreshWindows, submitedKeyword])
 
   useEffect(function focusControlWindowAfterLoad() {
     focusControlWindow()
@@ -149,7 +149,7 @@ const ControlApp: React.FC<{
         console.log('onSubmit', newSearchKeyword)
         setLoading(true)
         if (control) {
-          await cleanControl(control)
+          await closeSearchWindows(control)
         }
         moveControlWindow(controlWindowId).then(() => {
           setControl(() => {
@@ -161,7 +161,7 @@ const ControlApp: React.FC<{
         })
       })
     }
-  }, [cleanControl, control, controlProcessing, controlWindowId, moveControlWindow, setControl, setLoading])
+  }, [closeSearchWindows, control, controlProcessing, controlWindowId, moveControlWindow, setControl, setLoading])
 
   useEffect(function receiveChangeSearchMessage() {
     const [ applyReceive, cancelReceive ] = MessageEvent('ChangeSearch', (new_keyword) => {

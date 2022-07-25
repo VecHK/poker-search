@@ -19,9 +19,7 @@ export default function useControl(base: Base) {
 
   const [control, setControl] = useState<Control | null>(null)
 
-  const cleanControl = useCallback(async (con: Control) => {
-    con.cancelAllEvent()
-
+  const closeSearchWindows = useCallback(async (con: Control) => {
     if (con.refocus_window_id === undefined) {
       await Promise.all(closeWindows(con.getRegIds()))
     } else {
@@ -29,18 +27,27 @@ export default function useControl(base: Base) {
     }
   }, [])
 
+  useEffect(function searchWindowsEventInit() {
+    if (control !== null) {
+      control.applyAllEvent()
+      return () => {
+        control.cancelAllEvent()
+      }
+    }
+  }, [closeSearchWindows, control])
+
   useEffect(function closeAllWindowBeforeUnload() {
     const handler = () => {
       stop_creating_signal.trigger()
       if (control !== null) {
-        cleanControl(control)
+        closeSearchWindows(control)
       }
     }
     window.addEventListener('beforeunload', handler)
     return () => {
       window.removeEventListener('beforeunload', handler)
     }
-  }, [cleanControl, control, stop_creating_signal])
+  }, [closeSearchWindows, control, stop_creating_signal])
 
   const refreshWindows = useCallback((control_window_id: WindowID, keyword: string) => {
     console.log('refreshWindows')
@@ -87,7 +94,7 @@ export default function useControl(base: Base) {
     setLoading,
     control,
     setControl,
-    cleanControl,
+    closeSearchWindows,
     refreshWindows,
     controlProcessing,
     changeRow: useChangeRow(base, control),
