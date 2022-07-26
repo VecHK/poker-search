@@ -1,5 +1,5 @@
 import { compose, equals, prop } from 'ramda'
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
 
 import cfg from '../../config'
 
@@ -47,12 +47,19 @@ function useChangeRowShortcutKey(props: {
   }, [props])
 }
 
+function toFloorName(left: string) {
+  const [, ..._floor_name] = left
+  const floor_name = _floor_name.join('')
+  return floor_name
+}
+
 const ControlApp: React.FC<{
   base: Base
+  showTips: (t: ReactNode) => void
   controlWindowId: WindowID
   onSelectedFloorChange: (f: number[]) => void
-}> = ({ base, controlWindowId, onSelectedFloorChange }) => {
-  const [keywordInput, setKeywordInput] = useState('')
+}> = ({ base, showTips, controlWindowId, onSelectedFloorChange }) => {
+  const [keywordInput, setKeywordInput] = useState('/test ')
   const [submitedKeyword, submitKeyword] = useState<string | false>(false)
 
   const [selected_floor_idx, setSelectedFloorIdx] = useSelectedFloorIdx(base)
@@ -62,8 +69,7 @@ const ControlApp: React.FC<{
   const trueSelectedFloorIdx = useCallback(() => {
     const [ result, left ] = matchSearchPattern(keywordInput)
     if (result && (left[0] === '/')) {
-      const [, ..._floor_name] = left
-      const floor_name = _floor_name.join('')
+      const floor_name = toFloorName(left)
 
       const idx_list = (
         base.preferences.site_settings.reduce<number[]>((idx_list, f, idx) => {
@@ -234,6 +240,7 @@ const ControlApp: React.FC<{
     if (disable_search) {
       return (
         <SearchForm
+          only_mode={is_floor_search}
           keywordPlaceholder={'请选择至少一层的站点配置'}
           keyword={''}
           setKeyword={() => {}}
@@ -244,6 +251,7 @@ const ControlApp: React.FC<{
     } else {
       return (
         <SearchForm
+          only_mode={is_floor_search}
           keywordPlaceholder={'请输入搜索词'}
           keyword={keywordInput}
           setKeyword={setKeywordInput}
@@ -257,7 +265,7 @@ const ControlApp: React.FC<{
         />
       )
     }
-  }, [disable_search, handleSubmit, keywordInput, windowIsFocus])
+  }, [disable_search, handleSubmit, is_floor_search, keywordInput, windowIsFocus])
 
   return (
     <main className="control-main" style={{ background: `url(${BGSrc})` }}>
@@ -276,7 +284,7 @@ const ControlApp: React.FC<{
               totalFloor={base.preferences.site_settings.length}
               onChange={(filtered) => {
                 if (is_floor_search) {
-                  alert('你现在正在搜索单层，所以无法调整选层条')
+                  showTips(<>你已经限定了<b>{toFloorName(left || '')}</b>，因此现在无法调整楼层</>)
                 } else {
                   console.log('filtered onChange', filtered)
                   onSelectedFloorChange(filtered)

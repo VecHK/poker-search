@@ -75,6 +75,7 @@ function SearchLayout({ base, current_window_id, onSelectedFloorChange }: {
       <div className="search-interval"></div>
 
       <SearchForm
+        only_mode={false}
         keyword={input}
         keywordPlaceholder="请输入搜索词"
         setKeyword={setInput}

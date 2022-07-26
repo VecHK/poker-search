@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { ReactNode, useState } from 'react'
 import { useMemo } from 'react'
 import { useEffect } from 'react'
 import cfg from '../../config'
@@ -26,6 +26,7 @@ function getRevertContainerId(): RevertContainerID {
 }
 
 function useFilteredFloorTips() {
+  const [text, setText] = useState<ReactNode>(null)
   const [show_tips, setTips] = useState<number | false>(false)
 
   useEffect(() => {
@@ -38,15 +39,16 @@ function useFilteredFloorTips() {
   }, [show_tips])
 
   return [
-    function showTips() {
+    function showTips(text: ReactNode) {
+      setText(text)
       setTips(Date.now())
     },
 
     useMemo(() => (
       <div className={`filtered-floor-tips ${show_tips ? 'show' : ''}`}>
-        你可能需要重新提交关键字才能应用新选择的层
+        {text}
       </div>
-    ), [show_tips])
+    ), [show_tips, text])
   ] as const
 }
 
@@ -75,13 +77,14 @@ export default function Entrance() {
         <Control
           base={base}
           controlWindowId={controlWindow.windowId}
+          showTips={showTips}
           onSelectedFloorChange={(selected_idx_list) => {
             const s_ids = base.preferences.site_settings.map(s => s.id)
             const filtered_floor = s_ids.filter((_, idx) => {
               return selected_idx_list.indexOf(idx) === -1
             })
             saveFilteredFloor(filtered_floor).then(() => {
-              showTips()
+              showTips('你可能需要重新提交关键字才能应用新选择的层')
               refreshBase()
             })
           }}
