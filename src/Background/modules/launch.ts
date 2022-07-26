@@ -1,6 +1,6 @@
 import { thunkify } from 'ramda'
 import cfg from '../../config'
-import { createBase, createLayoutInfo, RevertContainerID, selectSiteSettingsByFiltered } from '../../core/base'
+import { createBase, initLayoutInfo, RevertContainerID, selectSiteSettingsByFiltered } from '../../core/base'
 import { getControlWindowHeight } from '../../core/base/control-window-height'
 import { calcControlWindowPos } from '../../core/layout/control-window'
 import { controlIsLaunched, setControlLaunch } from '../../x-state/control-window-launched'
@@ -12,7 +12,7 @@ async function controlBounds() {
     base.init_filtered_floor
   )
 
-  const info = createLayoutInfo(base.environment, base.limit, site_settings)
+  const info = initLayoutInfo(base.environment, base.limit, site_settings)
 
   const control_window_height = getControlWindowHeight(site_settings)
 

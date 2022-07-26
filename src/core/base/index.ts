@@ -18,8 +18,8 @@ export const selectSiteSettingsByFiltered = curry((
   })
 })
 
-export type LayoutInfo = ReturnType<typeof createLayoutInfo>
-export function createLayoutInfo(
+export type LayoutInfo = ReturnType<typeof initLayoutInfo>
+export function initLayoutInfo(
   environment: Environment,
   limit: Limit,
   site_settings: SiteSettings,
@@ -58,28 +58,13 @@ export function createLayoutInfo(
 }
 
 export type RevertContainerID = number | undefined
-export type BaseInfo = {
-  window_height: number
-  window_width: number
-  gap_horizontal: number
-  titlebar_height: number
-}
+
 export type Base = Readonly<{
   environment: Environment
   limit: Limit
   platform: chrome.runtime.PlatformInfo,
-  // info: BaseInfo,
+
   preferences: Preferences,
-
-  // search_matrix: SearchMatrix
-  // layout_width: number
-  // layout_height: number
-
-  // filtered_site_settings: Preferences['site_settings']
-
-  // selectSiteSettings: (filteredFloor: SiteSettingFloorID[]) => SiteSettingFloor[]
-
-  // control_window_height: number
 
   init_filtered_floor: SiteSettingFloorID[]
 
@@ -102,10 +87,6 @@ async function initBase(
     getFilteredFloor()
   ])
 
-  // const {
-  //   max_window_per_line, total_width, window_width
-  // } = autoAdjustWidth(gap_horizontal, limit.width)
-
   const [getRevertContainerId, setRevertContainerId] = Memo(revert_container_id)
 
   return Object.freeze({
@@ -114,28 +95,10 @@ async function initBase(
     platform,
     preferences,
 
-    // search_matrix,
-
-    // filtered_site_settings,
-
-    // layout_width: total_width,
-    // layout_height: total_height,
-
-    // selectSiteSettings: selectSiteSettingsByFiltered(preferences.site_settings),
-
-    // control_window_height,
-
     getRevertContainerId,
     setRevertContainerId,
 
     init_filtered_floor,
-
-    // info: {
-    //   // window_height,
-    //   // window_width,
-    //   gap_horizontal,
-    //   titlebar_height: environment.titlebar_height,
-    // }
   })
 }
 

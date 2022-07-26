@@ -1,10 +1,14 @@
 import { curry } from 'ramda'
-import { BaseInfo, LayoutInfo } from '../base'
+import { LayoutInfo } from '../base'
 import { calcWindowsTotalWidth } from '../base/auto-adjust'
 import { Limit } from '../base/limit'
 
 type Pos = Readonly<[number, number]>
-type LayoutPosInfo = Omit<BaseInfo, 'window_height'>
+type LayoutPosInfo = {
+  window_width: number
+  gap_horizontal: number
+  titlebar_height: number
+}
 export function calcLayoutPos(
   info: LayoutPosInfo,
   line: number,

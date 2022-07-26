@@ -3,7 +3,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
 import cfg from '../../config'
 
-import { Base, createLayoutInfo, selectSiteSettingsByFiltered } from '../../core/base'
+import { Base, initLayoutInfo, selectSiteSettingsByFiltered } from '../../core/base'
 import { calcControlWindowPos } from '../../core/layout/control-window'
 import { WindowID } from '../../core/layout/window'
 import { MessageEvent } from '../../message'
@@ -74,7 +74,7 @@ const ControlApp: React.FC<{
   ), [base.preferences.site_settings, filtered_floor_ids])
 
   const layout_info = useMemo(() => (
-    createLayoutInfo(
+    initLayoutInfo(
       base.environment,
       base.limit,
       selected_site_settings,
