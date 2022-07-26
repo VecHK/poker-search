@@ -1,24 +1,18 @@
 import { Memo, Signal } from 'vait'
-import { Base } from '../base'
+import { Base, LayoutInfo } from '../base'
 import { constructSearchWindowsFast } from './window-create'
 import { selectWindow } from './window-update'
-import { getWindowId, SearchWindow, WindowID } from './window'
+import { getWindowId, WindowID } from './window'
 import { renderCol, renderMatrix } from './render'
 import { selectCol } from '../common'
 
 import TrustedEvents from './events'
 import WindowRevert from './window-revert'
 
-export type LayoutInfo = {
-  width: number
-  height: number
-  countPerRow: number
-  searchList: Array<SearchWindow>
-}
-
 export async function CreateSearchLayout({
   control_window_id,
   base,
+  layout_info,
   keyword,
   creating_signal,
   stop_creating_signal,
@@ -27,6 +21,7 @@ export async function CreateSearchLayout({
 }: {
   control_window_id: WindowID
   base: Base
+  layout_info: LayoutInfo
   keyword: string
   creating_signal: Signal<void>
   stop_creating_signal: Signal<void>
@@ -40,16 +35,17 @@ export async function CreateSearchLayout({
   }
 
   async function refreshLayout(skip_ids: number[]) {
-    await renderMatrix(base, getMatrix(), true, false, skip_ids)
+    await renderMatrix(base, layout_info, getMatrix(), true, false, skip_ids)
     if (skip_ids.indexOf(control_window_id) === -1) {
       await chrome.windows.update(control_window_id, { focused: true })
     }
   }
 
-  const { search_matrix } = base
+  const { search_matrix } = layout_info
   const [getMatrix, setMatrix] = Memo(
     await constructSearchWindowsFast(
       base,
+      layout_info,
       search_matrix,
       keyword,
       creating_signal,
@@ -77,7 +73,7 @@ export async function CreateSearchLayout({
       const [need_update, update] = selectWindow(getMatrix(), focused_window_id)
       if (need_update) {
         const col_refresh_waiting = renderCol(
-          base, update.new_matrix, update.col, true, true
+          base, layout_info, update.new_matrix, update.col, true, true
         )
 
         if (needRefocusingLayout()) {

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Atomic, Signal } from 'vait'
 
-import { Base } from '../core/base'
+import { Base, LayoutInfo } from '../core/base'
 import { Matrix } from '../core/common'
 import { CreateSearchLayout } from '../core/layout'
 import { renderMatrix } from '../core/layout/render'
@@ -11,7 +11,10 @@ export type Control = Unpromise<ReturnType<typeof CreateSearchLayout>>
 
 const controlProcessing = Atomic()
 
-export default function useControl(base: Base) {
+export default function useControl(
+  base: Base,
+  layout_info: LayoutInfo
+) {
   const [isLoading, setLoading] = useState(false)
 
   const [stop_creating_signal] = useState(Signal<void>())
@@ -42,6 +45,7 @@ export default function useControl(base: Base) {
       if (control !== null) {
         closeSearchWindows(control)
       }
+      debugger;
     }
     window.addEventListener('beforeunload', handler)
     return () => {
@@ -49,7 +53,11 @@ export default function useControl(base: Base) {
     }
   }, [closeSearchWindows, control, stop_creating_signal])
 
-  const refreshWindows = useCallback((control_window_id: WindowID, keyword: string) => {
+  const refreshWindows = useCallback((
+    control_window_id: WindowID,
+    layout_info: LayoutInfo,
+    keyword: string,
+  ) => {
     console.log('refreshWindows')
     setLoading(true)
 
@@ -63,6 +71,7 @@ export default function useControl(base: Base) {
       CreateSearchLayout({
         control_window_id,
         base,
+        layout_info,
         keyword,
         stop_creating_signal,
         creating_signal,
@@ -97,11 +106,11 @@ export default function useControl(base: Base) {
     closeSearchWindows,
     refreshWindows,
     controlProcessing,
-    changeRow: useChangeRow(base, control),
+    changeRow: useChangeRow(base, layout_info, control),
   } as const
 }
 
-function useChangeRow(base: Base, control: Control | null) {
+function useChangeRow(base: Base, layout_info: LayoutInfo, control: Control | null) {
   return (
     useCallback(async (type: 'previus' | 'next') => {
       console.log('changeRow', type, control)
@@ -128,6 +137,7 @@ function useChangeRow(base: Base, control: Control | null) {
 
             await renderMatrix(
               base,
+              layout_info,
               newMatrix,
               type === 'next' ? true : undefined,
               true
@@ -141,6 +151,6 @@ function useChangeRow(base: Base, control: Control | null) {
           }
         })
       )
-    }, [base, control])
+    }, [base, control, layout_info])
   )
 }

@@ -1,6 +1,7 @@
 import { thunkify } from 'ramda'
 import cfg from '../../config'
-import { createBase, RevertContainerID } from '../../core/base'
+import { createBase, createLayoutInfo, RevertContainerID, selectSiteSettingsByFiltered } from '../../core/base'
+import { getControlWindowHeight } from '../../core/base/control-window-height'
 import { calcControlWindowPos } from '../../core/layout/control-window'
 import { controlIsLaunched, setControlLaunch } from '../../x-state/control-window-launched'
 
@@ -30,10 +31,16 @@ function generateUrl({ text, revert_container_id }: {
 
 async function getControlPos() {
   const base = await createBase(undefined)
+  const info = createLayoutInfo(base.environment, base.limit, base.preferences.site_settings)
+
+  const site_settings = selectSiteSettingsByFiltered(
+    base.preferences.site_settings,
+    base.init_filtered_floor
+  )
 
   const [ top, left ] = calcControlWindowPos(
-    base.control_window_height,
-    base.layout_height,
+    getControlWindowHeight(site_settings),
+    info.total_height,
     base.limit
   )
   return [ top, left ] as const
@@ -48,7 +55,11 @@ export default async function launchControlWindow({ text, revert_container_id }:
   if (await control_is_launched_P) {
     throw Error('control window is Launched')
   } else {
-    const { control_window_height } = await base_P
+    const site_settings = selectSiteSettingsByFiltered(
+      (await base_P).preferences.site_settings,
+      (await base_P).init_filtered_floor
+    )
+    const control_window_height = getControlWindowHeight(site_settings)
     const [ top, left ] = await getControlPos()
     const controlWindow = await chrome.windows.create({
       url: generateUrl({ text, revert_container_id }),

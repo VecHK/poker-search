@@ -1,5 +1,5 @@
 import { SearchWindowMatrix, SearchWindowRow, TabID, WindowID } from './window'
-import { Base } from '../base'
+import { Base, LayoutInfo } from '../base'
 import { SearchMatrix, SearchOption } from '../base/search-matrix'
 import { calcRealPos } from './pos'
 import { isCurrentRow } from './matrix'
@@ -57,6 +57,7 @@ type CreateOption = {
 
 export async function constructSearchWindowsFast(
   base: Base,
+  layout_info: LayoutInfo,
   search_matrix: SearchMatrix,
   keyword: string,
   creating_signal: Signal<void>,
@@ -74,7 +75,7 @@ export async function constructSearchWindowsFast(
       const { getSearchURL, is_plain } = search_option
       const url = getSearchURL(keyword)
 
-      const [left, top] = calcRealPos(base, row, col)
+      const [left, top] = calcRealPos(base.limit, layout_info, row, col)
 
       if (is_plain && (!base.preferences.fill_empty_window)) {
         create_row.push(null)
@@ -86,8 +87,8 @@ export async function constructSearchWindowsFast(
           window_data: {
             type: 'popup',
             focused: true,
-            width: base.info.window_width,
-            height: base.info.window_height,
+            width: layout_info.window_width,
+            height: layout_info.window_height,
             left,
             top,
           }
@@ -100,8 +101,8 @@ export async function constructSearchWindowsFast(
           window_data: {
             type: 'popup',
             focused: false,
-            width: base.info.window_width,
-            height: base.info.titlebar_height,
+            width: layout_info.window_width,
+            height: layout_info.titlebar_height,
             left,
             top,
           }
@@ -202,7 +203,7 @@ export async function constructSearchWindowsFast(
 
   new_matrix = [...new_matrix].reverse()
 
-  const waitting_render = renderMatrix(base, new_matrix, true, false)
+  const waitting_render = renderMatrix(base, layout_info, new_matrix, true, false)
   await waitting_render
 
   // 要在 renderMatrix 之后才取消 stop_creating_signal 的监听
