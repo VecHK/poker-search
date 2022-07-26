@@ -3,6 +3,7 @@ import { sendMessage } from '../../message'
 import { load as loadPreferences } from '../../preferences'
 import { toSearchURL } from '../../preferences/site-settings'
 import { ChromeEvent } from '../../utils/chrome-event'
+import matchSearchPattern from '../../utils/match-search-pattern'
 import { controlIsLaunched } from '../../x-state/control-window-launched'
 import launchControlWindow from './launch'
 
@@ -49,29 +50,38 @@ export default function OmniboxEvent() {
       })
 
       loadingAtomic(async () => {
-        const [site, ...remain_text ] = text.split(/ |　/)
+        const [
+          is_individual_searching, site, remain_text
+        ] = matchSearchPattern(text)
 
-        const preferenes = await loadPreferences()
+        if (is_individual_searching) {
+          const preferenes = await loadPreferences()
 
-        const site_opt = preferenes.site_settings.map(f => {
-          return f.row
-        })
-          .flat()
-          .find(site_opt => (
-            site_opt.url_pattern.indexOf(site) !== -1
-          ))
+          const site_opt = preferenes.site_settings.map(f => {
+            return f.row
+          })
+            .flat()
+            .find(site_opt => (
+              site_opt.url_pattern.indexOf(site) !== -1
+            ))
 
-        const keyword = remain_text.join(' ')
-
-        if (site_opt && keyword.length) {
-          const content = text + ' '
-          setIndividualSearch({ id: content, keyword, url_pattern: site_opt.url_pattern })
-          suggest([{
-            // 不加空格的话，显示不出来，可能 chrome 是将 content 作为
-            // id 了，就与前面的 setDefaultSuggestion 有冲突了
-            content: text + ' ',
-            description: `使用${site}搜索`,
-          }])
+          if (site_opt && remain_text.length) {
+            const content = text + ' '
+            setIndividualSearch({
+              id: content,
+              keyword: remain_text,
+              url_pattern: site_opt.url_pattern
+            })
+            suggest([{
+              // 不加空格的话，显示不出来，可能 chrome 是将 content 作为
+              // id 了，就与前面的 setDefaultSuggestion 有冲突了
+              content: text + ' ',
+              description: `使用${site}搜索: ${remain_text}`,
+            }])
+          } else {
+            suggest([])
+            setIndividualSearch(null)
+          }
         } else {
           suggest([])
           setIndividualSearch(null)
