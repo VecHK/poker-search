@@ -11,10 +11,12 @@ import { MessageEvent } from '../../message'
 import getQuery from '../../utils/get-query'
 import { validKeyword } from '../../utils/search'
 import animatingWindow from '../../utils/animating-window'
+import matchSearchPattern from '../../utils/match-search-pattern'
 
 import useWindowFocus from '../../hooks/useWindowFocus'
 import useControl from '../../hooks/useControl'
 import useReFocusMessage from '../../hooks/useReFocusMessage'
+import useSelectedFloorIdx from '../../components/FloorFilter/useSelectedFloorIdx'
 
 import Loading from '../../components/Loading'
 import SearchForm from '../../components/SearchForm'
@@ -24,7 +26,6 @@ import FloorFilter from '../../components/FloorFilter'
 import BGSrc from '../../assets/control-bg.png'
 
 import './Control.css'
-import useSelectedFloorIdx from '../../components/FloorFilter/useSelectedFloorIdx'
 
 function useChangeRowShortcutKey(props: {
   onPressUp: () => void
@@ -205,6 +206,32 @@ const ControlApp: React.FC<{
     }
   }, [disable_search, handleSubmit, keywordInput, windowIsFocus])
 
+  const [ result, left ] = matchSearchPattern(keywordInput)
+  const is_floor_search = result && (left[0] === '/')
+  const selectedFloors = useMemo(() => {
+    if (result && (left[0] === '/')) {
+      const [, ..._floor_name] = left
+      const floor_name = _floor_name.join('')
+
+      const idx_list = (
+        base.preferences.site_settings.reduce<number[]>((idx_list, f, idx) => {
+          if (f.name === floor_name) {
+            return [...idx_list, idx]
+          } else {
+            return idx_list
+          }
+        }, [])
+      )
+      if (idx_list.length) {
+        return idx_list
+      } else {
+        return selected_floor_idx
+      }
+    } else {
+      return selected_floor_idx
+    }
+  }, [base.preferences.site_settings, left, result, selected_floor_idx])
+
   return (
     <main className="control-main" style={{ background: `url(${BGSrc})` }}>
       {isLoading ? <Loading /> : (
@@ -218,12 +245,16 @@ const ControlApp: React.FC<{
           <div className="floor-filter-wrapper">
             <FloorFilter
               siteSettings={base.preferences.site_settings}
-              selectedFloors={selected_floor_idx}
+              selectedFloors={selectedFloors}
               totalFloor={base.preferences.site_settings.length}
               onChange={(filtered) => {
-                console.log('filtered onChange', filtered)
-                onSelectedFloorChange(filtered)
-                setSelectedFloorIdx(filtered)
+                if (is_floor_search) {
+                  alert('你现在正在搜索单层，所以无法调整选层条')
+                } else {
+                  console.log('filtered onChange', filtered)
+                  onSelectedFloorChange(filtered)
+                  setSelectedFloorIdx(filtered)
+                }
               }}
             />
           </div>
