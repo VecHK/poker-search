@@ -45,7 +45,6 @@ export default function useControl(
       if (control !== null) {
         closeSearchWindows(control)
       }
-      debugger;
     }
     window.addEventListener('beforeunload', handler)
     return () => {
