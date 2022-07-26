@@ -57,14 +57,41 @@ const ControlApp: React.FC<{
 
   const [selected_floor_idx, setSelectedFloorIdx] = useSelectedFloorIdx(base)
 
+  const [ result, left ] = matchSearchPattern(keywordInput)
+  const is_floor_search = result && (left[0] === '/')
+  const trueSelectedFloorIdx = useCallback(() => {
+    const [ result, left ] = matchSearchPattern(keywordInput)
+    if (result && (left[0] === '/')) {
+      const [, ..._floor_name] = left
+      const floor_name = _floor_name.join('')
+
+      const idx_list = (
+        base.preferences.site_settings.reduce<number[]>((idx_list, f, idx) => {
+          if (f.name === floor_name) {
+            return [...idx_list, idx]
+          } else {
+            return idx_list
+          }
+        }, [])
+      )
+      if (idx_list.length) {
+        return idx_list
+      } else {
+        return selected_floor_idx
+      }
+    } else {
+      return selected_floor_idx
+    }
+  }, [base.preferences.site_settings, keywordInput, selected_floor_idx])
+
   const s_ids = useMemo(() => (
     base.preferences.site_settings.map(s => s.id)
   ), [base.preferences.site_settings])
   const filtered_floor_ids = useMemo(() => (
     s_ids.filter((_, idx) => {
-      return selected_floor_idx.indexOf(idx) === -1
+      return trueSelectedFloorIdx().indexOf(idx) === -1
     })
-  ), [s_ids, selected_floor_idx])
+  ), [s_ids, trueSelectedFloorIdx])
 
   const selected_site_settings = useMemo(() => (
     selectSiteSettingsByFiltered(
@@ -232,32 +259,6 @@ const ControlApp: React.FC<{
     }
   }, [disable_search, handleSubmit, keywordInput, windowIsFocus])
 
-  const [ result, left ] = matchSearchPattern(keywordInput)
-  const is_floor_search = result && (left[0] === '/')
-  const selectedFloors = useMemo(() => {
-    if (result && (left[0] === '/')) {
-      const [, ..._floor_name] = left
-      const floor_name = _floor_name.join('')
-
-      const idx_list = (
-        base.preferences.site_settings.reduce<number[]>((idx_list, f, idx) => {
-          if (f.name === floor_name) {
-            return [...idx_list, idx]
-          } else {
-            return idx_list
-          }
-        }, [])
-      )
-      if (idx_list.length) {
-        return idx_list
-      } else {
-        return selected_floor_idx
-      }
-    } else {
-      return selected_floor_idx
-    }
-  }, [base.preferences.site_settings, left, result, selected_floor_idx])
-
   return (
     <main className="control-main" style={{ background: `url(${BGSrc})` }}>
       {isLoading ? <Loading /> : (
@@ -271,7 +272,7 @@ const ControlApp: React.FC<{
           <div className="floor-filter-wrapper">
             <FloorFilter
               siteSettings={base.preferences.site_settings}
-              selectedFloors={selectedFloors}
+              selectedFloors={trueSelectedFloorIdx()}
               totalFloor={base.preferences.site_settings.length}
               onChange={(filtered) => {
                 if (is_floor_search) {
