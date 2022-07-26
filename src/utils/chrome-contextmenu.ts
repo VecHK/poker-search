@@ -4,7 +4,8 @@ export function ChromeContextMenus(
   opts: Readonly<{
     id: string
     contexts: chrome.contextMenus.ContextType[],
-    title: string
+    title: string,
+    parentId?: string,
   }>,
   callback: (d: chrome.contextMenus.OnClickData, t: chrome.tabs.Tab | undefined) => void
 ) {
@@ -24,7 +25,8 @@ export function ChromeContextMenus(
         enabled: true,
         id: opts.id,
         contexts: opts.contexts,
-        title: opts.title
+        title: opts.title,
+        parentId: opts.parentId
       }, () => {
         if (chrome.runtime.lastError) {
           console.error(`chrome.contextMenus.create[${opts.id}] Error`, chrome.runtime.lastError.message)

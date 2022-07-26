@@ -5,7 +5,7 @@ import { cleanControlLaunch, controlIsLaunched, getControlWindowId } from '../x-
 import { regRules } from './modules/mobile-access'
 import GlobalCommand from './modules/gloal-command'
 import Omnibox from './modules/omnibox'
-import SelectionContextMenu from './modules/selection-contextmenu'
+import {groupSearchMenus, SelectionContextMenu } from './modules/selection-contextmenu'
 import LaunchContextMenu, { presetLaunchContextMenu, removeLaunchContextMenu } from './modules/launch-contextmenu'
 import TryPoker from './modules/try-poker'
 
@@ -25,6 +25,11 @@ export default function runBackground() {
   applySelectionContextMenuClick()
   applyLaunchContextMenuClick()
   applyTryPoker()
+
+  // 创建子搜索菜单
+  groupSearchMenus().forEach(obj => {
+    obj[0]()
+  })
 
   ApplyChromeEvent(
     chrome.windows.onRemoved,

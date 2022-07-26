@@ -2,7 +2,7 @@ import cfg from '../config'
 import { initControlWindowLaunched } from '../x-state/control-window-launched'
 
 import { presetLaunchContextMenu } from './modules/launch-contextmenu'
-import { presetSelectionContextMenu } from './modules/selection-contextmenu'
+import { presetSelectionContextMenu, presetSubMenus } from './modules/selection-contextmenu'
 
 import { load as loadPreferences } from '../preferences'
 
@@ -12,6 +12,8 @@ export default async function BackgroundOnInstalled(
   console.log('chrome.runtime.onInstalled', details)
 
   presetSelectionContextMenu()
+  // 配置选分组搜索的菜单
+  presetSubMenus()
 
   initLaunchContextMenu()
 
