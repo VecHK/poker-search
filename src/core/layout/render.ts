@@ -1,11 +1,13 @@
-import { Base } from '../base'
+import { Base, LayoutInfo } from '../base'
 import { Matrix } from '../common'
 import { calcRealPos } from './pos'
 import { isCurrentRow } from './matrix'
 import { SearchWindow } from './window'
+import { Limit } from '../base/limit'
 
 async function refreshWindow(
-  base: Base,
+  limit: Limit,
+  layout_info: LayoutInfo,
   opts: {
     window: SearchWindow,
     // windowId: number,
@@ -15,7 +17,7 @@ async function refreshWindow(
     col: number
   }
 ): Promise<void> {
-  const [left, top] = calcRealPos(base, opts.row, opts.col)
+  const [left, top] = calcRealPos(limit, layout_info, opts.row, opts.col)
 
   const { state, windowId } = opts.window
   if (state === 'EMPTY') {
@@ -25,8 +27,8 @@ async function refreshWindow(
       focused: opts.focused,
       left,
       top,
-      width: opts.resetSize ? base.info.window_width : undefined,
-      height: opts.resetSize ? base.info.window_height : undefined,
+      width: opts.resetSize ? layout_info.window_width : undefined,
+      height: opts.resetSize ? layout_info.window_height : undefined,
     })
     return
   }
@@ -34,6 +36,7 @@ async function refreshWindow(
 
 export async function renderMatrix(
   base: Base,
+  layout_info: LayoutInfo,
   matrix: Matrix<SearchWindow>,
   presetFocused: undefined | boolean = undefined,
   resetSize: boolean = false,
@@ -49,7 +52,7 @@ export async function renderMatrix(
       if (skip_ids.indexOf(win.windowId) !== -1) {
         promises.push(Promise.resolve(undefined))
       } else {
-        const p = refreshWindow(base, {
+        const p = refreshWindow(base.limit, layout_info, {
           window: win,
           focused: (presetFocused === undefined) ? (isWin || isLastLine) : presetFocused,
           resetSize,
@@ -66,6 +69,7 @@ export async function renderMatrix(
 
 export function renderCol(
   base: Base,
+  layout_info: LayoutInfo,
   matrix: Matrix<SearchWindow>,
   selectCol: number,
   presetFocused: undefined | boolean = undefined,
@@ -78,7 +82,7 @@ export function renderCol(
     for (let [col, win] of line.entries()) {
       if (selectCol === col) {
         const isLastLine = isCurrentRow(matrix, row)
-        const p = refreshWindow(base, {
+        const p = refreshWindow(base.limit, layout_info, {
           window: win,
           focused: (presetFocused === undefined) ? (isWin || isLastLine) : presetFocused,
           resetSize,

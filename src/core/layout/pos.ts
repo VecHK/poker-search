@@ -1,11 +1,12 @@
 import { curry } from 'ramda'
-import { Base } from '../base'
+import { BaseInfo, LayoutInfo } from '../base'
 import { calcWindowsTotalWidth } from '../base/auto-adjust'
 import { Limit } from '../base/limit'
 
 type Pos = Readonly<[number, number]>
+type LayoutPosInfo = Omit<BaseInfo, 'window_height'>
 export function calcLayoutPos(
-  info: Omit<Base['info'], 'window_height'>,
+  info: LayoutPosInfo,
   line: number,
   index: number
 ): Pos {
@@ -19,9 +20,22 @@ export function calcLayoutPos(
   return [left, top]
 }
 
-export function calcRealPos(base: Base, line: number, index: number) {
-  const [toRealLeft, toRealTop] = ToRealPos(base.limit, base.layout_width, base.layout_height)
-  const [l, t] = calcLayoutPos(base.info, line, index)
+export function calcRealPos(
+  limit: Limit,
+  info: LayoutInfo,
+  line: number,
+  index: number
+) {
+  const [toRealLeft, toRealTop] = ToRealPos(
+    limit,
+    info.total_width,
+    info.total_height,
+  )
+  const [l, t] = calcLayoutPos({
+    window_width: info.window_width,
+    gap_horizontal: info.gap_horizontal,
+    titlebar_height: info.titlebar_height
+  }, line, index)
   return [toRealLeft(l), toRealTop(t)] as const
 }
 

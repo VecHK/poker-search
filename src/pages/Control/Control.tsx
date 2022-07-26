@@ -3,7 +3,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
 import cfg from '../../config'
 
-import { Base } from '../../core/base'
+import { Base, createLayoutInfo, selectSiteSettingsByFiltered } from '../../core/base'
 import { calcControlWindowPos } from '../../core/layout/control-window'
 import { WindowID } from '../../core/layout/window'
 import { MessageEvent } from '../../message'
@@ -11,10 +11,12 @@ import { MessageEvent } from '../../message'
 import getQuery from '../../utils/get-query'
 import { validKeyword } from '../../utils/search'
 import animatingWindow from '../../utils/animating-window'
+import matchSearchPattern from '../../utils/match-search-pattern'
 
 import useWindowFocus from '../../hooks/useWindowFocus'
 import useControl from '../../hooks/useControl'
 import useReFocusMessage from '../../hooks/useReFocusMessage'
+import useSelectedFloorIdx from '../../components/FloorFilter/useSelectedFloorIdx'
 
 import Loading from '../../components/Loading'
 import SearchForm from '../../components/SearchForm'
@@ -24,7 +26,7 @@ import FloorFilter from '../../components/FloorFilter'
 import BGSrc from '../../assets/control-bg.png'
 
 import './Control.css'
-import useSelectedFloorIdx from '../../components/FloorFilter/useSelectedFloorIdx'
+import { getControlWindowHeight } from '../../core/base/control-window-height'
 
 function useChangeRowShortcutKey(props: {
   onPressUp: () => void
@@ -55,12 +57,36 @@ const ControlApp: React.FC<{
 
   const [selected_floor_idx, setSelectedFloorIdx] = useSelectedFloorIdx(base)
 
+  const s_ids = useMemo(() => (
+    base.preferences.site_settings.map(s => s.id)
+  ), [base.preferences.site_settings])
+  const filtered_floor_ids = useMemo(() => (
+    s_ids.filter((_, idx) => {
+      return selected_floor_idx.indexOf(idx) === -1
+    })
+  ), [s_ids, selected_floor_idx])
+
+  const selected_site_settings = useMemo(() => (
+    selectSiteSettingsByFiltered(
+      base.preferences.site_settings,
+      filtered_floor_ids
+    )
+  ), [base.preferences.site_settings, filtered_floor_ids])
+
+  const layout_info = useMemo(() => (
+    createLayoutInfo(
+      base.environment,
+      base.limit,
+      selected_site_settings,
+    )
+  ), [base.environment, base.limit, selected_site_settings])
+
   const [disable_search, setDisableSearch] = useState<boolean>(
-    !base.filtered_site_settings.length
+    !selected_site_settings.length
   )
   useEffect(() => {
-    setDisableSearch(!base.filtered_site_settings.length)
-  }, [base.filtered_site_settings.length])
+    setDisableSearch(!selected_site_settings.length)
+  }, [selected_site_settings.length])
 
   const windowIsFocus = useWindowFocus(true)
 
@@ -73,7 +99,7 @@ const ControlApp: React.FC<{
     refreshWindows,
     changeRow: controlChangeRow,
     controlProcessing,
-  } = useControl(base)
+  } = useControl(base, layout_info)
 
   const focusControlWindow = useCallback(async () => {
     return chrome.windows.update(controlWindowId, { focused: true })
@@ -83,15 +109,15 @@ const ControlApp: React.FC<{
 
   const moveControlWindow = useCallback(async (id: WindowID) => {
     const [ top, left ] = calcControlWindowPos(
-      base.control_window_height,
-      base.layout_height,
+      getControlWindowHeight(selected_site_settings),
+      layout_info.total_height,
       base.limit
     )
     const win = await chrome.windows.get(id)
 
     const not_move = equals(
       [win.top, win.left, win.height],
-      [top, left, base.control_window_height]
+      [top, left, getControlWindowHeight(selected_site_settings)]
     )
 
     if (!not_move) {
@@ -102,10 +128,10 @@ const ControlApp: React.FC<{
       }, {
         top,
         left,
-        height: base.control_window_height,
+        height: getControlWindowHeight(selected_site_settings),
       })
     }
-  }, [base.control_window_height, base.layout_height, base.limit])
+  }, [base.limit, layout_info.total_height, selected_site_settings])
 
   function changeRow(act: 'previus' | 'next') {
     controlChangeRow(act).then(focusControlWindow)
@@ -119,12 +145,12 @@ const ControlApp: React.FC<{
     console.log('openSearchWindows', controlWindowId, submitedKeyword)
     if (submitedKeyword !== false) {
       if (control === null) {
-        refreshWindows(controlWindowId, submitedKeyword).finally(() => {
+        refreshWindows(controlWindowId, layout_info, submitedKeyword).finally(() => {
           focusControlWindow()
         })
       }
     }
-  }, [control, controlWindowId, focusControlWindow, refreshWindows, submitedKeyword])
+  }, [control, controlWindowId, focusControlWindow, layout_info, refreshWindows, submitedKeyword])
 
   useEffect(function focusControlWindowAfterLoad() {
     focusControlWindow()
@@ -149,6 +175,7 @@ const ControlApp: React.FC<{
         console.log('onSubmit', newSearchKeyword)
         setLoading(true)
         if (control) {
+          control.cancelAllEvent()
           await closeSearchWindows(control)
         }
         moveControlWindow(controlWindowId).then(() => {
@@ -205,6 +232,32 @@ const ControlApp: React.FC<{
     }
   }, [disable_search, handleSubmit, keywordInput, windowIsFocus])
 
+  const [ result, left ] = matchSearchPattern(keywordInput)
+  const is_floor_search = result && (left[0] === '/')
+  const selectedFloors = useMemo(() => {
+    if (result && (left[0] === '/')) {
+      const [, ..._floor_name] = left
+      const floor_name = _floor_name.join('')
+
+      const idx_list = (
+        base.preferences.site_settings.reduce<number[]>((idx_list, f, idx) => {
+          if (f.name === floor_name) {
+            return [...idx_list, idx]
+          } else {
+            return idx_list
+          }
+        }, [])
+      )
+      if (idx_list.length) {
+        return idx_list
+      } else {
+        return selected_floor_idx
+      }
+    } else {
+      return selected_floor_idx
+    }
+  }, [base.preferences.site_settings, left, result, selected_floor_idx])
+
   return (
     <main className="control-main" style={{ background: `url(${BGSrc})` }}>
       {isLoading ? <Loading /> : (
@@ -218,12 +271,16 @@ const ControlApp: React.FC<{
           <div className="floor-filter-wrapper">
             <FloorFilter
               siteSettings={base.preferences.site_settings}
-              selectedFloors={selected_floor_idx}
+              selectedFloors={selectedFloors}
               totalFloor={base.preferences.site_settings.length}
               onChange={(filtered) => {
-                console.log('filtered onChange', filtered)
-                onSelectedFloorChange(filtered)
-                setSelectedFloorIdx(filtered)
+                if (is_floor_search) {
+                  alert('你现在正在搜索单层，所以无法调整选层条')
+                } else {
+                  console.log('filtered onChange', filtered)
+                  onSelectedFloorChange(filtered)
+                  setSelectedFloorIdx(filtered)
+                }
               }}
             />
           </div>
