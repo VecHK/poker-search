@@ -73,13 +73,13 @@ const ControlApp: React.FC<{
     )
   ), [base.preferences.site_settings, filtered_floor_ids])
 
-  const [layout_info, setLayoutInfo] = useState(
+  const layout_info = useMemo(() => (
     createLayoutInfo(
       base.environment,
       base.limit,
       selected_site_settings,
     )
-  )
+  ), [base.environment, base.limit, selected_site_settings])
 
   const [disable_search, setDisableSearch] = useState<boolean>(
     !selected_site_settings.length
@@ -180,23 +180,15 @@ const ControlApp: React.FC<{
         }
         moveControlWindow(controlWindowId).then(() => {
           setControl(() => {
-            setLayoutInfo(() => {
-              // 写成这样是处理提交同样搜索词的时候的处理
-              // 因为是用 useEffect 来判断的，如果是相同的值就不会触发更新了
-              submitKeyword(newSearchKeyword)
-
-              return createLayoutInfo(
-                base.environment,
-                base.limit,
-                selected_site_settings,
-              )
-            })
+            // 写成这样是处理提交同样搜索词的时候的处理
+            // 因为是用 useEffect 来判断的，如果是相同的值就不会触发更新了
+            submitKeyword(newSearchKeyword)
             return null
           })
         })
       })
     }
-  }, [base.environment, base.limit, closeSearchWindows, control, controlProcessing, controlWindowId, moveControlWindow, selected_site_settings, setControl, setLoading])
+  }, [closeSearchWindows, control, controlProcessing, controlWindowId, moveControlWindow, setControl, setLoading])
 
   useEffect(function receiveChangeSearchMessage() {
     const [ applyReceive, cancelReceive ] = MessageEvent('ChangeSearch', (new_keyword) => {
