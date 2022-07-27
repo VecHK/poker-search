@@ -91,8 +91,8 @@ function SearchLayout({ base, current_window_id, showTips, onSelectedFloorChange
           keywordPlaceholder={'请选择至少一层的站点配置'}
           keyword={''}
           setKeyword={thunkify(showTips)('请选择至少一层的站点配置')}
+          onSubmit={thunkify(showTips)('请选择至少一层的站点配置')}
           submitButtonActive={windowIsFocus}
-          onSubmit={() => {}}
         />
       )
     } else {
