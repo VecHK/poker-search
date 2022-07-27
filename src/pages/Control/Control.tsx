@@ -59,8 +59,16 @@ const ControlApp: React.FC<{
   controlWindowId: WindowID
   onSelectedFloorChange: (f: number[]) => void
 }> = ({ base, showTips, controlWindowId, onSelectedFloorChange }) => {
-  const [keywordInput, setKeywordInput] = useState('/test ')
-  const [submitedKeyword, submitKeyword] = useState<string | false>(false)
+  const [keywordInput, setKeywordInput] = useState('')
+  const [submitedKeyword, _submitKeyword] = useState<string | false>(false)
+  const submitKeyword = useCallback((str: string) => {
+    const [ result, , right ] = matchSearchPattern(str)
+    if (result) {
+      _submitKeyword(right)
+    } else {
+      _submitKeyword(str)
+    }
+  }, [])
 
   const [selected_floor_idx, setSelectedFloorIdx] = useSelectedFloorIdx(base)
 
