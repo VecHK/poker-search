@@ -41,10 +41,28 @@ function selectFloorIdxByFloorName(
   )
   return idx_list
 }
-export function selectFloorIdxBySearchText(text: string, site_settings: SiteSettings) {
+
+function isFloorNumber(str: string) {
+  return (
+    /^[0-9]+$/.test(str) ||
+    /^[0-9]+F$/i.test(str)
+  )
+}
+
+export function specifyFloorIdxBySearchText(text: string, site_settings: SiteSettings) {
   const [ res, floor_name ] = getFloorName(text)
   if (res) {
-    return selectFloorIdxByFloorName(site_settings, floor_name)
+    if (isFloorNumber(floor_name)) {
+      const f_number = parseInt(floor_name)
+      const select_floor_idx = f_number - 1
+      if (select_floor_idx < site_settings.length) {
+        return [ f_number - 1 ]
+      } else {
+        return selectFloorIdxByFloorName(site_settings, floor_name)
+      }
+    } else {
+      return selectFloorIdxByFloorName(site_settings, floor_name)
+    }
   } else {
     return []
   }
@@ -66,7 +84,7 @@ export default function useSearchForm(base: Base) {
   const [selected_floor_idx, setSelectedFloorIdx] = useSelectedFloorIdx(base)
 
   const trueSelectedFloorIdx = useCallback(() => {
-    const search_result_idx = selectFloorIdxBySearchText(keyword_input, base.preferences.site_settings)
+    const search_result_idx = specifyFloorIdxBySearchText(keyword_input, base.preferences.site_settings)
     if (search_result_idx.length) {
       return search_result_idx
     } else {

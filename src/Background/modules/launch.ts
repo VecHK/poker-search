@@ -3,7 +3,7 @@ import cfg from '../../config'
 import { Base, createBase, initLayoutInfo, RevertContainerID, selectSiteSettingsByFiltered } from '../../core/base'
 import { getControlWindowHeight } from '../../core/base/control-window-height'
 import { calcControlWindowPos } from '../../core/layout/control-window'
-import { selectFloorIdxBySearchText } from '../../hooks/useSearchForm'
+import { specifyFloorIdxBySearchText } from '../../hooks/useSearchForm'
 
 import { controlIsLaunched, setControlLaunch } from '../../x-state/control-window-launched'
 
@@ -12,7 +12,7 @@ function getSiteSettings(base: Base, search_text: string) {
     base.preferences.site_settings,
     base.init_filtered_floor
   )
-  const floor_idx = selectFloorIdxBySearchText(search_text, base.preferences.site_settings)
+  const floor_idx = specifyFloorIdxBySearchText(search_text, base.preferences.site_settings)
   if (floor_idx.length) {
     return floor_idx.map(idx => base.preferences.site_settings[idx])
   } else {
