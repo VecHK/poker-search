@@ -1,0 +1,14 @@
+.summary::marker {
+  /* display: inline-block; */
+  /* transition: color .2s;
+  content: '▶';
+  display: inline-block; */
+}
+.CollapseSectionTitle {
+  display: inline-block;
+
+  font-size: 18px;
+}
+.CollapseContent {
+  padding-left: 18px;
+}
