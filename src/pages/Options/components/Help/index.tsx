@@ -56,7 +56,7 @@ export default function Help() {
         再点击地址栏（域名右侧）旁的 Poker 图标，即可立马『添加该站点到 Poker』。
       </CollapseSection>
 
-      <CollapseSection title="召唤Poker">
+      <CollapseSection title="召唤 Poker">
         <ListItem title="字符串召唤">
           在搜索栏输入『poker + 空格』后激活 Poker 进行搜索。
         </ListItem>
@@ -77,7 +77,7 @@ export default function Help() {
         <ListItem title="右键召唤">
           在浏览器任意位置右键，可以直接召唤 Poker。并且，你还能直接右键搜索选中的内容。
         </ListItem>
-        <ListItem title="唤回Poker">
+        <ListItem title="唤回 Poker">
           <p>
             与此同时，在 Poker 启动后再执行 <b>图标召唤</b>、<b>快捷键召唤</b>、<b>右键召唤</b> 的话，<br />
             能立马呼唤回正在运行的 Poker。
