@@ -1,4 +1,4 @@
-import { compose, equals, prop } from 'ramda'
+import { compose, equals, prop, thunkify } from 'ramda'
 import React, { ReactNode, useCallback, useEffect, useMemo } from 'react'
 
 import cfg from '../../config'
@@ -192,9 +192,9 @@ const ControlApp: React.FC<{
           only_mode={false}
           keywordPlaceholder={'请选择至少一层的站点配置'}
           keyword={''}
-          setKeyword={() => {}}
+          setKeyword={thunkify(showTips)('请选择至少一层的站点配置')}
+          onSubmit={thunkify(showTips)('请选择至少一层的站点配置')}
           submitButtonActive={windowIsFocus}
-          onSubmit={() => {}}
         />
       )
     } else {
@@ -214,7 +214,7 @@ const ControlApp: React.FC<{
         />
       )
     }
-  }, [disable_search, handleSubmit, is_floor_search, keyword_input, setKeywordInput, windowIsFocus])
+  }, [disable_search, handleSubmit, is_floor_search, keyword_input, setKeywordInput, showTips, windowIsFocus])
 
   return (
     <main className="control-main" style={{ background: `url(${BGSrc})` }}>
