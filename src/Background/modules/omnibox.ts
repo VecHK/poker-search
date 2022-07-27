@@ -7,20 +7,20 @@ import matchSearchPattern from '../../utils/match-search-pattern'
 import { controlIsLaunched } from '../../x-state/control-window-launched'
 import launchControlWindow from './launch'
 
-type IndividualSearch = { id: string; url_pattern: string; keyword: string }
-const [getIndividualSearch, setIndividualSearch] = Memo<IndividualSearch | null>(null)
+type IndividualSearch = { id: string; url_pattern: string; search_text: string }
+const [getIndividualSearchInfo, setIndividualSearchInfo] = Memo<IndividualSearch | null>(null)
 
 export default function OmniboxEvent() {
   // omnibox 提交
   const [ applyOmniBoxInputEntered, cancelOmniBoxInputEntered ] = ChromeEvent(
     chrome.omnibox.onInputEntered,
     (content) => {
-      const ind_search = getIndividualSearch()
+      const ind_search = getIndividualSearchInfo()
 
-      if ((ind_search?.id === content)) {
-        const { url_pattern, keyword } = ind_search
+      if (ind_search && (ind_search.id === content)) {
+        const { url_pattern, search_text } = ind_search
         chrome.tabs.create({
-          url: toSearchURL(url_pattern, keyword),
+          url: toSearchURL(url_pattern, search_text),
           windowId: chrome.windows.WINDOW_ID_CURRENT
         })
       } else {
@@ -44,14 +44,44 @@ export default function OmniboxEvent() {
   const [ applyOmniboxSuggest, cancelOmniboxSuggest ] = ChromeEvent(
     chrome.omnibox.onInputChanged,
     (text, suggest) => {
-      chrome.omnibox.setDefaultSuggestion({
-        // content: 'content',
-        description: `Poker搜索: ${text}`,
-      })
+      function setNormalSearch() {
+        setIndividualSearchInfo(null)
+        suggest([])
+        chrome.omnibox.setDefaultSuggestion({
+          description: `Poker搜索: ${text}`,
+        })
+      }
+      function setIndividualSearch(
+        site: string,
+        search_text: string,
+        url_pattern: string
+      ) {
+        const content = text
+        setIndividualSearchInfo({
+          id: content,
+          search_text,
+          url_pattern
+        })
+
+        chrome.omnibox.setDefaultSuggestion({
+          description: `使用${site}搜索: ${search_text}`,
+        })
+        suggest([
+            {
+            // 不加空格的话，显示不出来，可能 chrome 是将 content 作为
+            // id 了，就与前面的 setDefaultSuggestion 有冲突了
+            // 另外这个 content 也是作为 individualSearch 的 id 的
+            content: text + ' ',
+            description: `Poker搜索: ${text}`,
+          }
+        ])
+      }
 
       loadingAtomic(async () => {
         const [
-          is_individual_searching, site, remain_text
+          is_individual_searching,
+          site,
+          remain_text
         ] = matchSearchPattern(text)
 
         if (is_individual_searching) {
@@ -66,25 +96,12 @@ export default function OmniboxEvent() {
             ))
 
           if (site_opt && remain_text.length) {
-            const content = text + ' '
-            setIndividualSearch({
-              id: content,
-              keyword: remain_text,
-              url_pattern: site_opt.url_pattern
-            })
-            suggest([{
-              // 不加空格的话，显示不出来，可能 chrome 是将 content 作为
-              // id 了，就与前面的 setDefaultSuggestion 有冲突了
-              content: text + ' ',
-              description: `使用${site}搜索: ${remain_text}`,
-            }])
+            setIndividualSearch(site, remain_text, site_opt.url_pattern)
           } else {
-            suggest([])
-            setIndividualSearch(null)
+            return setNormalSearch()
           }
         } else {
-          suggest([])
-          setIndividualSearch(null)
+          return setNormalSearch()
         }
       })
     }
