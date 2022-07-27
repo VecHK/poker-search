@@ -110,6 +110,7 @@ Poker 搜索启动后，用户能在底部的控制台窗口中再次键入新�
   <tr>
     <td align="center"><a href="http://vec.moe"><img src="https://avatars.githubusercontent.com/u/6480724?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Vec</b></sub></a><br /><a href="https://github.com/VecHK/poker-search/commits?author=VecHK" title="Code">💻</a> <a href="#ideas-VecHK" title="Ideas, Planning, & Feedback">🤔</a></td>
     <td align="center"><a href="https://github.com/nt-cubic"><img src="https://avatars.githubusercontent.com/u/88926027?v=4?s=100" width="100px;" alt=""/><br /><sub><b>NT³</b></sub></a><br /><a href="#design-nt-cubic" title="Design">🎨</a> <a href="#ideas-nt-cubic" title="Ideas, Planning, & Feedback">🤔</a></td>
+    <td align="center"><a href="https://github.com/iwazaki-uta"><img src="https://avatars.githubusercontent.com/u/106610172?v=4?s=100" width="100px;" alt=""/><br /><sub><b>iwazaki-uta</b></sub></a><br /><a href="#ideas-iwazaki-uta" title="Ideas, Planning, & Feedback">🤔</a></td>
   </tr>
 </table>
 
