@@ -1,10 +1,30 @@
+import { join, map, pipe, split } from 'ramda'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import useSelectedFloorIdx from '../components/FloorFilter/useSelectedFloorIdx'
 import { Base, initLayoutInfo, selectSiteSettingsByFiltered } from '../core/base'
 import { SiteSettings } from '../preferences'
 import matchSearchPattern from '../utils/match-search-pattern'
 
-const prefix_regex = /\/|\\|-/
+const prefix_regex = /\/|\\|-|。|，|·|・|～|`|｀/
+
+const FULL_WIDTH_NUMBERS = [...`０１２３４５６７８９`]
+
+function toHalfWidthNumberChar(ch: string) {
+  const num = FULL_WIDTH_NUMBERS.indexOf(ch)
+  if (num !== -1) {
+    return String(num)
+  } else {
+    return ch
+  }
+}
+
+const toHalfWidthNumber = pipe(
+  split(''),
+  map(toHalfWidthNumberChar),
+  join('')
+)
+
+if (global) Object.assign(global, { toHalfWidthNumber })
 
 function toFloorName(left: string) {
   const [, ..._floor_name] = left
@@ -42,10 +62,13 @@ function selectFloorIdxByFloorName(
   return idx_list
 }
 
-function isFloorNumber(str: string) {
+function isFloorNumber(input_str: string) {
+  const test_str = toHalfWidthNumber(input_str)
   return (
-    /^[0-9]+$/.test(str) ||
-    /^[0-9]+F$/i.test(str)
+    /^[0-9]+$/.test(test_str) ||
+    /^[0-9]+F$/i.test(test_str) ||
+    /^[0-9]+ｆ$/i.test(test_str) ||
+    /^[0-9]+Ｆ$/i.test(test_str)
   )
 }
 
@@ -53,7 +76,7 @@ export function specifyFloorIdxBySearchText(text: string, site_settings: SiteSet
   const [ res, floor_name ] = getFloorName(text)
   if (res) {
     if (isFloorNumber(floor_name)) {
-      const f_number = parseInt(floor_name)
+      const f_number = parseInt(toHalfWidthNumber(floor_name))
       const select_floor_idx = f_number - 1
       if (select_floor_idx < site_settings.length) {
         return [ f_number - 1 ]
