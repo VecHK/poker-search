@@ -1,10 +1,30 @@
+import { join, map, pipe, split } from 'ramda'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import useSelectedFloorIdx from '../components/FloorFilter/useSelectedFloorIdx'
 import { Base, initLayoutInfo, selectSiteSettingsByFiltered } from '../core/base'
 import { SiteSettings } from '../preferences'
 import matchSearchPattern from '../utils/match-search-pattern'
 
-const prefix_regex = /\/|\\|-/
+const prefix_regex = /\/|\\|-|。|，|·|・|～|`|｀/
+
+const FULL_WIDTH_NUMBERS = [...`０１２３４５６７８９`]
+
+function toHalfWidthNumberChar(ch: string) {
+  const num = FULL_WIDTH_NUMBERS.indexOf(ch)
+  if (num !== -1) {
+    return String(num)
+  } else {
+    return ch
+  }
+}
+
+const toHalfWidthNumber = pipe(
+  split(''),
+  map(toHalfWidthNumberChar),
+  join('')
+)
+
+if (global) Object.assign(global, { toHalfWidthNumber })
 
 function toFloorName(left: string) {
   const [, ..._floor_name] = left
@@ -41,10 +61,31 @@ function selectFloorIdxByFloorName(
   )
   return idx_list
 }
-export function selectFloorIdxBySearchText(text: string, site_settings: SiteSettings) {
+
+function isFloorNumber(input_str: string) {
+  const test_str = toHalfWidthNumber(input_str)
+  return (
+    /^[0-9]+$/.test(test_str) ||
+    /^[0-9]+F$/i.test(test_str) ||
+    /^[0-9]+ｆ$/i.test(test_str) ||
+    /^[0-9]+Ｆ$/i.test(test_str)
+  )
+}
+
+export function specifyFloorIdxBySearchText(text: string, site_settings: SiteSettings) {
   const [ res, floor_name ] = getFloorName(text)
   if (res) {
-    return selectFloorIdxByFloorName(site_settings, floor_name)
+    if (isFloorNumber(floor_name)) {
+      const f_number = parseInt(toHalfWidthNumber(floor_name))
+      const select_floor_idx = f_number - 1
+      if (select_floor_idx < site_settings.length) {
+        return [ f_number - 1 ]
+      } else {
+        return selectFloorIdxByFloorName(site_settings, floor_name)
+      }
+    } else {
+      return selectFloorIdxByFloorName(site_settings, floor_name)
+    }
   } else {
     return []
   }
@@ -66,7 +107,7 @@ export default function useSearchForm(base: Base) {
   const [selected_floor_idx, setSelectedFloorIdx] = useSelectedFloorIdx(base)
 
   const trueSelectedFloorIdx = useCallback(() => {
-    const search_result_idx = selectFloorIdxBySearchText(keyword_input, base.preferences.site_settings)
+    const search_result_idx = specifyFloorIdxBySearchText(keyword_input, base.preferences.site_settings)
     if (search_result_idx.length) {
       return search_result_idx
     } else {
