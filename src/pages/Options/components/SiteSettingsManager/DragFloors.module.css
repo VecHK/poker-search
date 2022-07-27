@@ -18,6 +18,10 @@
   position: relative;
 }
 
+.FloorSettingItemInner {
+  padding-bottom: 20px;
+}
+
 .FloorSettingName:focus {
   border-bottom: solid 1px #3a3a45;
 }

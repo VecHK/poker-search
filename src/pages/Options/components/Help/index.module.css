@@ -1,0 +1,59 @@
+.CollapseSummary::marker {
+}
+.CollapseSummary:hover .CollapseSectionTitle {
+  /* transform: translateX(2px); */
+  text-decoration: underline;
+}
+.CollapseSummary {
+  cursor: pointer;
+}
+
+.CollapseSection:last-child {
+  margin-bottom: 0;
+}
+.CollapseSection {
+  margin-bottom: 10px;
+}
+
+.CollapseSectionTitle {
+  display: inline-block;
+
+  font-size: 18px;
+  padding-left: 4px;
+}
+.CollapseContent > :global(p):first-child {
+  margin-top: 0;
+}
+.CollapseContent > :global(p):last-child {
+  margin-bottom: 0;
+}
+
+.CollapseContent {
+  margin-top: 4px;
+  padding-left: 18px;
+}
+
+.ListItem :global(p):first-child {
+  margin-top: 0;
+}
+.ListItem :global(p):last-child {
+  margin-bottom: 0;
+}
+.ListItem :global(p) {
+  margin-top: 6px;
+  margin-bottom: 6px;
+}
+
+.ListItem:last-child {
+  margin-bottom: 0;
+}
+.ListItem {
+  margin-bottom: 10px;
+}
+.ListItemTitle {
+  font-size: 1.1em;
+  font-weight: 600;
+}
+.ListItemContent {
+  margin-top: 0px;
+}

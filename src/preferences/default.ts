@@ -21,7 +21,7 @@ export default function getDefaultPreferences(
     __is_poker__: true,
     version: 4,
     fill_empty_window: true,
-    refocus_window: true,
+    refocus_window: false,
     launch_poker_contextmenu: true,
     site_settings: getDefaultSiteSettings(),
     ...append,
