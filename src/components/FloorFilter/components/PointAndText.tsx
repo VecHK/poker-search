@@ -95,12 +95,12 @@ const FloorText = forwardRef<number, FloorTextProps>(({
   intervalWidth,
   text,
 }, ref) => {
-  const [offsetWidth, innerTextRef] = useOffsetWidth()
+  const [offset_width, innerTextRef] = useOffsetWidth()
 
   const angle = 35
   const height = useMemo(() => (
-    calcHeight(deg(angle), offsetWidth)
-  ), [offsetWidth])
+    calcHeight(deg(angle), offset_width)
+  ), [offset_width])
 
   const interval_top = 7
 

@@ -5,12 +5,13 @@ import IconSubmitSrc from './submit.svg'
 import IconSubmitClickedSrc from './submit-clicked.svg'
 
 const SearchForm: React.FC<{
+  only_mode: boolean
   keyword: string
   keywordPlaceholder?: string
   submitButtonActive: boolean
   setKeyword: React.Dispatch<React.SetStateAction<string>>
   onSubmit: (e: { keyword: string }) => void
-}> = ({ keyword, keywordPlaceholder, submitButtonActive, setKeyword, onSubmit }) => {
+}> = ({ only_mode, keyword, keywordPlaceholder, submitButtonActive, setKeyword, onSubmit }) => {
   const [focus, setFocus] = useState(false)
   const focusClass = focus ? s.Focus : ''
 
@@ -19,6 +20,8 @@ const SearchForm: React.FC<{
       className={`${s.SearchInputForm} ${focusClass}`}
       onSubmit={(e) => onSubmit(formDataTransform(e))}
     >
+      <div className={`${s.OnlyMode} ${only_mode ? s.OnlyModeActive : ''}`}></div>
+
       <KeywordInput
         value={keyword}
         placeholder={keywordPlaceholder}
@@ -26,6 +29,7 @@ const SearchForm: React.FC<{
         onFocus={() => setFocus(true)}
         onBlur={() => setFocus(false)}
       />
+
       <SubmitButton active={submitButtonActive} />
     </form>
   )

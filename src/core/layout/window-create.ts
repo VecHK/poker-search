@@ -1,10 +1,11 @@
 import { SearchWindowMatrix, SearchWindowRow, TabID, WindowID } from './window'
-import { Base } from '../base'
+import { Base, LayoutInfo } from '../base'
 import { SearchMatrix, SearchOption } from '../base/search-matrix'
 import { calcRealPos } from './pos'
 import { isCurrentRow } from './matrix'
 import { renderMatrix } from './render'
 import { Signal } from 'vait'
+import { removeAllFakeUARules, setFakeUA } from '../../utils/fake-ua'
 
 type PlainUnit = null
 type Unit = PlainUnit | {
@@ -56,6 +57,7 @@ type CreateOption = {
 
 export async function constructSearchWindowsFast(
   base: Base,
+  layout_info: LayoutInfo,
   search_matrix: SearchMatrix,
   keyword: string,
   creating_signal: Signal<void>,
@@ -73,7 +75,7 @@ export async function constructSearchWindowsFast(
       const { getSearchURL, is_plain } = search_option
       const url = getSearchURL(keyword)
 
-      const [left, top] = calcRealPos(base, row, col)
+      const [left, top] = calcRealPos(base.limit, layout_info, row, col)
 
       if (is_plain && (!base.preferences.fill_empty_window)) {
         create_row.push(null)
@@ -85,8 +87,8 @@ export async function constructSearchWindowsFast(
           window_data: {
             type: 'popup',
             focused: true,
-            width: base.info.window_width,
-            height: base.info.window_height,
+            width: layout_info.window_width,
+            height: layout_info.window_height,
             left,
             top,
           }
@@ -99,8 +101,8 @@ export async function constructSearchWindowsFast(
           window_data: {
             type: 'popup',
             focused: false,
-            width: base.info.window_width,
-            height: base.info.titlebar_height,
+            width: layout_info.window_width,
+            height: layout_info.titlebar_height,
             left,
             top,
           }
@@ -123,6 +125,8 @@ export async function constructSearchWindowsFast(
   }
   stop_creating_signal.receive(stopCreatingHandler)
 
+  await removeAllFakeUARules()
+
   for (const [row, create_row] of [...create_matrix].reverse().entries()) {
     const new_row: SearchWindowRow = []
     new_matrix.push(new_row)
@@ -144,11 +148,13 @@ export async function constructSearchWindowsFast(
         const [win, p] = OpenSearchWindow(create_opt.url, {
           ...create_opt.window_data
         })
-
         await p
         const windowId = win.getWindowId()
         const tabId = win.getTabId()
         created_window_ids.push(windowId)
+
+        await setFakeUA(tabId)
+
         const { search_option } = create_opt
         const is_debugger_attach = (search_option?.site_option?.access_mode === 'MOBILE-STRONG')
         new_row.push({
@@ -197,7 +203,7 @@ export async function constructSearchWindowsFast(
 
   new_matrix = [...new_matrix].reverse()
 
-  const waitting_render = renderMatrix(base, new_matrix, true, false)
+  const waitting_render = renderMatrix(base, layout_info, new_matrix, true, false)
   await waitting_render
 
   // 要在 renderMatrix 之后才取消 stop_creating_signal 的监听

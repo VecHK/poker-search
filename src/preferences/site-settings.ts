@@ -11,7 +11,7 @@ export function toMatrix(s: SiteSettings): Matrix<SiteOption> {
 
 export function generateSiteSettingFloor(
   row: SiteOption[],
-  name: string = cfg.DEFAULT_SITE_OPTION_NAME
+  name: string = cfg.DEFAULT_SITE_SETTING_FLOOR_NAME
 ): SiteSettingFloor {
   return {
     id: generateId(),

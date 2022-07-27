@@ -46,7 +46,7 @@ export default function AddToPoker({
   const [formRef, triggerSubmit] = useEditLayoutSubmit()
 
   return (
-    <footer className="AddToPoker">
+    <div className="AddToPoker">
       <ActionSwitch
         state={switchState}
         isPokerSearchIdentifier={isPokerSearchIdentifier}
@@ -83,7 +83,7 @@ export default function AddToPoker({
           </RenderEditLayout>
         )}
       </div>
-    </footer>
+    </div>
   )
 }
 

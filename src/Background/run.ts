@@ -2,7 +2,7 @@ import { ApplyChromeEvent } from '../utils/chrome-event'
 import { MessageEvent, sendMessage } from '../message'
 import { cleanControlLaunch, controlIsLaunched, getControlWindowId } from '../x-state/control-window-launched'
 
-import { regRules } from './modules/mobile-access'
+import initFirstAccessMobileDetecting from './modules/first-access-mobile-detecting'
 import GlobalCommand from './modules/gloal-command'
 import Omnibox from './modules/omnibox'
 import SelectionContextMenu from './modules/selection-contextmenu'
@@ -18,7 +18,7 @@ const [ applyTryPoker, ] = TryPoker()
 export default function runBackground() {
   console.log('runBackground')
 
-  regRules()
+  initFirstAccessMobileDetecting()
 
   applyGlobalCommand()
   applyOmnibox()

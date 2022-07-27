@@ -1,5 +1,7 @@
 const { id: chrome_id } = chrome.runtime
 
+const KEYWORD_REPLACEHOLDER = '%poker%'
+
 const cfg = Object.freeze({
   DEBUG_DEV_TOOLS_WIDTH: 640,
 
@@ -38,12 +40,12 @@ const cfg = Object.freeze({
   ENVIRONMENT_STORAGE_KEY: 'poker-env',
   PREFERENCES_STORAGE_KEY: 'poker-options',
 
-  KEYWORD_REPLACEHOLDER: '%poker%',
+  KEYWORD_REPLACEHOLDER,
 
   MOBILE_PAGE_IDENTIFIER: chrome_id,
 
   get PLAIN_SEARCH_WINDOW_URL_PATTERN() {
-    return chrome.runtime.getURL(`/plainWindow.html?q=${cfg.KEYWORD_REPLACEHOLDER}`)
+    return chrome.runtime.getURL(`/plainWindow.html?q=${KEYWORD_REPLACEHOLDER}`)
   },
 
   get DEFAULT_SITE_ICON() {
@@ -51,30 +53,32 @@ const cfg = Object.freeze({
   },
 
   EXPORT_SITE_SETTINGS_FILE_NAME: 'poker-sites.json',
-  DEFAULT_SITE_OPTION_NAME: '站点',
+  DEFAULT_SITE_SETTING_FLOOR_NAME: '',
+
+  MOBILE_USER_AGNET: 'Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Mobile/15E148 Safari/604.1',
 
   get DEFAULT_SITES() {
     return [
       [
-        `https://www.google.com/search?q=${cfg.KEYWORD_REPLACEHOLDER}`,
-        `http://www.baidu.com/s?ie=utf-8&f=8&wd=${cfg.KEYWORD_REPLACEHOLDER}`,
-        `https://www.bing.com/search?q=${cfg.KEYWORD_REPLACEHOLDER}`,
-        `https://duckduckgo.com/?q=${cfg.KEYWORD_REPLACEHOLDER}`,
-        `https://www.reddit.com/search/?q=${cfg.KEYWORD_REPLACEHOLDER}`,
-        `https://mobile.twitter.com/search?q=${cfg.KEYWORD_REPLACEHOLDER}&src=typeahead_click`,
+        `https://www.google.com/search?q=${KEYWORD_REPLACEHOLDER}`,
+        `http://www.baidu.com/s?ie=utf-8&f=8&wd=${KEYWORD_REPLACEHOLDER}`,
+        `https://www.bing.com/search?q=${KEYWORD_REPLACEHOLDER}`,
+        `https://duckduckgo.com/?q=${KEYWORD_REPLACEHOLDER}`,
+        `https://www.reddit.com/search/?q=${KEYWORD_REPLACEHOLDER}`,
+        `https://mobile.twitter.com/search?q=${KEYWORD_REPLACEHOLDER}&src=typeahead_click`,
       ],
       [
-        `https://www.youtube.com/results?search_query=${cfg.KEYWORD_REPLACEHOLDER}`,
-        `https://search.bilibili.com/all?keyword=${cfg.KEYWORD_REPLACEHOLDER}`,
-        `https://www.zhihu.com/search?type=content&q=${cfg.KEYWORD_REPLACEHOLDER}`,
-        `https://www.douban.com/search?source=suggest&q=${cfg.KEYWORD_REPLACEHOLDER}`,
-        `https://www.google.com/maps/search/${cfg.KEYWORD_REPLACEHOLDER}`,
-        `https://www.deepl.com/ja/translator#en/zh/${cfg.KEYWORD_REPLACEHOLDER}`,
+        `https://www.youtube.com/results?search_query=${KEYWORD_REPLACEHOLDER}`,
+        `https://search.bilibili.com/all?keyword=${KEYWORD_REPLACEHOLDER}`,
+        `https://www.zhihu.com/search?type=content&q=${KEYWORD_REPLACEHOLDER}`,
+        `https://www.douban.com/search?source=suggest&q=${KEYWORD_REPLACEHOLDER}`,
+        `https://www.google.com/maps/search/${KEYWORD_REPLACEHOLDER}`,
+        `https://www.deepl.com/ja/translator#en/zh/${KEYWORD_REPLACEHOLDER}`,
       ],
       [
-        `https://github.com/search?q=${cfg.KEYWORD_REPLACEHOLDER}`,
-        `https://stackoverflow.com/search?q=${cfg.KEYWORD_REPLACEHOLDER}`,
-        `https://www.artstation.com/search?sort_by=relevance&query=${cfg.KEYWORD_REPLACEHOLDER}`,
+        `https://github.com/search?q=${KEYWORD_REPLACEHOLDER}`,
+        `https://stackoverflow.com/search?q=${KEYWORD_REPLACEHOLDER}`,
+        `https://www.artstation.com/search?sort_by=relevance&query=${KEYWORD_REPLACEHOLDER}`,
       ]
     ]
   },

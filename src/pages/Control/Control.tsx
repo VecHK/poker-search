@@ -1,5 +1,5 @@
 import { compose, equals, prop } from 'ramda'
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { ReactNode, useCallback, useEffect, useMemo } from 'react'
 
 import cfg from '../../config'
 
@@ -15,6 +15,7 @@ import animatingWindow from '../../utils/animating-window'
 import useWindowFocus from '../../hooks/useWindowFocus'
 import useControl from '../../hooks/useControl'
 import useReFocusMessage from '../../hooks/useReFocusMessage'
+import useSearchForm from '../../hooks/useSearchForm'
 
 import Loading from '../../components/Loading'
 import SearchForm from '../../components/SearchForm'
@@ -24,7 +25,7 @@ import FloorFilter from '../../components/FloorFilter'
 import BGSrc from '../../assets/control-bg.png'
 
 import './Control.css'
-import useSelectedFloorIdx from '../../components/FloorFilter/useSelectedFloorIdx'
+import { getControlWindowHeight } from '../../core/base/control-window-height'
 
 function useChangeRowShortcutKey(props: {
   onPressUp: () => void
@@ -47,20 +48,27 @@ function useChangeRowShortcutKey(props: {
 
 const ControlApp: React.FC<{
   base: Base
+  showTips: (t: ReactNode) => void
   controlWindowId: WindowID
   onSelectedFloorChange: (f: number[]) => void
-}> = ({ base, controlWindowId, onSelectedFloorChange }) => {
-  const [keywordInput, setKeywordInput] = useState('')
-  const [submitedKeyword, submitKeyword] = useState<string | false>(false)
+}> = ({ base, showTips, controlWindowId, onSelectedFloorChange }) => {
+  const {
+    keyword_input,
+    setKeywordInput,
+    submited_keyword,
+    submitKeyword,
 
-  const [selected_floor_idx, setSelectedFloorIdx] = useSelectedFloorIdx(base)
+    is_floor_search,
+    setSelectedFloorIdx,
+    trueSelectedFloorIdx,
 
-  const [disable_search, setDisableSearch] = useState<boolean>(
-    !base.filtered_site_settings.length
-  )
-  useEffect(() => {
-    setDisableSearch(!base.filtered_site_settings.length)
-  }, [base.filtered_site_settings.length])
+    disable_search,
+
+    selected_site_settings,
+    layout_info,
+
+    getSelectedFloorName,
+  } = useSearchForm(base)
 
   const windowIsFocus = useWindowFocus(true)
 
@@ -69,11 +77,11 @@ const ControlApp: React.FC<{
     setLoading,
     control,
     setControl,
-    cleanControl,
+    closeSearchWindows,
     refreshWindows,
     changeRow: controlChangeRow,
     controlProcessing,
-  } = useControl(base)
+  } = useControl(base, layout_info)
 
   const focusControlWindow = useCallback(async () => {
     return chrome.windows.update(controlWindowId, { focused: true })
@@ -83,15 +91,15 @@ const ControlApp: React.FC<{
 
   const moveControlWindow = useCallback(async (id: WindowID) => {
     const [ top, left ] = calcControlWindowPos(
-      base.control_window_height,
-      base.layout_height,
+      getControlWindowHeight(selected_site_settings),
+      layout_info.total_height,
       base.limit
     )
     const win = await chrome.windows.get(id)
 
     const not_move = equals(
       [win.top, win.left, win.height],
-      [top, left, base.control_window_height]
+      [top, left, getControlWindowHeight(selected_site_settings)]
     )
 
     if (!not_move) {
@@ -102,10 +110,10 @@ const ControlApp: React.FC<{
       }, {
         top,
         left,
-        height: base.control_window_height,
+        height: getControlWindowHeight(selected_site_settings),
       })
     }
-  }, [base.control_window_height, base.layout_height, base.limit])
+  }, [base.limit, layout_info.total_height, selected_site_settings])
 
   function changeRow(act: 'previus' | 'next') {
     controlChangeRow(act).then(focusControlWindow)
@@ -116,15 +124,15 @@ const ControlApp: React.FC<{
   })
 
   useEffect(function openSearchWindows() {
-    console.log('openSearchWindows', controlWindowId, submitedKeyword)
-    if (submitedKeyword !== false) {
+    console.log('openSearchWindows', controlWindowId, submited_keyword)
+    if (submited_keyword !== false) {
       if (control === null) {
-        refreshWindows(controlWindowId, submitedKeyword).finally(() => {
+        refreshWindows(controlWindowId, layout_info, submited_keyword).finally(() => {
           focusControlWindow()
         })
       }
     }
-  }, [cleanControl, control, controlWindowId, focusControlWindow, refreshWindows, submitedKeyword])
+  }, [control, controlWindowId, focusControlWindow, layout_info, refreshWindows, submited_keyword])
 
   useEffect(function focusControlWindowAfterLoad() {
     focusControlWindow()
@@ -138,7 +146,7 @@ const ControlApp: React.FC<{
         setKeywordInput(searchWord)
       }
     }
-  }, [])
+  }, [setKeywordInput, submitKeyword])
 
   const handleSubmit = useCallback((newSearchKeyword: string) => {
     console.log('onSubmit')
@@ -149,7 +157,8 @@ const ControlApp: React.FC<{
         console.log('onSubmit', newSearchKeyword)
         setLoading(true)
         if (control) {
-          await cleanControl(control)
+          control.cancelAllEvent()
+          await closeSearchWindows(control)
         }
         moveControlWindow(controlWindowId).then(() => {
           setControl(() => {
@@ -161,7 +170,7 @@ const ControlApp: React.FC<{
         })
       })
     }
-  }, [cleanControl, control, controlProcessing, controlWindowId, moveControlWindow, setControl, setLoading])
+  }, [closeSearchWindows, control, controlProcessing, controlWindowId, moveControlWindow, setControl, setKeywordInput, setLoading, submitKeyword])
 
   useEffect(function receiveChangeSearchMessage() {
     const [ applyReceive, cancelReceive ] = MessageEvent('ChangeSearch', (new_keyword) => {
@@ -180,6 +189,7 @@ const ControlApp: React.FC<{
     if (disable_search) {
       return (
         <SearchForm
+          only_mode={false}
           keywordPlaceholder={'请选择至少一层的站点配置'}
           keyword={''}
           setKeyword={() => {}}
@@ -190,8 +200,9 @@ const ControlApp: React.FC<{
     } else {
       return (
         <SearchForm
+          only_mode={is_floor_search}
           keywordPlaceholder={'请输入搜索词'}
-          keyword={keywordInput}
+          keyword={keyword_input}
           setKeyword={setKeywordInput}
           submitButtonActive={windowIsFocus}
           onSubmit={
@@ -203,7 +214,7 @@ const ControlApp: React.FC<{
         />
       )
     }
-  }, [disable_search, handleSubmit, keywordInput, windowIsFocus])
+  }, [disable_search, handleSubmit, is_floor_search, keyword_input, setKeywordInput, windowIsFocus])
 
   return (
     <main className="control-main" style={{ background: `url(${BGSrc})` }}>
@@ -218,12 +229,17 @@ const ControlApp: React.FC<{
           <div className="floor-filter-wrapper">
             <FloorFilter
               siteSettings={base.preferences.site_settings}
-              selectedFloors={selected_floor_idx}
+              selectedFloors={trueSelectedFloorIdx()}
               totalFloor={base.preferences.site_settings.length}
               onChange={(filtered) => {
-                console.log('filtered onChange', filtered)
-                onSelectedFloorChange(filtered)
-                setSelectedFloorIdx(filtered)
+                const selected_floor_name = getSelectedFloorName()
+                if (selected_floor_name) {
+                  showTips(<>你已经限定了<b>{selected_floor_name}</b>，因此现在无法调整楼层</>)
+                } else {
+                  console.log('filtered onChange', filtered)
+                  onSelectedFloorChange(filtered)
+                  setSelectedFloorIdx(filtered)
+                }
               }}
             />
           </div>

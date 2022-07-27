@@ -17,3 +17,36 @@
 
   overflow: hidden;
 }
+
+.footer {
+  background-color: var(--footer-background);
+  border-top: solid 1px hsl(240deg 2% 23% / 15%);
+
+  box-shadow:
+    inset 0 var(--footer-shadow-size) var(--footer-shadow-size) calc(-1 * var(--footer-shadow-size)) var(--footer-shadow-color),
+    inset 0 calc(-1 * var(--footer-shadow-size)) var(--footer-shadow-size) calc(-1 * var(--footer-shadow-size)) var(--footer-shadow-color)
+  ;
+}
+
+.bottom-tips.show {
+  height: var(--footer-height);
+}
+.bottom-tips {
+  position: relative;
+  height: 0;
+
+  text-align: center;
+  overflow: hidden;
+  transition: height 382ms;
+  color: hsl(219deg 59% 46%);
+  user-select: none;
+}
+
+.bottom-tips-inner {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: var(--footer-height);
+  line-height: var(--footer-height);
+}
