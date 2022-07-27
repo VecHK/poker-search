@@ -1,9 +1,9 @@
 import { compose, equals, prop } from 'ramda'
-import React, { ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
+import React, { ReactNode, useCallback, useEffect, useMemo } from 'react'
 
 import cfg from '../../config'
 
-import { Base, initLayoutInfo, selectSiteSettingsByFiltered } from '../../core/base'
+import { Base } from '../../core/base'
 import { calcControlWindowPos } from '../../core/layout/control-window'
 import { WindowID } from '../../core/layout/window'
 import { MessageEvent } from '../../message'
@@ -11,12 +11,11 @@ import { MessageEvent } from '../../message'
 import getQuery from '../../utils/get-query'
 import { validKeyword } from '../../utils/search'
 import animatingWindow from '../../utils/animating-window'
-import matchSearchPattern from '../../utils/match-search-pattern'
 
 import useWindowFocus from '../../hooks/useWindowFocus'
 import useControl from '../../hooks/useControl'
 import useReFocusMessage from '../../hooks/useReFocusMessage'
-import useSelectedFloorIdx from '../../components/FloorFilter/useSelectedFloorIdx'
+import useSearchForm from '../../hooks/useSearchForm'
 
 import Loading from '../../components/Loading'
 import SearchForm from '../../components/SearchForm'
@@ -47,87 +46,29 @@ function useChangeRowShortcutKey(props: {
   }, [props])
 }
 
-function toFloorName(left: string) {
-  const [, ..._floor_name] = left
-  const floor_name = _floor_name.join('')
-  return floor_name
-}
-
 const ControlApp: React.FC<{
   base: Base
   showTips: (t: ReactNode) => void
   controlWindowId: WindowID
   onSelectedFloorChange: (f: number[]) => void
 }> = ({ base, showTips, controlWindowId, onSelectedFloorChange }) => {
-  const [keywordInput, setKeywordInput] = useState('')
-  const [submitedKeyword, _submitKeyword] = useState<string | false>(false)
-  const submitKeyword = useCallback((str: string) => {
-    const [ result, , right ] = matchSearchPattern(str)
-    if (result) {
-      _submitKeyword(right)
-    } else {
-      _submitKeyword(str)
-    }
-  }, [])
+  const {
+    keyword_input,
+    setKeywordInput,
+    submited_keyword,
+    submitKeyword,
 
-  const [selected_floor_idx, setSelectedFloorIdx] = useSelectedFloorIdx(base)
+    is_floor_search,
+    setSelectedFloorIdx,
+    trueSelectedFloorIdx,
 
-  const [ result, left ] = matchSearchPattern(keywordInput)
-  const is_floor_search = result && (left[0] === '/')
-  const trueSelectedFloorIdx = useCallback(() => {
-    const [ result, left ] = matchSearchPattern(keywordInput)
-    if (result && (left[0] === '/')) {
-      const floor_name = toFloorName(left)
+    disable_search,
 
-      const idx_list = (
-        base.preferences.site_settings.reduce<number[]>((idx_list, f, idx) => {
-          if (f.name === floor_name) {
-            return [...idx_list, idx]
-          } else {
-            return idx_list
-          }
-        }, [])
-      )
-      if (idx_list.length) {
-        return idx_list
-      } else {
-        return selected_floor_idx
-      }
-    } else {
-      return selected_floor_idx
-    }
-  }, [base.preferences.site_settings, keywordInput, selected_floor_idx])
+    selected_site_settings,
+    layout_info,
 
-  const s_ids = useMemo(() => (
-    base.preferences.site_settings.map(s => s.id)
-  ), [base.preferences.site_settings])
-  const filtered_floor_ids = useMemo(() => (
-    s_ids.filter((_, idx) => {
-      return trueSelectedFloorIdx().indexOf(idx) === -1
-    })
-  ), [s_ids, trueSelectedFloorIdx])
-
-  const selected_site_settings = useMemo(() => (
-    selectSiteSettingsByFiltered(
-      base.preferences.site_settings,
-      filtered_floor_ids
-    )
-  ), [base.preferences.site_settings, filtered_floor_ids])
-
-  const layout_info = useMemo(() => (
-    initLayoutInfo(
-      base.environment,
-      base.limit,
-      selected_site_settings,
-    )
-  ), [base.environment, base.limit, selected_site_settings])
-
-  const [disable_search, setDisableSearch] = useState<boolean>(
-    !selected_site_settings.length
-  )
-  useEffect(() => {
-    setDisableSearch(!selected_site_settings.length)
-  }, [selected_site_settings.length])
+    getSelectedFloorName,
+  } = useSearchForm(base)
 
   const windowIsFocus = useWindowFocus(true)
 
@@ -183,15 +124,15 @@ const ControlApp: React.FC<{
   })
 
   useEffect(function openSearchWindows() {
-    console.log('openSearchWindows', controlWindowId, submitedKeyword)
-    if (submitedKeyword !== false) {
+    console.log('openSearchWindows', controlWindowId, submited_keyword)
+    if (submited_keyword !== false) {
       if (control === null) {
-        refreshWindows(controlWindowId, layout_info, submitedKeyword).finally(() => {
+        refreshWindows(controlWindowId, layout_info, submited_keyword).finally(() => {
           focusControlWindow()
         })
       }
     }
-  }, [control, controlWindowId, focusControlWindow, layout_info, refreshWindows, submitedKeyword])
+  }, [control, controlWindowId, focusControlWindow, layout_info, refreshWindows, submited_keyword])
 
   useEffect(function focusControlWindowAfterLoad() {
     focusControlWindow()
@@ -205,7 +146,7 @@ const ControlApp: React.FC<{
         setKeywordInput(searchWord)
       }
     }
-  }, [])
+  }, [setKeywordInput, submitKeyword])
 
   const handleSubmit = useCallback((newSearchKeyword: string) => {
     console.log('onSubmit')
@@ -229,7 +170,7 @@ const ControlApp: React.FC<{
         })
       })
     }
-  }, [closeSearchWindows, control, controlProcessing, controlWindowId, moveControlWindow, setControl, setLoading])
+  }, [closeSearchWindows, control, controlProcessing, controlWindowId, moveControlWindow, setControl, setKeywordInput, setLoading, submitKeyword])
 
   useEffect(function receiveChangeSearchMessage() {
     const [ applyReceive, cancelReceive ] = MessageEvent('ChangeSearch', (new_keyword) => {
@@ -248,7 +189,7 @@ const ControlApp: React.FC<{
     if (disable_search) {
       return (
         <SearchForm
-          only_mode={is_floor_search}
+          only_mode={false}
           keywordPlaceholder={'请选择至少一层的站点配置'}
           keyword={''}
           setKeyword={() => {}}
@@ -261,7 +202,7 @@ const ControlApp: React.FC<{
         <SearchForm
           only_mode={is_floor_search}
           keywordPlaceholder={'请输入搜索词'}
-          keyword={keywordInput}
+          keyword={keyword_input}
           setKeyword={setKeywordInput}
           submitButtonActive={windowIsFocus}
           onSubmit={
@@ -273,7 +214,7 @@ const ControlApp: React.FC<{
         />
       )
     }
-  }, [disable_search, handleSubmit, is_floor_search, keywordInput, windowIsFocus])
+  }, [disable_search, handleSubmit, is_floor_search, keyword_input, setKeywordInput, windowIsFocus])
 
   return (
     <main className="control-main" style={{ background: `url(${BGSrc})` }}>
@@ -291,8 +232,9 @@ const ControlApp: React.FC<{
               selectedFloors={trueSelectedFloorIdx()}
               totalFloor={base.preferences.site_settings.length}
               onChange={(filtered) => {
-                if (is_floor_search) {
-                  showTips(<>你已经限定了<b>{toFloorName(left || '')}</b>，因此现在无法调整楼层</>)
+                const selected_floor_name = getSelectedFloorName()
+                if (selected_floor_name) {
+                  showTips(<>你已经限定了<b>{selected_floor_name}</b>，因此现在无法调整楼层</>)
                 } else {
                   console.log('filtered onChange', filtered)
                   onSelectedFloorChange(filtered)
