@@ -21,7 +21,9 @@ export function generateSiteSettingFloor(
 }
 
 export function toSearchURL(urlPattern: URLPattern, keyword: string) {
-  return urlPattern.replace(cfg.KEYWORD_REPLACEHOLDER, encodeURIComponent(keyword))
+  return urlPattern
+    .replace(cfg.KEYWORD_REPLACEHOLDER, encodeURIComponent(keyword))
+    .replace(cfg.KEYWORD_REPLACEHOLDER_WITH_BASE64, btoa(keyword))
 }
 
 export function addMobileIdentifier(url: string) {

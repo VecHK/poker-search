@@ -1,6 +1,7 @@
 const { id: chrome_id } = chrome.runtime
 
 const KEYWORD_REPLACEHOLDER = '%poker%'
+const KEYWORD_REPLACEHOLDER_WITH_BASE64 = '|poker|'
 
 const cfg = Object.freeze({
   DEBUG_DEV_TOOLS_WIDTH: 640,
@@ -41,6 +42,7 @@ const cfg = Object.freeze({
   PREFERENCES_STORAGE_KEY: 'poker-options',
 
   KEYWORD_REPLACEHOLDER,
+  KEYWORD_REPLACEHOLDER_WITH_BASE64,
 
   MOBILE_PAGE_IDENTIFIER: chrome_id,
 
