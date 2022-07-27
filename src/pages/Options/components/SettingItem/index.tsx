@@ -5,6 +5,7 @@ import SettingItemTitle from './SettingItemTitle'
 
 export default function SettingItem(props: {
   className?: string
+  innerClassName?: string
   title?: ReactNode
   disableMargin?: boolean
   children: ReactNode
@@ -20,7 +21,7 @@ export default function SettingItem(props: {
   return (
     <div className={`${s.SettingItem} ${props.className ? props.className : ''}`} style={{ margin: props.disableMargin ? 'unset' : '' }}>
       {tilteNode}
-      <div className={s.SettingItemInner}>
+      <div className={`${s.SettingItemInner} ${props.innerClassName ? props.innerClassName : ''}`}>
         {props.children}
       </div>
     </div>

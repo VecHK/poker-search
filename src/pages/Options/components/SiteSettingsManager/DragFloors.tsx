@@ -172,7 +172,7 @@ export default function DragFloors() {
                                 marginBottom: `${list_item_margin_bottom}px`,
                               }}
                             >
-                              <SettingItem className={s.FloorSettingItem} disableMargin>
+                              <SettingItem className={s.FloorSettingItem} innerClassName={s.FloorSettingItemInner} disableMargin>
                                 <input
                                   className={s.FloorSettingName}
                                   placeholder="请输入楼层名"
