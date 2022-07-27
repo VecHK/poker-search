@@ -3,7 +3,7 @@ import React, { CSSProperties, useCallback, useEffect, useMemo, useRef, useState
 
 import { getSelectedRange, rangeToFloors } from './utils'
 
-import PointAndText from './components/PointAndText'
+import PointAndText, { FloorLabel, FloorPoint } from './components/PointAndText'
 import Selected from './components/Selected'
 import useMouseDrag from './hooks/useMouseDrag'
 import useOffsetWidth from './hooks/useOffsetWidth'
@@ -19,7 +19,7 @@ type FloorFilterProps = {
   onChange: (fs: SelectedFloors) => void
 }
 
-export default function FloorFilter({
+function FloorFilterMulti({
   siteSettings,
   selectedFloors,
   totalFloor,
@@ -114,7 +114,6 @@ export default function FloorFilter({
 
   const PointAndText_height_ref = useRef<number>(null)
 
-
   const [text_height, setTextHeight] = useState(
     PointAndText_height_ref.current || 0
   )
@@ -171,5 +170,48 @@ export default function FloorFilter({
         }}
       />
     </div>
+  )
+}
+
+function FloorFilterSingle({
+  siteSettings,
+  selectedFloors,
+  totalFloor,
+  onChange,
+}: FloorFilterProps) {
+  const is_selected = selectedFloors.indexOf(0) !== -1
+
+  return (
+    <div className={s.FloorFilterSingle}>
+      <FloorPoint
+        isHighlight={is_selected}
+        onClick={() => {
+          if (is_selected) {
+            onChange([])
+          } else {
+            onChange([0])
+          }
+        }}
+      />
+      <div className={s.Interval}></div>
+      <FloorLabel highlight={is_selected}>{siteSettings[0]?.name || '1F'}</FloorLabel>
+    </div>
+  )
+}
+
+export default function FloorFilter(props: FloorFilterProps) {
+  return (
+    <div className={s.FloorFilterWrapper}>{(() => {
+      switch (props.siteSettings.length) {
+        case 0:
+          return <>空站点配置</>
+
+        case 1:
+          return <FloorFilterSingle {...props} />
+
+        default:
+          return <FloorFilterMulti {...props} />
+      }
+    })()}</div>
   )
 }
