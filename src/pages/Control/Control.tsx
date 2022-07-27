@@ -123,6 +123,10 @@ const ControlApp: React.FC<{
     onPressDown: () => changeRow('next')
   })
 
+  useEffect(function firstLoadAdjustPosition() {
+    moveControlWindow(controlWindowId)
+  }, [controlWindowId, moveControlWindow])
+
   useEffect(function openSearchWindows() {
     console.log('openSearchWindows', controlWindowId, submited_keyword)
     if (submited_keyword !== false) {
