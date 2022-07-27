@@ -1,0 +1,330 @@
+{
+  "__is_poker__": true,
+  "version": 4,
+  "fill_empty_window": true,
+  "refocus_window": true,
+  "launch_poker_contextmenu": true,
+  "site_settings": [
+    {
+      "id": "AVDKWOEBWSEBSUSJ",
+      "name": "搜索",
+      "row": [
+        {
+          "access_mode": "MOBILE",
+          "icon": null,
+          "id": "ZVEMEVXXDYYILUSF",
+          "name": "__DEFAULT_NAME__",
+          "url_pattern": "https://www.google.com/search?q=%poker%"
+        },
+        {
+          "access_mode": "MOBILE",
+          "icon": null,
+          "id": "YASDELKLLZBDPGTO",
+          "name": "__DEFAULT_NAME__",
+          "url_pattern": "http://www.baidu.com/s?ie=utf-8&f=8&wd=%poker%"
+        },
+        {
+          "access_mode": "MOBILE",
+          "icon": null,
+          "id": "TSHCQLXCCEDRNLYE",
+          "name": "__DEFAULT_NAME__",
+          "url_pattern": "https://www.bing.com/search?q=%poker%"
+        },
+        {
+          "access_mode": "MOBILE-STRONG",
+          "icon": null,
+          "id": "FMAHZYWMQUTAMPSA",
+          "name": "__DEFAULT_NAME__",
+          "url_pattern": "https://duckduckgo.com/?q=%poker%"
+        },
+        {
+          "access_mode": "MOBILE",
+          "icon": null,
+          "id": "SQWDVMIRKGEJILQO",
+          "name": "_DEFAULT_NAME_",
+          "url_pattern": "https://search.yahoo.com/search;_ylt=Awr90Lmor9Jibc4OnulXNyoA;_ylc=X1MDMjc2NjY3OQRfcgMyBGZyA3NmcARmcjIDc2ItdG9wBGdwcmlkA3F1WEs3RTdUUWs2SmM1WXR1NmxocEEEbl9yc2x0AzAEbl9zdWdnAzEwBG9yaWdpbgNzZWFyY2gueWFob28uY29tBHBvcwMwBHBxc3RyAwRwcXN0cmwDMARxc3RybAM1BHF1ZXJ5A3Bva2VyBHRfc3RtcAMxNjU3OTc0Nzcw?p=%poker%&fr2=sb-top&fr=sfp"
+        },
+        {
+          "access_mode": "MOBILE",
+          "icon": null,
+          "id": "QWGHTWHOAQZHEVOM",
+          "name": "__DEFAULT_NAME__",
+          "url_pattern": "https://www.zhihu.com/search?type=content&q=%poker%"
+        }
+      ]
+    },
+    {
+      "id": "IMHTIJTIFUMGKBGA",
+      "name": "游戏",
+      "row": [
+        {
+          "access_mode": "MOBILE",
+          "icon": null,
+          "id": "HXHHVHKFERGSBDMR",
+          "name": "__DEFAULT_NAME__",
+          "url_pattern": "https://www.youtube.com/results?search_query=%poker%"
+        },
+        {
+          "access_mode": "MOBILE",
+          "icon": null,
+          "id": "HPFTOLPUAOTMDNHJ",
+          "name": "_DEFAULT_NAME_",
+          "url_pattern": "https://store.steampowered.com/search/?term=%poker%"
+        },
+        {
+          "access_mode": "MOBILE",
+          "icon": null,
+          "id": "EKKZEFBKSDCHLMPL",
+          "name": "_DEFAULT_NAME_",
+          "url_pattern": "https://www.metacritic.com/search/all/%poker%/results"
+        },
+        {
+          "access_mode": "MOBILE",
+          "icon": null,
+          "id": "FPAQKULOEKEQWOND",
+          "name": "_DEFAULT_NAME_",
+          "url_pattern": "https://bangumi.tv/subject_search/%poker%?cat=all"
+        },
+        {
+          "access_mode": "DESKTOP",
+          "icon": null,
+          "id": "VFQYRDQFENJMVEGF",
+          "name": "_DEFAULT_NAME_",
+          "url_pattern": "https://www.vgtime.com/search/list.jhtml?keyword=%poker%"
+        },
+        {
+          "access_mode": "MOBILE",
+          "icon": null,
+          "id": "MWHHYJZMSBIQQOFD",
+          "name": "_DEFAULT_NAME_",
+          "url_pattern": "https://m.douban.com/search/?query=%poker%"
+        }
+      ]
+    },
+    {
+      "id": "XITXIAMQXSBRDRUH",
+      "name": "社交",
+      "row": [
+        {
+          "access_mode": "MOBILE",
+          "icon": null,
+          "id": "GEVEQNDLLWJVLJVX",
+          "name": "_DEFAULT_NAME_",
+          "url_pattern": "https://xtea.io/ts_en.html?MOBILE_PAGE_IDENTIFIER=ehmafbeimeembbfabdliegfiepljgmcf#gsc.tab=0&gsc.q=%poker%&gsc.sort="
+        },
+        {
+          "access_mode": "MOBILE",
+          "icon": null,
+          "id": "KWJPWSQKETTJARFB",
+          "name": "_DEFAULT_NAME_",
+          "url_pattern": "https://www.tumblr.com/search/%poker%"
+        },
+        {
+          "access_mode": "MOBILE",
+          "icon": null,
+          "id": "HVLCMPSDULWQFMAG",
+          "name": "_DEFAULT_NAME_",
+          "url_pattern": "https://www.instagram.com/explore/search/keyword/?q=%poker%"
+        },
+        {
+          "access_mode": "MOBILE",
+          "icon": null,
+          "id": "BWYDVCHPTGQXZQEB",
+          "name": "__DEFAULT_NAME__",
+          "url_pattern": "https://mobile.twitter.com/search?q=%poker%&src=typeahead_click"
+        },
+        {
+          "access_mode": "MOBILE",
+          "icon": null,
+          "id": "BLTTWMXDLLOMQBIY",
+          "name": "__DEFAULT_NAME__",
+          "url_pattern": "https://www.reddit.com/search/?q=%poker%"
+        },
+        {
+          "access_mode": "MOBILE",
+          "icon": null,
+          "id": "PJFUEONXODKFWVJG",
+          "name": "_DEFAULT_NAME_",
+          "url_pattern": "https://m.weibo.cn/search?containerid=100103type%3D1%26q%3D%poker%"
+        }
+      ]
+    },
+    {
+      "id": "OMFDHUAGDIKYGTPQ",
+      "name": "视频",
+      "row": [
+        {
+          "access_mode": "MOBILE",
+          "icon": null,
+          "id": "OSZSGDELRRDDJDOR",
+          "name": "_DEFAULT_NAME_",
+          "url_pattern": "https://www.youtube.com/results?search_query=%poker%"
+        },
+        {
+          "access_mode": "MOBILE",
+          "icon": null,
+          "id": "ZYOEDZKUUFFWHAVB",
+          "name": "__DEFAULT_NAME__",
+          "url_pattern": "https://search.bilibili.com/all?keyword=%poker%"
+        },
+        {
+          "access_mode": "MOBILE",
+          "icon": null,
+          "id": "FIFGYOQIIKSDWRLI",
+          "name": "_DEFAULT_NAME_",
+          "url_pattern": "https://www.nicovideo.jp/search/%poker%?ref=nicotop_search"
+        },
+        {
+          "access_mode": "MOBILE",
+          "icon": null,
+          "id": "NTGWXBBDOFFYMJBW",
+          "name": "_DEFAULT_NAME_",
+          "url_pattern": "https://oreno3d.com/search?keyword=%poker%"
+        }
+      ]
+    },
+    {
+      "id": "KLOTVZPFGKKHUSMZ",
+      "name": "百科",
+      "row": [
+        {
+          "access_mode": "MOBILE",
+          "icon": null,
+          "id": "OIICXPVKOTNDIKBS",
+          "name": "_DEFAULT_NAME_",
+          "url_pattern": "https://baike.baidu.com/search?word=%poker%&pn=0&rn=0&enc=utf8"
+        },
+        {
+          "access_mode": "MOBILE",
+          "icon": null,
+          "id": "GAGNKZJLQTQPWVKN",
+          "name": "_DEFAULT_NAME_",
+          "url_pattern": "https://en.wikipedia.org/w/index.php?search=%poker%&title=Special:Search&profile=advanced&fulltext=1&ns0=1"
+        },
+        {
+          "access_mode": "MOBILE",
+          "icon": null,
+          "id": "QSTYZIZZUXUDRCIC",
+          "name": "_DEFAULT_NAME_",
+          "url_pattern": "https://ja.wikipedia.org/w/index.php?search=%poker%&title=%E7%89%B9%E5%88%A5%3A%E6%A4%9C%E7%B4%A2&ns0=1"
+        },
+        {
+          "access_mode": "MOBILE",
+          "icon": null,
+          "id": "TRRTWFHQYNUDXGBS",
+          "name": "_DEFAULT_NAME_",
+          "url_pattern": "https://zh.wikipedia.org/w/index.php?search=%poker%&title=Special%3A%E6%90%9C%E7%B4%A2&go=%E5%89%8D%E5%BE%80&ns0=1"
+        },
+        {
+          "access_mode": "MOBILE",
+          "icon": null,
+          "id": "COTSKLBMWXQBIUCR",
+          "name": "_DEFAULT_NAME_",
+          "url_pattern": "https://zh.moegirl.org.cn/index.php?search=%poker%&title=Special:%E6%90%9C%E7%B4%A2&profile=default&fulltext=1&searchToken=cpsvyphinsempz654uaf3q4xi"
+        },
+        {
+          "access_mode": "MOBILE",
+          "icon": null,
+          "id": "CKWQINICAUUWAIJE",
+          "name": "_DEFAULT_NAME_",
+          "url_pattern": "https://atwiki.jp/wiki/%poker%"
+        }
+      ]
+    },
+    {
+      "id": "WZWKQITTFUOGDINZ",
+      "name": "代码",
+      "row": [
+        {
+          "access_mode": "MOBILE",
+          "icon": null,
+          "id": "UMCEFPDNUGETPPFM",
+          "name": "__DEFAULT_NAME__",
+          "url_pattern": "https://github.com/search?q=%poker%"
+        },
+        {
+          "access_mode": "MOBILE",
+          "icon": null,
+          "id": "EDIKOMNVJJIDXSXK",
+          "name": "__DEFAULT_NAME__",
+          "url_pattern": "https://stackoverflow.com/search?q=%poker%"
+        },
+        {
+          "access_mode": "MOBILE",
+          "icon": null,
+          "id": "TDGNQVAXQBGDFBDX",
+          "name": "_DEFAULT_NAME_",
+          "url_pattern": "https://www.quora.com/search?q=%poker%"
+        }
+      ]
+    },
+    {
+      "id": "UPCHXTTYAEYHNZAP",
+      "name": "美术",
+      "row": [
+        {
+          "access_mode": "MOBILE",
+          "icon": null,
+          "id": "CMQPIWZOKIBOCARS",
+          "name": "_DEFAULT_NAME_",
+          "url_pattern": "https://www.pixiv.net/tags/%poker%"
+        },
+        {
+          "access_mode": "MOBILE",
+          "icon": null,
+          "id": "HIGEBYZCRCRJSBLG",
+          "name": "_DEFAULT_NAME_",
+          "url_pattern": "https://www.flickr.com/search/?text=%poker%"
+        },
+        {
+          "access_mode": "MOBILE",
+          "icon": null,
+          "id": "IGIKYPRYWDMMZKWW",
+          "name": "_DEFAULT_NAME_",
+          "url_pattern": "https://www.pinterest.jp/search/pins/?q=%poker%&rs=typed&term_meta[]=%poker%%7Ctyped"
+        },
+        {
+          "access_mode": "MOBILE",
+          "icon": null,
+          "id": "TQNFMRDZVCSQEFTR",
+          "name": "__DEFAULT_NAME__",
+          "url_pattern": "https://www.artstation.com/search?sort_by=relevance&query=%poker%"
+        }
+      ]
+    },
+    {
+      "id": "KYDJPRLMBVQVPJME",
+      "name": "翻译/地图",
+      "row": [
+        {
+          "access_mode": "MOBILE",
+          "icon": null,
+          "id": "QDYUHAJWBVJDLXHI",
+          "name": "_DEFAULT_NAME_",
+          "url_pattern": "https://translate.google.com/?hl=zh-CN&sl=en&tl=zh-CN&text=%poker%&op=translate"
+        },
+        {
+          "access_mode": "MOBILE-STRONG",
+          "icon": null,
+          "id": "BCXOQQJOOONHVGHC",
+          "name": "_DEFAULT_NAME_",
+          "url_pattern": "https://fanyi.baidu.com/#en/zh/%poker%"
+        },
+        {
+          "access_mode": "MOBILE-STRONG",
+          "icon": null,
+          "id": "VANHAEGDHTOSTBGE",
+          "name": "__DEFAULT_NAME__",
+          "url_pattern": "https://www.deepl.com/ja/translator#en/zh/%poker%"
+        },
+        {
+          "access_mode": "MOBILE",
+          "icon": null,
+          "id": "XOEKFOKEITOJYBHX",
+          "name": "__DEFAULT_NAME__",
+          "url_pattern": "https://www.google.com/maps/search/%poker%"
+        }
+      ]
+    }
+  ]
+}
