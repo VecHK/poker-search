@@ -1,12 +1,53 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import useSelectedFloorIdx from '../components/FloorFilter/useSelectedFloorIdx'
 import { Base, initLayoutInfo, selectSiteSettingsByFiltered } from '../core/base'
+import { SiteSettings } from '../preferences'
 import matchSearchPattern from '../utils/match-search-pattern'
+
+const prefix_regex = /\/|\\|-/
 
 function toFloorName(left: string) {
   const [, ..._floor_name] = left
   const floor_name = _floor_name.join('')
   return floor_name
+}
+
+function getFloorName(search_text: string) {
+  const [ result, left ] = matchSearchPattern(search_text)
+  if (result && prefix_regex.test(left[0])) {
+    return [ true, toFloorName(left) ] as const
+  } else {
+    return [ false ] as const
+  }
+}
+
+function isFloorSearch(search_text: string) {
+  const [ res ] = getFloorName(search_text)
+  return res
+}
+
+function selectFloorIdxByFloorName(
+  site_settings: SiteSettings,
+  floor_name: string
+) {
+  const idx_list = (
+    site_settings.reduce<number[]>((idx_list, f, idx) => {
+      if (f.name === floor_name) {
+        return [...idx_list, idx]
+      } else {
+        return idx_list
+      }
+    }, [])
+  )
+  return idx_list
+}
+export function selectFloorIdxBySearchText(text: string, site_settings: SiteSettings) {
+  const [ res, floor_name ] = getFloorName(text)
+  if (res) {
+    return selectFloorIdxByFloorName(site_settings, floor_name)
+  } else {
+    return []
+  }
 }
 
 export default function useSearchForm(base: Base) {
@@ -24,27 +65,10 @@ export default function useSearchForm(base: Base) {
 
   const [selected_floor_idx, setSelectedFloorIdx] = useSelectedFloorIdx(base)
 
-  const [ result, left ] = matchSearchPattern(keyword_input)
-  const is_floor_search = result && (left[0] === '/')
   const trueSelectedFloorIdx = useCallback(() => {
-    const [ result, left ] = matchSearchPattern(keyword_input)
-    if (result && (left[0] === '/')) {
-      const floor_name = toFloorName(left)
-
-      const idx_list = (
-        base.preferences.site_settings.reduce<number[]>((idx_list, f, idx) => {
-          if (f.name === floor_name) {
-            return [...idx_list, idx]
-          } else {
-            return idx_list
-          }
-        }, [])
-      )
-      if (idx_list.length) {
-        return idx_list
-      } else {
-        return selected_floor_idx
-      }
+    const search_result_idx = selectFloorIdxBySearchText(keyword_input, base.preferences.site_settings)
+    if (search_result_idx.length) {
+      return search_result_idx
     } else {
       return selected_floor_idx
     }
@@ -88,7 +112,8 @@ export default function useSearchForm(base: Base) {
     submitKeyword,
 
     getSelectedFloorName() {
-      if (left) {
+      const [ , left ] = matchSearchPattern(keyword_input)
+      if (left !== undefined) {
         return toFloorName(left)
       } else {
         return null
@@ -96,7 +121,7 @@ export default function useSearchForm(base: Base) {
     },
 
     setSelectedFloorIdx,
-    is_floor_search,
+    is_floor_search: isFloorSearch(keyword_input),
     trueSelectedFloorIdx,
     selected_site_settings,
     layout_info,

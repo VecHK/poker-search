@@ -1,15 +1,30 @@
 import { thunkify } from 'ramda'
 import cfg from '../../config'
-import { createBase, initLayoutInfo, RevertContainerID, selectSiteSettingsByFiltered } from '../../core/base'
+import { Base, createBase, initLayoutInfo, RevertContainerID, selectSiteSettingsByFiltered } from '../../core/base'
 import { getControlWindowHeight } from '../../core/base/control-window-height'
 import { calcControlWindowPos } from '../../core/layout/control-window'
+import { selectFloorIdxBySearchText } from '../../hooks/useSearchForm'
+
 import { controlIsLaunched, setControlLaunch } from '../../x-state/control-window-launched'
 
-async function controlBounds() {
-  const base = await createBase(undefined)
+function getSiteSettings(base: Base, search_text: string) {
   const site_settings = selectSiteSettingsByFiltered(
     base.preferences.site_settings,
     base.init_filtered_floor
+  )
+  const floor_idx = selectFloorIdxBySearchText(search_text, base.preferences.site_settings)
+  if (floor_idx.length) {
+    return floor_idx.map(idx => base.preferences.site_settings[idx])
+  } else {
+    return site_settings
+  }
+}
+
+async function controlBounds(search_keyword: string) {
+  const base = await createBase(undefined)
+  const site_settings = getSiteSettings(
+    base,
+    search_keyword
   )
 
   const info = initLayoutInfo(base.environment, base.limit, site_settings)
@@ -61,7 +76,7 @@ export default async function launchControlWindow({ text, revert_container_id }:
   if (await controlIsLaunched()) {
     throw Error('control window is Launched')
   } else {
-    const { top, left, height, width } = await controlBounds()
+    const { top, left, height, width } = await controlBounds(text || '')
 
     const controlWindow = await chrome.windows.create({
       url: generateUrl({ text, revert_container_id }),
