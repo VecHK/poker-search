@@ -1,3 +1,4 @@
+import { thunkify } from 'ramda'
 import { Atomic } from 'vait'
 import React, { ReactNode, useEffect, useMemo, useState } from 'react'
 
@@ -10,15 +11,16 @@ import { validKeyword } from '../../../utils/search'
 import { WindowID } from '../../../core/layout/window'
 import { Base, createBase } from '../../../core/base'
 
+import { saveFilteredFloor } from '../../../x-state/filtered-floor'
+
 import useCurrentWindow from '../../../hooks/useCurrentWindow'
 import useWindowFocus from '../../../hooks/useWindowFocus'
-import { saveFilteredFloor } from '../../../x-state/filtered-floor'
+import useSearchForm from '../../../hooks/useSearchForm'
 
 import SearchForm from '../../../components/SearchForm'
 import FloorFilter from '../../../components/FloorFilter'
 
 import './0-Search.css'
-import useSearchForm from '../../../hooks/useSearchForm'
 
 const processing = Atomic()
 
@@ -88,7 +90,7 @@ function SearchLayout({ base, current_window_id, showTips, onSelectedFloorChange
           only_mode={false}
           keywordPlaceholder={'请选择至少一层的站点配置'}
           keyword={''}
-          setKeyword={() => {}}
+          setKeyword={thunkify(showTips)('请选择至少一层的站点配置')}
           submitButtonActive={windowIsFocus}
           onSubmit={() => {}}
         />
@@ -133,7 +135,7 @@ function SearchLayout({ base, current_window_id, showTips, onSelectedFloorChange
         />
       )
     }
-  }, [current_window_id, disable_search, is_floor_search, keyword_input, setKeywordInput, windowIsFocus])
+  }, [current_window_id, disable_search, is_floor_search, keyword_input, setKeywordInput, showTips, windowIsFocus])
 
 
   return (
