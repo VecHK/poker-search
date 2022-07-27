@@ -1,8 +1,13 @@
+import { thunkify } from 'ramda'
 import cfg from '../config'
-import { mapMatrix } from '../core/common'
 import generateId from '../utils/generate-id'
-import { SiteSettings, Preferences, SiteOption } from './'
-import { generateSiteSettingFloor } from './site-settings'
+import { AllVersion, Preferences, SiteOption } from './'
+import { processSiteSettingsData } from './site-settings'
+
+import default_site_settings_data from '../config/default_site_settings.json'
+const getDefaultSiteSettings = thunkify(processSiteSettingsData)(
+  default_site_settings_data as AllVersion
+)
 
 type AppendPreferences = Omit<
   Partial<Preferences>,
@@ -21,21 +26,6 @@ export default function getDefaultPreferences(
     site_settings: getDefaultSiteSettings(),
     ...append,
   }
-}
-
-function getDefaultSiteSettings(): SiteSettings {
-  return mapMatrix(
-    cfg.DEFAULT_SITES,
-    (url_pattern): SiteOption => ({
-      id: generateId(),
-      icon: null,
-      name: '__DEFAULT_NAME__',
-      url_pattern,
-      access_mode: 'MOBILE'
-    })
-  ).map(row => {
-    return generateSiteSettingFloor(row)
-  })
 }
 
 export function generateExampleOption(): SiteOption {
