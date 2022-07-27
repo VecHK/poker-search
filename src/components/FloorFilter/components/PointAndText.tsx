@@ -1,7 +1,18 @@
 import { multiply } from 'ramda'
-import React, { CSSProperties, forwardRef, useEffect, useMemo, useRef } from 'react'
+import React, { CSSProperties, forwardRef, ReactNode, useEffect, useMemo, useRef } from 'react'
 import useOffsetWidth from '../hooks/useOffsetWidth'
 import s from './PointAndText.module.css'
+
+export function FloorPoint({ isHighlight, ...rest }: {
+  isHighlight: boolean
+} & React.DOMAttributes<HTMLDivElement>) {
+  return (
+    <div
+      className={`${s.FloorPoint} ${isHighlight ? s.FloorPointHighlight : ''}`}
+      { ...rest }
+    ></div>
+  )
+}
 
 type Props = {
   textList: string[]
@@ -61,14 +72,16 @@ export default forwardRef<number, Props>(function PointAndText({
           return (
             <div
               key={floor_idx}
-              className={`${s.FloorPoint} ${isHighlight(floor_idx) ? s.FloorPointHighlight : ''}`}
+              className={`${s.FloorPointWrap}`}
               style={{ left: `calc(${floor_idx} * ${intervalWidth} - ( var(--point-size) / 2 ))`}}
               onMouseDown={e => {
                 e.preventDefault()
                 e.stopPropagation()
                 onMouseDownPoint(e.clientX, floor_idx)
               }}
-            ></div>
+            >
+              <FloorPoint isHighlight={isHighlight(floor_idx)} />
+            </div>
           )
         })}
       </div>
@@ -114,7 +127,7 @@ const FloorText = forwardRef<number, FloorTextProps>(({
 
   return (
     <div
-      className={`${s.FloorText} ${highlight ? s.FloorTextHighlight : ''}`}
+      className={`${s.FloorText}`}
       style={{
         left: `calc(${floorIdx} * ${intervalWidth} - ( var(--text-width) / 2 ))`,
         '--deg': `${angle}deg`,
@@ -122,7 +135,16 @@ const FloorText = forwardRef<number, FloorTextProps>(({
       } as CSSProperties}
     >
       {/* <div className={s.Height} style={{ height: `${height}px` }}></div> */}
-      <span ref={innerTextRef} className={s.FloorTextInner}>{ text.length ? text : `${floorIdx + 1}F` }</span>
+      <span ref={innerTextRef} className={s.FloorTextInner}>
+        <FloorLabel highlight={highlight}>{ text.length ? text : `${floorIdx + 1}F` }</FloorLabel>
+      </span>
     </div>
   )
 })
+
+export function FloorLabel({
+  highlight,
+  children
+}: { highlight: boolean; children?: ReactNode }) {
+  return <span className={`${s.FloorLabel} ${highlight ? s.FloorLabelHighlight : ''}`}>{ children }</span>
+}

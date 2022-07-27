@@ -2,11 +2,8 @@
   cursor: ew-resize;
 }
 
-.FloorFilter {
-  width: calc(100% - (var(--point-size) / 2 * 2));
-  margin: 0;
-  position: relative;
-
+.FloorFilterWrapper {
+  width: 100%;
   --active-color: #3a3a45;
   --unactive-color: #3a3a4555;
 
@@ -25,6 +22,12 @@
   --TrackLayoutTop: calc((var(--point-size) - var(--track-height)) / 2);
   --TextLayoutTop: calc((var(--point-size) + 4px));
   --PointLayoutTop: 0px;
+}
+
+.FloorFilter {
+  width: calc(100% - (var(--point-size) / 2 * 2));
+  margin: 0;
+  position: relative;
 
   height: calc(
     var(--track-height) +
@@ -33,4 +36,17 @@
     var(--ex-height)
   );
   user-select: none;
+}
+.Interval {
+  height: 4px;
+}
+.FloorFilterSingle {
+  position: relative;
+  /* height: var(--point-size); */
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  align-content: center;
+  justify-content: center;
 }

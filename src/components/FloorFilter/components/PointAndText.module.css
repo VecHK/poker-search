@@ -3,9 +3,6 @@
   position: relative;
 }
 
-.FloorText.FloorTextHighlight {
-  color: rgba(0, 0, 0, 0.65);
-}
 .FloorText {
   position: absolute;
   top: var(--TextLayoutTop);
@@ -14,13 +11,6 @@
 
   width: var(--text-width);
   text-align: left;
-
-  font-family: Arial, Helvetica, sans-serif;
-  font-weight: 600;
-  color: var(--unactive-color);
-  font-size: 14px;
-  line-height: 1em;
-  height: 1em;
 
   --interval-top: 7px;
 }
@@ -44,6 +34,20 @@
   transform-origin: bottom left;
 
   transition: transform 382ms, left 382ms;
+  height: 1em;
+}
+
+.FloorLabel.FloorLabelHighlight {
+  color: rgba(0, 0, 0, 0.65);
+}
+.FloorLabel {
+  font-family: Arial, Helvetica, sans-serif;
+  font-weight: 600;
+
+  color: var(--unactive-color);
+
+  font-size: 14px;
+  line-height: 1em;
   height: 1em;
 }
 
@@ -73,10 +77,11 @@
   height: calc(var(--point-size) - (3px * 2 + 1px));
   border-radius: var(--point-size);
 }
-.FloorPoint {
+.FloorPointWrap {
   position: absolute;
   top: var(--PointLayoutTop);
-
+}
+.FloorPoint {
   display: flex;
   justify-content: center;
   align-items: center;
