@@ -9,6 +9,7 @@ import { generateSiteSettingFloor } from '../../preferences/site-settings'
 
 import usePreferences from '../Options/hooks/usePreferences'
 import useMaxWindowPerLine from '../../hooks/useMaxWindowPerLine'
+import useBottomTips from '../../hooks/useBottomTips'
 
 import { FloorLayout } from './FloorLayout'
 import { SwitchState } from './ActionSwitch'
@@ -20,6 +21,8 @@ import AccessModeFloor from './floors/2-AccessMode'
 import './Popup.css'
 
 export default function PopupPage() {
+  const [ showTips, tips_node ] = useBottomTips()
+
   const [currentFloor, setFloor] = useState(0)
 
   const [ switchState, setSwitchState ] = useState<SwitchState>('NORMAL')
@@ -59,34 +62,40 @@ export default function PopupPage() {
         floors={[
           {
             height: 'var(--main-height)',
-            node: <Search isOpenBackground={switchState === 'BACKGROUND'} />,
+            node: <Search
+              isOpenBackground={switchState === 'BACKGROUND'}
+              showTips={showTips}
+            />,
           },
           {
             height: 'var(--popup-height)',
             node: (
-              <AddToPoker
-                switchState={switchState}
-                onClickAddToPoker={() => {
-                  setSwitchState('BACKGROUND')
-                  setFloor(1)
-                }}
-                onSave={(opt) => {
-                  console.log('onSave', preferences)
-                  if (preferences) {
-                    updatePreferencesField('site_settings')((latest) => {
-                      setSwitchState('SAVED')
-                      return addToSiteSettings(opt, latest.site_settings, maxWindowPerLine)
-                    })
-                  }
-                }}
-                onClickCancel={() => {
-                  setSwitchState('NORMAL')
-                  setFloor(0)
-                }}
-                onClickForceMobileAccessTipsCircle={() => {
-                  setFloor(2)
-                }}
-              />
+              <div className="footer">
+                {tips_node}
+                <AddToPoker
+                  switchState={switchState}
+                  onClickAddToPoker={() => {
+                    setSwitchState('BACKGROUND')
+                    setFloor(1)
+                  }}
+                  onSave={(opt) => {
+                    console.log('onSave', preferences)
+                    if (preferences) {
+                      updatePreferencesField('site_settings')((latest) => {
+                        setSwitchState('SAVED')
+                        return addToSiteSettings(opt, latest.site_settings, maxWindowPerLine)
+                      })
+                    }
+                  }}
+                  onClickCancel={() => {
+                    setSwitchState('NORMAL')
+                    setFloor(0)
+                  }}
+                  onClickForceMobileAccessTipsCircle={() => {
+                    setFloor(2)
+                  }}
+                />
+              </div>
             )
           },
           {

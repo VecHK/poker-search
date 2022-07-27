@@ -1,8 +1,8 @@
-import React, { ReactNode, useState } from 'react'
-import { useMemo } from 'react'
+import React, { useState } from 'react'
 import { useEffect } from 'react'
 import cfg from '../../config'
 import { Base, createBase, RevertContainerID } from '../../core/base'
+import useBottomTips from '../../hooks/useBottomTips'
 import useCurrentWindow from '../../hooks/useCurrentWindow'
 import usePreventEnterFullScreen from '../../hooks/usePreventEnterFullScreen'
 import getQuery from '../../utils/get-query'
@@ -25,38 +25,11 @@ function getRevertContainerId(): RevertContainerID {
   }
 }
 
-function useFilteredFloorTips() {
-  const [text, setText] = useState<ReactNode>(null)
-  const [show_tips, setTips] = useState<number | false>(false)
-
-  useEffect(() => {
-    if (show_tips !== false) {
-      const handler = setTimeout(() => {
-        setTips(() => false)
-      }, 3000)
-      return () => clearTimeout(handler)
-    }
-  }, [show_tips])
-
-  return [
-    function showTips(text: ReactNode) {
-      setText(text)
-      setTips(Date.now())
-    },
-
-    useMemo(() => (
-      <div className={`filtered-floor-tips ${show_tips ? 'show' : ''}`}>
-        {text}
-      </div>
-    ), [show_tips, text])
-  ] as const
-}
-
 export default function Entrance() {
   const controlWindow = useCurrentWindow()
   usePreventEnterFullScreen(controlWindow?.windowId)
 
-  const [showTips, tips_node] = useFilteredFloorTips()
+  const [showTips, tips_node] = useBottomTips()
   const [base, setBase] = useState<Base | undefined>()
 
   function refreshBase() {

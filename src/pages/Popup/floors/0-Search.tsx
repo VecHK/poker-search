@@ -1,5 +1,5 @@
 import { Atomic } from 'vait'
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { ReactNode, useEffect, useMemo, useState } from 'react'
 
 import { controlIsLaunched } from '../../../x-state/control-window-launched'
 import { sendMessage } from '../../../message'
@@ -22,7 +22,10 @@ import useSearchForm from '../../../hooks/useSearchForm'
 
 const processing = Atomic()
 
-export default function SearchFormLayout({ isOpenBackground }: { isOpenBackground: boolean }) {
+export default function SearchFormLayout({
+  isOpenBackground,
+  showTips
+}: { isOpenBackground: boolean; showTips(s: ReactNode): void }) {
   const [base, setBase] = useState<Base | undefined>()
   const currentWindow = useCurrentWindow()
 
@@ -43,6 +46,7 @@ export default function SearchFormLayout({ isOpenBackground }: { isOpenBackgroun
           <SearchLayout
             base={base}
             current_window_id={currentWindow.windowId}
+            showTips={showTips}
             onSelectedFloorChange={(selected_idx_list) => {
               const s_ids = base.preferences.site_settings.map(s => s.id)
               const filtered_floor = s_ids.filter((_, idx) => {
@@ -59,9 +63,10 @@ export default function SearchFormLayout({ isOpenBackground }: { isOpenBackgroun
   }
 }
 
-function SearchLayout({ base, current_window_id, onSelectedFloorChange }: {
+function SearchLayout({ base, current_window_id, showTips, onSelectedFloorChange }: {
   base: Base
   current_window_id: WindowID
+  showTips(s: ReactNode): void
   onSelectedFloorChange: (f: number[]) => void
 }) {
   const {
@@ -148,7 +153,7 @@ function SearchLayout({ base, current_window_id, onSelectedFloorChange }: {
           console.log('filtered onChange', filtered)
           const selected_floor_name = getSelectedFloorName()
           if (selected_floor_name) {
-            alert(`你已经限定了${selected_floor_name}，因此现在无法调整楼层`)
+            showTips(<>你已经限定了<b>{selected_floor_name}</b>，因此现在无法调整楼层</>)
           } else {
             onSelectedFloorChange(filtered)
             setSelectedFloorIdx(filtered)
