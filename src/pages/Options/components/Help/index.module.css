@@ -1,5 +1,13 @@
 .CollapseSummary::marker {
 }
+.CollapseSummary:hover .CollapseSectionTitle {
+  /* transform: translateX(2px); */
+  text-decoration: underline;
+}
+.CollapseSummary {
+  cursor: pointer;
+}
+
 .CollapseSection:last-child {
   margin-bottom: 0;
 }

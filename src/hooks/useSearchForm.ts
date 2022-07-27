@@ -5,7 +5,8 @@ import { Base, initLayoutInfo, selectSiteSettingsByFiltered } from '../core/base
 import { SiteSettings } from '../preferences'
 import matchSearchPattern from '../utils/match-search-pattern'
 
-const prefix_regex = /\/|\\|-|。|，|·|・|～|`|｀/
+export const specify_floor_prefixs = [...'\\-。，·・～`｀、']
+const prefix_regex = /\/|\\|-|。|，|·|・|～|`|｀|、/
 
 const FULL_WIDTH_NUMBERS = [...`０１２３４５６７８９`]
 
@@ -46,7 +47,7 @@ function isFloorSearch(search_text: string) {
   return res
 }
 
-function selectFloorIdxByFloorName(
+function specifyFloorIdxByFloorName(
   site_settings: SiteSettings,
   floor_name: string
 ) {
@@ -81,10 +82,10 @@ export function specifyFloorIdxBySearchText(text: string, site_settings: SiteSet
       if (select_floor_idx < site_settings.length) {
         return [ f_number - 1 ]
       } else {
-        return selectFloorIdxByFloorName(site_settings, floor_name)
+        return specifyFloorIdxByFloorName(site_settings, floor_name)
       }
     } else {
-      return selectFloorIdxByFloorName(site_settings, floor_name)
+      return specifyFloorIdxByFloorName(site_settings, floor_name)
     }
   } else {
     return []
