@@ -1,4 +1,6 @@
 import { Preferences } from '.'
+import { Base64 } from 'js-base64'
+
 import cfg from '../config'
 import { Matrix } from '../core/common'
 import generateId from '../utils/generate-id'
@@ -24,9 +26,14 @@ export function generateSiteSettingFloor(
 }
 
 export function toSearchURL(urlPattern: URLPattern, keyword: string) {
-  return urlPattern
-    .replace(cfg.KEYWORD_REPLACEHOLDER, encodeURIComponent(keyword))
-    .replace(cfg.KEYWORD_REPLACEHOLDER_WITH_BASE64, btoa(keyword))
+  try {
+    return urlPattern
+      .replace(cfg.KEYWORD_REPLACEHOLDER, encodeURIComponent(keyword))
+      .replace(cfg.KEYWORD_REPLACEHOLDER_WITH_BASE64, encodeURIComponent(Base64.encode(keyword)))
+  } catch (err) {
+    console.warn(err)
+    throw Error(`toSearchURL(${keyword}) failure: ${urlPattern}`)
+  }
 }
 
 export function addMobileIdentifier(url: string) {

@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react'
 
+import { Base64 } from 'js-base64'
+
 import cfg from '../../../config'
 
 import { RenderEditLayout, useEditLayoutSubmit } from '../../Options/components/SiteSettingsManager/EditLayout'
@@ -105,7 +107,7 @@ const match_search_keyword_list = [`poker`, `Poker`, `POKER`]
 function hasPokerSearchIdentifier(url: string) {
   return match_search_keyword_list.some((match_search_keyword) => {
     const has_keyword_query = url.indexOf(encodeURIComponent(match_search_keyword)) !== -1
-    const has_keyword_base64 = url.indexOf(btoa(match_search_keyword)) !== -1
+    const has_keyword_base64 = url.indexOf(encodeURIComponent(Base64.encode(match_search_keyword))) !== -1
     return has_keyword_query || has_keyword_base64
   })
 }
@@ -114,6 +116,6 @@ function replaceAsUrlPattern(url: string): string {
   return match_search_keyword_list.reduce((url, match_search_keyword) => (
     url
       .replaceAll(encodeURIComponent(match_search_keyword), cfg.KEYWORD_REPLACEHOLDER)
-      .replaceAll(btoa(match_search_keyword), cfg.KEYWORD_REPLACEHOLDER_WITH_BASE64)
+      .replaceAll(encodeURIComponent(Base64.encode(match_search_keyword)), cfg.KEYWORD_REPLACEHOLDER_WITH_BASE64)
   ), url)
 }
