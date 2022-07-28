@@ -31,6 +31,8 @@ const cfg = Object.freeze({
     1000,
     720,
     480,
+    320,
+    200
   ],
 
   SEARCH_WINDOW_GAP_HORIZONTAL: 30,
