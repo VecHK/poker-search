@@ -110,7 +110,7 @@
           "icon": null,
           "id": "GEVEQNDLLWJVLJVX",
           "name": "_DEFAULT_NAME_",
-          "url_pattern": "https://xtea.io/ts_en.html?MOBILE_PAGE_IDENTIFIER=ehmafbeimeembbfabdliegfiepljgmcf#gsc.tab=0&gsc.q=%poker%&gsc.sort="
+          "url_pattern": "https://xtea.io/ts_en.html#gsc.tab=0&gsc.q=%poker%&gsc.sort="
         },
         {
           "access_mode": "MOBILE",
@@ -173,13 +173,6 @@
           "id": "FIFGYOQIIKSDWRLI",
           "name": "_DEFAULT_NAME_",
           "url_pattern": "https://www.nicovideo.jp/search/%poker%?ref=nicotop_search"
-        },
-        {
-          "access_mode": "MOBILE",
-          "icon": null,
-          "id": "NTGWXBBDOFFYMJBW",
-          "name": "_DEFAULT_NAME_",
-          "url_pattern": "https://oreno3d.com/search?keyword=%poker%"
         }
       ]
     },
