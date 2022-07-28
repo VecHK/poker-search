@@ -78,6 +78,17 @@ export function autoAdjustHeight(
 ): { window_height: number; total_height: number } {
   if (height_list.length === 0) {
     throw Error('none available window height')
+  } if (height_list.length === 1) {
+    const [ last_window_height ] = height_list
+    const total_height = calcTotalHeight(
+      control_window_height,
+      {
+        row: total_row,
+        window_height: last_window_height,
+        titlebar_height,
+      }
+    )
+    return { window_height: last_window_height, total_height }
   } else {
     const [window_height, ...remain_height_list] = height_list
 
