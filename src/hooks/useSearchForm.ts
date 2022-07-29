@@ -33,17 +33,17 @@ function toFloorName(left: string) {
   return floor_name
 }
 
-function getFloorName(search_text: string) {
-  const [ result, left ] = matchSearchPattern(search_text)
+function parseFloorSpecify(input_text: string) {
+  const [ result, left, search_text ] = matchSearchPattern(input_text)
   if (result && prefix_regex.test(left[0])) {
-    return [ true, toFloorName(left) ] as const
+    return [ true, toFloorName(left), search_text ] as const
   } else {
     return [ false ] as const
   }
 }
 
 function isFloorSearch(search_text: string) {
-  const [ res ] = getFloorName(search_text)
+  const [ res ] = parseFloorSpecify(search_text)
   return res
 }
 
@@ -74,7 +74,7 @@ function isFloorNumber(input_str: string) {
 }
 
 export function specifyFloorIdxBySearchText(text: string, site_settings: SiteSettings) {
-  const [ res, floor_name ] = getFloorName(text)
+  const [ res, floor_name ] = parseFloorSpecify(text)
   if (res) {
     if (isFloorNumber(floor_name)) {
       const f_number = parseInt(toHalfWidthNumber(floor_name))
@@ -97,9 +97,9 @@ export default function useSearchForm(base: Base) {
   const [submited_keyword, _submitKeyword] = useState<string | false>(false)
 
   const submitKeyword = useCallback((str: string) => {
-    const [ result, , right ] = matchSearchPattern(str)
-    if (result) {
-      _submitKeyword(right)
+    const [ is_floor_search, , search_text ] = parseFloorSpecify(str)
+    if (is_floor_search) {
+      _submitKeyword(search_text)
     } else {
       _submitKeyword(str)
     }
@@ -154,9 +154,9 @@ export default function useSearchForm(base: Base) {
     submitKeyword,
 
     getSelectedFloorName() {
-      const [ , left ] = matchSearchPattern(keyword_input)
-      if (left !== undefined) {
-        return toFloorName(left)
+      const [ is_floor_search, floor_name ] = parseFloorSpecify(keyword_input)
+      if (is_floor_search) {
+        return floor_name
       } else {
         return null
       }
