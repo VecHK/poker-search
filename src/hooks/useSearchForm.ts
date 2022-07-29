@@ -5,8 +5,10 @@ import { Base, initLayoutInfo, selectSiteSettingsByFiltered } from '../core/base
 import { SiteSettings } from '../preferences'
 import matchSearchPattern from '../utils/match-search-pattern'
 
-export const specify_floor_prefixs = [...'\\-。，·・～`｀、']
-const prefix_regex = /\/|\\|-|。|，|·|・|～|`|｀|、/
+export const specify_floor_prefixs = [...'/\\-。，·・～`｀、']
+function isPrefix(ch: string) {
+  return specify_floor_prefixs.indexOf(ch) !== -1
+}
 
 const FULL_WIDTH_NUMBERS = [...`０１２３４５６７８９`]
 
@@ -35,7 +37,7 @@ function toFloorName(left: string) {
 
 function parseFloorSpecify(input_text: string) {
   const [ result, left, search_text ] = matchSearchPattern(input_text)
-  if (result && prefix_regex.test(left[0])) {
+  if (result && isPrefix(left[0])) {
     return [ true, toFloorName(left), search_text ] as const
   } else {
     return [ false ] as const

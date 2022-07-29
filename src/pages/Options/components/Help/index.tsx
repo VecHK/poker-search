@@ -1,3 +1,4 @@
+import { indexOf, map, remove } from 'ramda'
 import React, { Fragment, ReactNode } from 'react'
 
 import cfg from '../../../../config'
@@ -123,10 +124,11 @@ export default function Help() {
           还可以滑动选择这些点，可以很快选到自己想要的楼层。<br />
           你甚至可以不动鼠标，直接在输入框中，输入 <InputContent text="/楼层 xxx" />，<br />
           即可选中所有叫『楼层』的层来搜索xxx。<br />
-          除了 <InputContent text="/" />，你还可以使用 {
-            specify_floor_prefixs.map((ch) => (
-              <Fragment key={ch}>『{ch}』</Fragment>
-            ))
+          除了『/』，你还可以使用 {
+            map(
+              (ch: string) => <Fragment key={ch}>『{ch}』</Fragment>,
+              remove(indexOf('/', specify_floor_prefixs), 1, specify_floor_prefixs)
+            )
           } 这些字符。同时空格字符也可以是全角的。
         </p>
 
