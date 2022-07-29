@@ -139,11 +139,11 @@ const ControlApp: React.FC<{
   }, [focusControlWindow])
 
   useEffect(function setSearchwordFromURL() {
-    const searchWord = getQuery(cfg.CONTROL_QUERY_TEXT)
-    if (searchWord !== null) {
-      if (validKeyword(searchWord)) {
-        submitKeyword(searchWord)
-        setKeywordInput(searchWord)
+    const search_word = getQuery(cfg.CONTROL_QUERY_TEXT)
+    if (search_word !== null) {
+      if (validKeyword(search_word)) {
+        submitKeyword(search_word)
+        setKeywordInput(search_word)
       }
     }
   }, [setKeywordInput, submitKeyword])
