@@ -1,4 +1,4 @@
-import { controlIsLaunched } from '../../hooks/useControlWindowExists'
+import { controlIsLaunched } from '../../core/control-window'
 import { sendMessage } from '../../message'
 import { ChromeEvent } from '../../utils/chrome-event'
 import launchControlWindow from './launch'

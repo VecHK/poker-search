@@ -1,5 +1,5 @@
 import { Atomic, Memo } from 'vait'
-import { controlIsLaunched } from '../../hooks/useControlWindowExists'
+import { controlIsLaunched } from '../../core/control-window'
 import { sendMessage } from '../../message'
 import { load as loadPreferences } from '../../preferences'
 import { toSearchURL } from '../../preferences/site-settings'

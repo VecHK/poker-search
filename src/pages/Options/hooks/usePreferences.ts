@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState } from 'react'
 
 import { Preferences, save as savePreferences } from '../../../preferences'
 import { sendMessage } from '../../../message'
-import { controlIsLaunched } from '../../../hooks/useControlWindowExists'
+import { controlIsLaunched } from '../../../core/control-window'
 
 type SafelyPreferencesKeys = Exclude<keyof Preferences, '__is_poker__' | 'version'>
 

@@ -1,37 +1,20 @@
-import { nth } from 'ramda'
 import { useEffect, useState } from 'react'
-import { getControlWindowUrl } from '../Background/modules/launch'
+import { getControlWindowID } from '../core/control-window'
 import { WindowID } from '../core/layout/window'
 import { ApplyChromeEvent } from '../utils/chrome-event'
-
-async function getControlWindowId(): Promise<WindowID | undefined> {
-  const tab = nth(
-    0,
-    await chrome.tabs.query({
-      url: getControlWindowUrl(),
-      windowType: 'popup'
-    })
-  )
-  return tab?.windowId
-}
-
-export async function controlIsLaunched() {
-  const control_window_id = await getControlWindowId()
-  return control_window_id !== undefined
-}
 
 export default function useControlWindowExists(): boolean {
   const [window_id, setWindowId] = useState<WindowID>()
 
   useEffect(() => {
-    getControlWindowId().then(win_id => {
+    getControlWindowID().then(win_id => {
       setWindowId(win_id)
     })
   }, [])
 
   useEffect(() => {
     return ApplyChromeEvent(chrome.windows.onCreated, (win) => {
-      getControlWindowId()
+      getControlWindowID()
         .then((win_id) => {
           setWindowId(win_id)
         })

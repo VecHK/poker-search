@@ -6,7 +6,7 @@ import Omnibox from './modules/omnibox'
 import SelectionContextMenu from './modules/selection-contextmenu'
 import LaunchContextMenu, { presetLaunchContextMenu, removeLaunchContextMenu } from './modules/launch-contextmenu'
 import TryPoker from './modules/try-poker'
-import { controlIsLaunched } from '../hooks/useControlWindowExists'
+import { controlIsLaunched } from '../core/control-window'
 
 const [ applyGlobalCommand, ] = GlobalCommand()
 const [ applyOmnibox, ] = Omnibox()

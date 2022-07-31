@@ -1,5 +1,5 @@
 import { RevertContainerID } from '../../core/base'
-import { controlIsLaunched } from '../../hooks/useControlWindowExists'
+import { controlIsLaunched } from '../../core/control-window'
 import { sendMessage } from '../../message'
 import { ChromeContextMenus } from '../../utils/chrome-contextmenu'
 import launchControlWindow from './launch'
