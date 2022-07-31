@@ -1,7 +1,7 @@
 import { RevertContainerID } from '../../core/base'
+import { controlIsLaunched } from '../../hooks/useControlWindowExists'
 import { sendMessage } from '../../message'
 import { ChromeContextMenus } from '../../utils/chrome-contextmenu'
-import { controlIsLaunched } from '../../x-state/control-window-launched'
 import launchControlWindow from './launch'
 
 export async function searchPoker(

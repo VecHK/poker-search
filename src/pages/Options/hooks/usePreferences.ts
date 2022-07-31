@@ -2,8 +2,8 @@ import { curry } from 'ramda'
 import { useCallback, useEffect, useState } from 'react'
 
 import { Preferences, save as savePreferences } from '../../../preferences'
-import { controlIsLaunched } from '../../../x-state/control-window-launched'
 import { sendMessage } from '../../../message'
+import { controlIsLaunched } from '../../../hooks/useControlWindowExists'
 
 type SafelyPreferencesKeys = Exclude<keyof Preferences, '__is_poker__' | 'version'>
 

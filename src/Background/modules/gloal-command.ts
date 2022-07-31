@@ -1,6 +1,6 @@
+import { controlIsLaunched } from '../../hooks/useControlWindowExists'
 import { sendMessage } from '../../message'
 import { ChromeEvent } from '../../utils/chrome-event'
-import { controlIsLaunched } from '../../x-state/control-window-launched'
 import launchControlWindow from './launch'
 
 export async function callPoker() {

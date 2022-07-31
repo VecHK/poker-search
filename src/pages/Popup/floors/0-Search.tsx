@@ -2,7 +2,7 @@ import { thunkify } from 'ramda'
 import { Atomic } from 'vait'
 import React, { ReactNode, useEffect, useMemo, useState } from 'react'
 
-import { controlIsLaunched } from '../../../x-state/control-window-launched'
+import { controlIsLaunched } from '../../../hooks/useControlWindowExists'
 import { sendMessage } from '../../../message'
 import launchControlWindow from '../../../Background/modules/launch'
 

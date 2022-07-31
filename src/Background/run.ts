@@ -1,6 +1,4 @@
-import { ApplyChromeEvent } from '../utils/chrome-event'
 import { MessageEvent, sendMessage } from '../message'
-import { cleanControlLaunch, controlIsLaunched, getControlWindowId } from '../x-state/control-window-launched'
 
 import initFirstAccessMobileDetecting from './modules/first-access-mobile-detecting'
 import GlobalCommand from './modules/gloal-command'
@@ -8,6 +6,7 @@ import Omnibox from './modules/omnibox'
 import SelectionContextMenu from './modules/selection-contextmenu'
 import LaunchContextMenu, { presetLaunchContextMenu, removeLaunchContextMenu } from './modules/launch-contextmenu'
 import TryPoker from './modules/try-poker'
+import { controlIsLaunched } from '../hooks/useControlWindowExists'
 
 const [ applyGlobalCommand, ] = GlobalCommand()
 const [ applyOmnibox, ] = Omnibox()
@@ -25,19 +24,6 @@ export default function runBackground() {
   applySelectionContextMenuClick()
   applyLaunchContextMenuClick()
   applyTryPoker()
-
-  ApplyChromeEvent(
-    chrome.windows.onRemoved,
-    async (removed_id) => {
-      const control_id = await getControlWindowId()
-      console.log('onRemoved', control_id, removed_id)
-      if (control_id !== null) {
-        if (control_id === removed_id) {
-          cleanControlLaunch()
-        }
-      }
-    }
-  )
 
   const [ applyReceive ] = MessageEvent('ChangeSearch', (search_keyword) => {
     controlIsLaunched().then(is_launched => {

@@ -15,6 +15,11 @@ async function getControlWindowId(): Promise<WindowID | undefined> {
   return tab?.windowId
 }
 
+export async function controlIsLaunched() {
+  const control_window_id = await getControlWindowId()
+  return control_window_id !== undefined
+}
+
 export default function useControlWindowExists(): boolean {
   const [window_id, setWindowId] = useState<WindowID>()
 

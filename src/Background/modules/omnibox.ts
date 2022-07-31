@@ -1,10 +1,10 @@
 import { Atomic, Memo } from 'vait'
+import { controlIsLaunched } from '../../hooks/useControlWindowExists'
 import { sendMessage } from '../../message'
 import { load as loadPreferences } from '../../preferences'
 import { toSearchURL } from '../../preferences/site-settings'
 import { ChromeEvent } from '../../utils/chrome-event'
 import matchSearchPattern from '../../utils/match-search-pattern'
-import { controlIsLaunched } from '../../x-state/control-window-launched'
 import launchControlWindow from './launch'
 
 type IndividualSearch = { id: string; url_pattern: string; search_text: string }
