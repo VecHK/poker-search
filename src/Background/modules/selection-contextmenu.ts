@@ -1,22 +1,5 @@
-import { RevertContainerID } from '../../core/base'
-import { controlIsLaunched } from '../../core/control-window'
-import { sendMessage } from '../../message'
+import { submitSearch } from '../../core/control-window'
 import { ChromeContextMenus } from '../../utils/chrome-contextmenu'
-import launchControlWindow from './launch'
-
-export async function searchPoker(
-  search_text: string,
-  revert_container_id: RevertContainerID
-) {
-  if (await controlIsLaunched()) {
-    sendMessage('ChangeSearch', search_text)
-  } else {
-    launchControlWindow({
-      text: search_text,
-      revert_container_id
-    })
-  }
-}
 
 const contextMenu = () => (
   ChromeContextMenus(
@@ -32,7 +15,7 @@ const contextMenu = () => (
         const { selectionText } = info
         const { windowId } = tab
         if (selectionText !== undefined) {
-          searchPoker(selectionText, windowId)
+          submitSearch(selectionText, windowId)
         }
       }
     }
