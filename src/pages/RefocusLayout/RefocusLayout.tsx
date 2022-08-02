@@ -1,5 +1,5 @@
 import React from 'react'
-import { sendMessage } from '../../message'
+import { focusControlWindow } from '../../core/control-window'
 
 import s from './RefocusLayout.module.css'
 
@@ -18,7 +18,7 @@ function AppMain() {
         className={s.Button}
         onClick={(e) => {
           e.preventDefault()
-          sendMessage('Refocus', null)
+          focusControlWindow()
         }}
       >唤回 Poker</button>
     </footer>

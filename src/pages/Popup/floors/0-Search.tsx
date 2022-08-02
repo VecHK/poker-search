@@ -2,9 +2,7 @@ import { thunkify } from 'ramda'
 import { Atomic } from 'vait'
 import React, { ReactNode, useEffect, useMemo, useState } from 'react'
 
-import { controlIsLaunched } from '../../../x-state/control-window-launched'
-import { sendMessage } from '../../../message'
-import launchControlWindow from '../../../Background/modules/launch'
+import { submitSearch } from '../../../core/control-window'
 
 import { validKeyword } from '../../../utils/search'
 
@@ -107,26 +105,12 @@ function SearchLayout({ base, current_window_id, showTips, onSelectedFloorChange
             ({ keyword: newSearchKeyword }) => {
               if (validKeyword(newSearchKeyword)) {
                 processing(async () => {
-                  if (await controlIsLaunched()) {
-                    console.log('send ChangeSearch message')
-                    sendMessage('ChangeSearch', newSearchKeyword)
-                      .then(() => {
-                        window.close()
-                      })
-                      .catch(err => {
-                        console.warn('send failure:', err)
-                      })
-                  } else {
-                    console.log('launchControlWindow')
-                    launchControlWindow({
-                      text: newSearchKeyword,
-                      revert_container_id: current_window_id
-                    })
-                      .then(() => {
-                        window.close()
-                      }).catch(err => {
-                        console.warn('launch failure:', err)
-                      })
+                  try {
+                    await submitSearch(newSearchKeyword, current_window_id)
+                    window.close()
+                  } catch (err: any) {
+                    console.error(err)
+                    console.error('submit failure', err.message)
                   }
                 })
               }

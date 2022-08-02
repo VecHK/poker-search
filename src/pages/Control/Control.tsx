@@ -14,7 +14,6 @@ import animatingWindow from '../../utils/animating-window'
 
 import useWindowFocus from '../../hooks/useWindowFocus'
 import useControl from '../../hooks/useControl'
-import useReFocusMessage from '../../hooks/useReFocusMessage'
 import useSearchForm from '../../hooks/useSearchForm'
 
 import Loading from '../../components/Loading'
@@ -86,8 +85,6 @@ const ControlApp: React.FC<{
   const focusControlWindow = useCallback(async () => {
     return chrome.windows.update(controlWindowId, { focused: true })
   }, [controlWindowId])
-
-  useReFocusMessage(controlWindowId, control)
 
   const moveControlWindow = useCallback(async (id: WindowID) => {
     const [ top, left ] = calcControlWindowPos(

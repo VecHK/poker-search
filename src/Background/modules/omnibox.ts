@@ -1,11 +1,9 @@
 import { Atomic, Memo } from 'vait'
-import { sendMessage } from '../../message'
+import { submitSearch } from '../../core/control-window'
 import { load as loadPreferences } from '../../preferences'
 import { toSearchURL } from '../../preferences/site-settings'
 import { ChromeEvent } from '../../utils/chrome-event'
 import matchSearchPattern from '../../utils/match-search-pattern'
-import { controlIsLaunched } from '../../x-state/control-window-launched'
-import launchControlWindow from './launch'
 
 type IndividualSearch = { id: string; url_pattern: string; search_text: string }
 const [getIndividualSearchInfo, setIndividualSearchInfo] = Memo<IndividualSearch | null>(null)
@@ -24,16 +22,9 @@ export default function OmniboxEvent() {
           windowId: chrome.windows.WINDOW_ID_CURRENT
         })
       } else {
-        chrome.windows.getCurrent(async ({ id }) => {
-          if (await controlIsLaunched()) {
-            sendMessage('ChangeSearch', content)
-          } else {
-            launchControlWindow({
-              text: content,
-              revert_container_id: id
-            })
-          }
-        })
+        chrome.windows.getCurrent(
+          ({ id }) => submitSearch(content, id)
+        )
       }
     }
   )
