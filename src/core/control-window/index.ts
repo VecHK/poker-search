@@ -1,8 +1,8 @@
 import { nth } from 'ramda'
-import launchControlWindow, { getControlWindowUrl } from '../Background/modules/launch'
-import { sendMessage } from '../message'
-import { RevertContainerID } from './base'
-import { WindowID } from './layout/window'
+import launchControlWindow, { getControlWindowUrl } from './launch'
+import { sendMessage } from '../../message'
+import { RevertContainerID } from '../base'
+import { WindowID } from '../layout/window'
 
 export async function getControlWindowID(): Promise<WindowID | undefined> {
   const tab = nth(

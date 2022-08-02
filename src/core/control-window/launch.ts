@@ -1,9 +1,9 @@
 import { thunkify } from 'ramda'
 import cfg from '../../config'
 import { Base, createBase, initLayoutInfo, RevertContainerID, selectSiteSettingsByFiltered } from '../../core/base'
-import { getControlWindowHeight } from '../../core/base/control-window-height'
-import { controlIsLaunched } from '../../core/control-window'
-import { calcControlWindowPos } from '../../core/layout/control-window'
+import { getControlWindowHeight } from '../base/control-window-height'
+import { controlIsLaunched } from '../control-window'
+import { calcControlWindowPos } from '../layout/control-window'
 import { specifyFloorIdxBySearchText } from '../../hooks/useSearchForm'
 
 function getSiteSettings(base: Base, search_text: string) {
