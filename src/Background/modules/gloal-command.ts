@@ -1,11 +1,10 @@
-import { controlIsLaunched } from '../../core/control-window'
-import { sendMessage } from '../../message'
+import { controlIsLaunched, focusControlWindow } from '../../core/control-window'
 import { ChromeEvent } from '../../utils/chrome-event'
 import launchControlWindow from './launch'
 
 export async function callPoker() {
   if (await controlIsLaunched()) {
-    sendMessage('Refocus', null)
+    focusControlWindow()
   } else {
     launchControlWindow({
       text: undefined,

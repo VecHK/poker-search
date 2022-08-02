@@ -20,6 +20,16 @@ export async function controlIsLaunched() {
   return control_window_id !== undefined
 }
 
+export async function focusControlWindow() {
+  const win_id = await getControlWindowID()
+  if (win_id !== undefined) {
+    await chrome.windows.update(win_id, { focused: true })
+    return true
+  } else {
+    return false
+  }
+}
+
 export async function submitSearch(
   search_text: string,
   revert_container_id: RevertContainerID
