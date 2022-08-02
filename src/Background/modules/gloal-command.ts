@@ -1,17 +1,5 @@
-import { controlIsLaunched, focusControlWindow } from '../../core/control-window'
+import { callControlWindow } from '../../core/control-window'
 import { ChromeEvent } from '../../utils/chrome-event'
-import launchControlWindow from './launch'
-
-export async function callPoker() {
-  if (await controlIsLaunched()) {
-    focusControlWindow()
-  } else {
-    launchControlWindow({
-      text: undefined,
-      revert_container_id: undefined
-    })
-  }
-}
 
 // 未启动Poker的控制窗时候，快捷键 focus-layout 为启动 Poker 控制窗
 // 在启动控制窗后，快捷键 focus-layout 不进行任何操作
@@ -22,7 +10,7 @@ export default function GlobalCommand() {
     (command) => {
       if (command === 'focus-layout') {
         console.log('call poker command')
-        callPoker()
+        callControlWindow()
       }
     }
   )

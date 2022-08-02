@@ -30,6 +30,16 @@ export async function focusControlWindow() {
   }
 }
 
+export async function callControlWindow() {
+  const control_window_exists = await focusControlWindow()
+  if (!control_window_exists) {
+    await launchControlWindow({
+      text: undefined,
+      revert_container_id: undefined
+    })
+  }
+}
+
 export async function submitSearch(
   search_text: string,
   revert_container_id: RevertContainerID

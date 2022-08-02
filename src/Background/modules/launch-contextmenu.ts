@@ -1,5 +1,5 @@
+import { callControlWindow } from '../../core/control-window'
 import { ChromeContextMenus } from '../../utils/chrome-contextmenu'
-import { callPoker } from './gloal-command'
 
 const contextMenu = () => (
   ChromeContextMenus(
@@ -8,7 +8,7 @@ const contextMenu = () => (
       contexts: ['page'],
       title: '启动Poker'
     },
-    callPoker
+    callControlWindow
   )
 )
 
