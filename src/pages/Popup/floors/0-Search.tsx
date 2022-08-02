@@ -2,9 +2,7 @@ import { thunkify } from 'ramda'
 import { Atomic } from 'vait'
 import React, { ReactNode, useEffect, useMemo, useState } from 'react'
 
-import { controlIsLaunched, submitSearch } from '../../../core/control-window'
-import { sendMessage } from '../../../message'
-import launchControlWindow from '../../../Background/modules/launch'
+import { submitSearch } from '../../../core/control-window'
 
 import { validKeyword } from '../../../utils/search'
 
