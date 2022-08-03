@@ -7,7 +7,7 @@ import { CreateSearchLayout } from '../core/layout'
 import { renderMatrix } from '../core/layout/render'
 import { closeWindows, SearchWindow, WindowID } from '../core/layout/window'
 
-export type Control = Unpromise<ReturnType<typeof CreateSearchLayout>>
+export type SearchLayout = Unpromise<ReturnType<typeof CreateSearchLayout>>
 
 const controlProcessing = Atomic()
 
@@ -20,39 +20,39 @@ export default function useControl(
   const [stop_creating_signal] = useState(Signal<void>())
   const [creating_signal] = useState(Signal<void>())
 
-  const [control, setControl] = useState<Control | null>(null)
+  const [search_layout, setSearchLayout] = useState<SearchLayout | null>(null)
 
-  const closeSearchWindows = useCallback(async (con: Control) => {
-    if (con.refocus_window_id === undefined) {
-      await Promise.all(closeWindows(con.getRegIds()))
+  const closeSearchWindows = useCallback(async (layout: SearchLayout) => {
+    if (layout.refocus_window_id === undefined) {
+      await Promise.all(closeWindows(layout.getRegIds()))
     } else {
-      await Promise.all(closeWindows([con.refocus_window_id, ...con.getRegIds()]))
+      await Promise.all(closeWindows([layout.refocus_window_id, ...layout.getRegIds()]))
     }
   }, [])
 
   useEffect(function searchWindowsEventInit() {
-    if (control !== null) {
-      control.applyAllEvent()
+    if (search_layout !== null) {
+      search_layout.applyAllEvent()
       return () => {
-        control.cancelAllEvent()
+        search_layout.cancelAllEvent()
       }
     }
-  }, [closeSearchWindows, control])
+  }, [closeSearchWindows, search_layout])
 
   useEffect(function closeAllWindowBeforeUnload() {
     const handler = () => {
       stop_creating_signal.trigger()
-      if (control !== null) {
-        closeSearchWindows(control)
+      if (search_layout !== null) {
+        closeSearchWindows(search_layout)
       }
     }
     window.addEventListener('beforeunload', handler)
     return () => {
       window.removeEventListener('beforeunload', handler)
     }
-  }, [closeSearchWindows, control, stop_creating_signal])
+  }, [closeSearchWindows, search_layout, stop_creating_signal])
 
-  const refreshWindows = useCallback((
+  const constructSearchLayout = useCallback((
     control_window_id: WindowID,
     layout_info: LayoutInfo,
     keyword: string,
@@ -80,8 +80,8 @@ export default function useControl(
         async onRemovedWindow() {
           window.close()
         },
-      }).then(newControl => {
-        setControl(newControl)
+      }).then(new_layout => {
+        setSearchLayout(new_layout)
       }).catch(err => {
         if (err.cancel) {
           // 提前取消
@@ -100,28 +100,28 @@ export default function useControl(
   return {
     isLoading,
     setLoading,
-    control,
-    setControl,
+    search_layout,
+    setSearchLayout,
     closeSearchWindows,
-    refreshWindows,
+    constructSearchLayout,
     controlProcessing,
-    changeRow: useChangeRow(base, layout_info, control),
+    changeRow: useChangeRow(base, layout_info, search_layout),
   } as const
 }
 
-function useChangeRow(base: Base, layout_info: LayoutInfo, control: Control | null) {
+function useChangeRow(base: Base, layout_info: LayoutInfo, search_layout: SearchLayout | null) {
   return (
     useCallback(async (type: 'previus' | 'next') => {
-      console.log('changeRow', type, control)
-      if (control === null) {
+      console.log('changeRow', type, search_layout)
+      if (search_layout === null) {
         return
       }
       return (
         controlProcessing(async () => {
           try {
-            control.cancelAllEvent()
+            search_layout.cancelAllEvent()
 
-            const remainMatrix = [...control.getMatrix()]
+            const remainMatrix = [...search_layout.getMatrix()]
             const latestRow = type === 'next' ? remainMatrix.pop() : remainMatrix.shift()
 
             let newMatrix: Matrix<SearchWindow>
@@ -144,12 +144,12 @@ function useChangeRow(base: Base, layout_info: LayoutInfo, control: Control | nu
 
             // await focusControlWindow()
 
-            control.setMatrix(newMatrix)
+            search_layout.setMatrix(newMatrix)
           } finally {
-            control.applyAllEvent()
+            search_layout.applyAllEvent()
           }
         })
       )
-    }, [base, control, layout_info])
+    }, [base, search_layout, layout_info])
   )
 }
