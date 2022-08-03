@@ -1,18 +1,11 @@
 import { useCallback, useEffect, useState } from 'react'
-import { Atomic, Signal } from 'vait'
+import { Signal } from 'vait'
 
-import { Base, LayoutInfo } from '../core/base'
-import { Matrix } from '../core/common'
-import { CreateSearchLayout, SearchLayout } from '../core/layout'
-import { renderMatrix } from '../core/layout/render'
-import { closeWindows, SearchWindow, WindowID } from '../core/layout/window'
+import { Base, LayoutInfo } from '../../../core/base'
+import { CreateSearchLayout, SearchLayout } from '../../../core/layout'
+import { closeWindows, WindowID } from '../../../core/layout/window'
 
-const controlProcessing = Atomic()
-
-export default function useControl(
-  base: Base,
-  layout_info: LayoutInfo
-) {
+export default function useControl( base: Base ) {
   const [isLoading, setLoading] = useState(false)
 
   const [stop_creating_signal] = useState(Signal<void>())
@@ -102,52 +95,5 @@ export default function useControl(
     setSearchLayout,
     closeSearchWindows,
     constructSearchLayout,
-    controlProcessing,
-    changeRow: useChangeRow(base, layout_info, search_layout),
   } as const
-}
-
-function useChangeRow(base: Base, layout_info: LayoutInfo, search_layout: SearchLayout | null) {
-  return (
-    useCallback(async (type: 'previus' | 'next') => {
-      console.log('changeRow', type, search_layout)
-      if (search_layout === null) {
-        return
-      }
-      return (
-        controlProcessing(async () => {
-          try {
-            search_layout.cancelAllEvent()
-
-            const remainMatrix = [...search_layout.getMatrix()]
-            const latestRow = type === 'next' ? remainMatrix.pop() : remainMatrix.shift()
-
-            let newMatrix: Matrix<SearchWindow>
-
-            if (latestRow === undefined) {
-              throw Error('latestRow is undefined')
-            } else if (type === 'next') {
-              newMatrix = [latestRow, ...remainMatrix]
-            } else {
-              newMatrix = [...remainMatrix, latestRow]
-            }
-
-            await renderMatrix(
-              base,
-              layout_info,
-              newMatrix,
-              type === 'next' ? true : undefined,
-              true
-            )
-
-            // await focusControlWindow()
-
-            search_layout.setMatrix(newMatrix)
-          } finally {
-            search_layout.applyAllEvent()
-          }
-        })
-      )
-    }, [base, search_layout, layout_info])
-  )
 }

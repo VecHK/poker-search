@@ -1,3 +1,4 @@
+import { Atomic } from 'vait'
 import { compose, equals, prop, thunkify } from 'ramda'
 import React, { ReactNode, useCallback, useEffect, useMemo } from 'react'
 
@@ -14,8 +15,10 @@ import { validKeyword } from '../../utils/search'
 import animatingWindow from '../../utils/animating-window'
 
 import useWindowFocus from '../../hooks/useWindowFocus'
-import useControl from '../../hooks/useControl'
 import useSearchForm from '../../hooks/useSearchForm'
+import useControl from './hooks/useControl'
+import useChangeRowShortcutKey from './hooks/useChangeRowShortcutKey'
+import useChangeRow from './hooks/useChangeRow'
 
 import Loading from '../../components/Loading'
 import SearchForm from '../../components/SearchForm'
@@ -26,24 +29,7 @@ import BGSrc from '../../assets/control-bg.png'
 
 import './Control.css'
 
-function useChangeRowShortcutKey(props: {
-  onPressUp: () => void
-  onPressDown: () => void
-}) {
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === 'ArrowUp') {
-        e.preventDefault()
-        props.onPressUp()
-      } else if (e.key === 'ArrowDown') {
-        e.preventDefault()
-        props.onPressDown()
-      }
-    }
-    window.addEventListener('keydown', handler, true)
-    return () => window.removeEventListener('keydown', handler, true)
-  }, [props])
-}
+const controlProcessing = Atomic()
 
 const ControlApp: React.FC<{
   base: Base
@@ -86,10 +72,9 @@ const ControlApp: React.FC<{
     setSearchLayout,
     closeSearchWindows,
     constructSearchLayout,
-    changeRow: controlChangeRow,
-    controlProcessing,
-  } = useControl(base, layout_info)
+  } = useControl(base)
 
+  const controlChangeRow = useChangeRow(controlProcessing, base, layout_info, search_layout)
   function changeRow(act: 'previus' | 'next') {
     controlChangeRow(act).then(focusControlWindow)
   }
@@ -167,7 +152,7 @@ const ControlApp: React.FC<{
         })
       })
     }
-  }, [closeSearchWindows, controlProcessing, controlWindowId, moveControlWindow, search_layout, setKeywordInput, setLoading, setSearchLayout, submitKeyword])
+  }, [closeSearchWindows, controlWindowId, moveControlWindow, search_layout, setKeywordInput, setLoading, setSearchLayout, submitKeyword])
 
   useEffect(function receiveChangeSearchMessage() {
     const [ applyReceive, cancelReceive ] = MessageEvent('ChangeSearch', (new_keyword) => {
