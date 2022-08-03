@@ -3,11 +3,9 @@ import { Atomic, Signal } from 'vait'
 
 import { Base, LayoutInfo } from '../core/base'
 import { Matrix } from '../core/common'
-import { CreateSearchLayout } from '../core/layout'
+import { CreateSearchLayout, SearchLayout } from '../core/layout'
 import { renderMatrix } from '../core/layout/render'
 import { closeWindows, SearchWindow, WindowID } from '../core/layout/window'
-
-export type SearchLayout = Unpromise<ReturnType<typeof CreateSearchLayout>>
 
 const controlProcessing = Atomic()
 
