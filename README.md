@@ -58,7 +58,7 @@ zip 文件文件的安装方式会麻烦一些，你需要进行如下步骤：
 
 在按下回车键提交搜索后，Poker 将会弹出数个搜索窗出来。你可以点击背景的窗口标题栏来切换：
 
-![reorder col](readme-assets/reorder-col.gif)
+![change search window](readme-assets/change-search-window.gif)
 
 注意到『↑』『↓』这两个按钮了吗？点击它们可以切换每一列最前排的窗口。你还可以点击这些搜索窗的「最大化」来使它还原成普通浏览器窗口的样子（mac的话是点击「最小化」按钮）关闭任意一个窗口后也将会关闭其他的全部窗口。
 
