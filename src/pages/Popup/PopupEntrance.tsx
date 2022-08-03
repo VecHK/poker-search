@@ -5,22 +5,24 @@ import useWindowFocus from '../../hooks/useWindowFocus'
 
 import Popup from './Popup'
 
+function focusControlWindowAndExit() {
+  focusControlWindow().finally(() => {
+    window.close()
+  })
+}
+
 export default function PopupEntrance() {
   const control_is_launched = useControlWindowExists()
   useEffect(function exitPopupWhenControlWindowLaunch() {
     if (control_is_launched) {
-      focusControlWindow().finally(() => {
-        window.close()
-      })
+      focusControlWindowAndExit()
     }
   }, [control_is_launched])
 
   const window_focused = useWindowFocus(true)
   useEffect(function exitPopupWhenWindowBlur() {
     if (!window_focused) {
-      focusControlWindow().finally(() => {
-        window.close()
-      })
+      focusControlWindowAndExit()
     }
   }, [window_focused])
 
