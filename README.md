@@ -14,7 +14,7 @@
 
 一款灵感来源于 Smartisan TNT 发牌手的 Chrome 扩展插件。
 
-![](readme-images/poker-search-released.png)
+![](readme-assets/poker-search-released.png)
 
 它能够让用户**输入一个关键词**后，用全新的交互方式一次性展现出用户所有收录进 Poker 的网站的搜索结果。<br>
 而这个收录的网站，只需要有能进行搜索的 URL 即可。
@@ -30,26 +30,26 @@
 - **在商品比价上**（你能利用的网购平台，**都能以你的所在地价格展示**，并一目了然）
 - **在资源搜索上**（BT、PT、网盘搜索、仓库……各种资源网站一目十行）
 
-![](readme-images/Demo1.png)
+![](readme-assets/Demo1.png)
 
 
 # 下载安装
 
 安装方式有两种， 一种是去 [Chrome 的 Web Store](https://chrome.google.com/webstore/detail/poker-search/oojeodibjbmkclnocinjolfaigheengg) 上下载；另一种是下载[这个 Release 条目](https://github.com/VecHK/poker-search/releases/latest)下的 zip 文件来安装。
- 
+
 zip 文件文件的安装方式会麻烦一些，你需要进行如下步骤：
 
 1. 先打开 Chrome，在地址栏输入 chrome://extensions 后进入扩展程序管理页面
 1. 启用页面右上角的「开发者模式」
 1. 然后解压 poker.zip ，将解压出来的文件夹拖拽到这个页面上，即可完成安装
- 
+
 两种安装方式似乎是没有什么区别的，不过因为谷歌审核的原因， Web Store 的更新都会稍慢一些。
- 
+
 # 使用方法
 
 ## 启动前的设置
 
-![](readme-images/DemoSetting.png)
+![](readme-assets/DemoSetting.png)
 
 我们花费了大量的时间去制作『扩展选项』的设置页面。
 **<u>因此我们推荐使用前，先去看看设置页面的初期配置。</u>**
@@ -81,11 +81,11 @@ zip 文件文件的安装方式会麻烦一些，你需要进行如下步骤：
 Poker 搜索启动后，用户能在底部的控制台窗口中再次键入新内容进行再一次的搜索。
 也可以在控制台窗口点击『↑』『↓』按钮切换显示的层级。
 
-![image-20220520204922710](readme-images/Control.png)
+![image-20220520204922710](readme-assets/Control.png)
 
 而若是你想单独看后面层级的某个网站时，你能点击那个网站的窗口顶部将它移动到最前面。
 
-![reorder col](readme-images/reorder-col.gif)
+![reorder col](readme-assets/reorder-col.gif)
 
 # 有疑问或建议
 
