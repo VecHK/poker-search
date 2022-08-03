@@ -1,9 +1,11 @@
+import { Atomic } from 'vait'
 import { compose, equals, prop, thunkify } from 'ramda'
 import React, { ReactNode, useCallback, useEffect, useMemo } from 'react'
 
 import cfg from '../../config'
 
 import { Base } from '../../core/base'
+import { getControlWindowHeight } from '../../core/base/control-window-height'
 import { calcControlWindowPos } from '../../core/layout/control-window'
 import { WindowID } from '../../core/layout/window'
 import { MessageEvent } from '../../message'
@@ -13,8 +15,10 @@ import { validKeyword } from '../../utils/search'
 import animatingWindow from '../../utils/animating-window'
 
 import useWindowFocus from '../../hooks/useWindowFocus'
-import useControl from '../../hooks/useControl'
 import useSearchForm from '../../hooks/useSearchForm'
+import useControl from './hooks/useControl'
+import useChangeRowShortcutKey from './hooks/useChangeRowShortcutKey'
+import useChangeRow from './hooks/useChangeRow'
 
 import Loading from '../../components/Loading'
 import SearchForm from '../../components/SearchForm'
@@ -24,26 +28,8 @@ import FloorFilter from '../../components/FloorFilter'
 import BGSrc from '../../assets/control-bg.png'
 
 import './Control.css'
-import { getControlWindowHeight } from '../../core/base/control-window-height'
 
-function useChangeRowShortcutKey(props: {
-  onPressUp: () => void
-  onPressDown: () => void
-}) {
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === 'ArrowUp') {
-        e.preventDefault()
-        props.onPressUp()
-      } else if (e.key === 'ArrowDown') {
-        e.preventDefault()
-        props.onPressDown()
-      }
-    }
-    window.addEventListener('keydown', handler, true)
-    return () => window.removeEventListener('keydown', handler, true)
-  }, [props])
-}
+const controlProcessing = Atomic()
 
 const ControlApp: React.FC<{
   base: Base
@@ -51,6 +37,16 @@ const ControlApp: React.FC<{
   controlWindowId: WindowID
   onSelectedFloorChange: (f: number[]) => void
 }> = ({ base, showTips, controlWindowId, onSelectedFloorChange }) => {
+  const window_is_focused = useWindowFocus(true)
+
+  const focusControlWindow = useCallback(async () => {
+    return chrome.windows.update(controlWindowId, { focused: true })
+  }, [controlWindowId])
+
+  useEffect(function focusControlWindowAfterLoad() {
+    focusControlWindow()
+  }, [focusControlWindow])
+
   const {
     keyword_input,
     setKeywordInput,
@@ -69,22 +65,44 @@ const ControlApp: React.FC<{
     getSelectedFloorName,
   } = useSearchForm(base)
 
-  const windowIsFocus = useWindowFocus(true)
-
   const {
     isLoading,
     setLoading,
-    control,
-    setControl,
+    search_layout,
+    setSearchLayout,
     closeSearchWindows,
-    refreshWindows,
-    changeRow: controlChangeRow,
-    controlProcessing,
-  } = useControl(base, layout_info)
+    constructSearchLayout,
+  } = useControl(base)
 
-  const focusControlWindow = useCallback(async () => {
-    return chrome.windows.update(controlWindowId, { focused: true })
-  }, [controlWindowId])
+  const controlChangeRow = useChangeRow(controlProcessing, base, layout_info, search_layout)
+  function changeRow(act: 'previus' | 'next') {
+    controlChangeRow(act).then(focusControlWindow)
+  }
+  useChangeRowShortcutKey({
+    onPressUp: () => changeRow('previus'),
+    onPressDown: () => changeRow('next')
+  })
+
+  useEffect(function openSearchWindows() {
+    console.log('openSearchWindows', controlWindowId, submited_keyword)
+    if (submited_keyword !== false) {
+      if (search_layout === null) {
+        constructSearchLayout(controlWindowId, layout_info, submited_keyword).finally(() => {
+          focusControlWindow()
+        })
+      }
+    }
+  }, [constructSearchLayout, controlWindowId, focusControlWindow, layout_info, search_layout, submited_keyword])
+
+  useEffect(function setSearchwordFromURL() {
+    const search_word = getQuery(cfg.CONTROL_QUERY_TEXT)
+    if (search_word !== null) {
+      if (validKeyword(search_word)) {
+        setKeywordInput(search_word)
+        submitKeyword(search_word)
+      }
+    }
+  }, [setKeywordInput, submitKeyword])
 
   const moveControlWindow = useCallback(async (id: WindowID) => {
     const [ top, left ] = calcControlWindowPos(
@@ -112,39 +130,6 @@ const ControlApp: React.FC<{
     }
   }, [base.limit, layout_info.total_height, selected_site_settings])
 
-  function changeRow(act: 'previus' | 'next') {
-    controlChangeRow(act).then(focusControlWindow)
-  }
-  useChangeRowShortcutKey({
-    onPressUp: () => changeRow('previus'),
-    onPressDown: () => changeRow('next')
-  })
-
-  useEffect(function openSearchWindows() {
-    console.log('openSearchWindows', controlWindowId, submited_keyword)
-    if (submited_keyword !== false) {
-      if (control === null) {
-        refreshWindows(controlWindowId, layout_info, submited_keyword).finally(() => {
-          focusControlWindow()
-        })
-      }
-    }
-  }, [control, controlWindowId, focusControlWindow, layout_info, refreshWindows, submited_keyword])
-
-  useEffect(function focusControlWindowAfterLoad() {
-    focusControlWindow()
-  }, [focusControlWindow])
-
-  useEffect(function setSearchwordFromURL() {
-    const search_word = getQuery(cfg.CONTROL_QUERY_TEXT)
-    if (search_word !== null) {
-      if (validKeyword(search_word)) {
-        submitKeyword(search_word)
-        setKeywordInput(search_word)
-      }
-    }
-  }, [setKeywordInput, submitKeyword])
-
   const handleSubmit = useCallback((newSearchKeyword: string) => {
     console.log('onSubmit')
     if (validKeyword(newSearchKeyword)) {
@@ -153,12 +138,12 @@ const ControlApp: React.FC<{
       controlProcessing(async () => {
         console.log('onSubmit', newSearchKeyword)
         setLoading(true)
-        if (control) {
-          control.cancelAllEvent()
-          await closeSearchWindows(control)
+        if (search_layout) {
+          search_layout.cancelAllEvent()
+          await closeSearchWindows(search_layout)
         }
         moveControlWindow(controlWindowId).then(() => {
-          setControl(() => {
+          setSearchLayout(() => {
             // 写成这样是处理提交同样搜索词的时候的处理
             // 因为是用 useEffect 来判断的，如果是相同的值就不会触发更新了
             submitKeyword(newSearchKeyword)
@@ -167,11 +152,11 @@ const ControlApp: React.FC<{
         })
       })
     }
-  }, [closeSearchWindows, control, controlProcessing, controlWindowId, moveControlWindow, setControl, setKeywordInput, setLoading, submitKeyword])
+  }, [closeSearchWindows, controlWindowId, moveControlWindow, search_layout, setKeywordInput, setLoading, setSearchLayout, submitKeyword])
 
   useEffect(function receiveChangeSearchMessage() {
     const [ applyReceive, cancelReceive ] = MessageEvent('ChangeSearch', (new_keyword) => {
-      control?.cancelAllEvent()
+      search_layout?.cancelAllEvent()
 
       chrome.windows.update(controlWindowId, { focused: true }).then(() => {
         handleSubmit(new_keyword)
@@ -180,7 +165,7 @@ const ControlApp: React.FC<{
     applyReceive()
 
     return cancelReceive
-  }, [controlWindowId, control, handleSubmit])
+  }, [controlWindowId, search_layout, handleSubmit])
 
   const searchFormNode = useMemo(() => {
     if (disable_search) {
@@ -191,7 +176,7 @@ const ControlApp: React.FC<{
           keyword={''}
           setKeyword={thunkify(showTips)('请选择至少一层的站点配置')}
           onSubmit={thunkify(showTips)('请选择至少一层的站点配置')}
-          submitButtonActive={windowIsFocus}
+          submitButtonActive={window_is_focused}
         />
       )
     } else {
@@ -201,7 +186,7 @@ const ControlApp: React.FC<{
           keywordPlaceholder={'请输入搜索词'}
           keyword={keyword_input}
           setKeyword={setKeywordInput}
-          submitButtonActive={windowIsFocus}
+          submitButtonActive={window_is_focused}
           onSubmit={
             compose(
               handleSubmit,
@@ -211,7 +196,7 @@ const ControlApp: React.FC<{
         />
       )
     }
-  }, [disable_search, handleSubmit, is_floor_search, keyword_input, setKeywordInput, showTips, windowIsFocus])
+  }, [disable_search, handleSubmit, is_floor_search, keyword_input, setKeywordInput, showTips, window_is_focused])
 
   return (
     <main className="control-main" style={{ background: `url(${BGSrc})` }}>
