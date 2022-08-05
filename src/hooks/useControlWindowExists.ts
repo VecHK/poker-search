@@ -22,7 +22,7 @@ export default function useControlWindowExists(): boolean {
   }, [])
 
   useEffect(() => {
-    if (window_id !== null) {
+    if (window_id !== undefined) {
       return ApplyChromeEvent(chrome.windows.onRemoved, win_id => {
         if (window_id === win_id) {
           setWindowId(undefined)
