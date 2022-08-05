@@ -1,9 +1,9 @@
 import cfg from '../../config'
-import { init } from '../../environment'
+import { initEnvironment } from '../../environment'
 
 (async () => {
   try {
-    await init({
+    await initEnvironment({
       window_height: cfg.INSTALLED_WINDOW_HEIGHT,
       inner_height: window.innerHeight,
     })
