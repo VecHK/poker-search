@@ -8,7 +8,7 @@ export async function getControlWindowID(): Promise<WindowID | undefined> {
   const tab = nth(
     0,
     await chrome.tabs.query({
-      url: getControlWindowUrl(),
+      url: `${getControlWindowUrl()}*`,
       windowType: 'popup'
     })
   )
