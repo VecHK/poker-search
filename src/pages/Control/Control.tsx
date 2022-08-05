@@ -28,6 +28,7 @@ import FloorFilter from '../../components/FloorFilter'
 import BGSrc from '../../assets/control-bg.png'
 
 import './Control.css'
+import useFocusControlMessage from './hooks/useFocusControlMessage'
 
 const controlProcessing = Atomic()
 
@@ -73,6 +74,11 @@ const ControlApp: React.FC<{
     closeSearchWindows,
     constructSearchLayout,
   } = useControl(base)
+
+  useFocusControlMessage(
+    controlWindowId,
+    search_layout
+  )
 
   const controlChangeRow = useChangeRow(controlProcessing, base, layout_info, search_layout)
   function changeRow(act: 'previus' | 'next') {
