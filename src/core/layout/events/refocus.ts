@@ -30,6 +30,7 @@ export async function InitRefocusEvent(
     const { id: refocus_window_id } = await chrome.windows.create({
       url: chrome.runtime.getURL('refocusLayout.html'),
       type: 'popup',
+      state: 'normal',
       left: limit.minX,
       top: limit.minY,
       width: cfg.REFOCUS_LAYOUT_WINDOW_WIDTH,

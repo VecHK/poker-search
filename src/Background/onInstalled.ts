@@ -36,6 +36,7 @@ function openInstalledWindow(is_update: boolean) {
   return chrome.windows.create({
     focused: false,
     type: 'popup',
+    state: 'normal',
     width: cfg.INSTALLED_WINDOW_WIDTH,
     height: cfg.INSTALLED_WINDOW_HEIGHT,
     left: 0,
