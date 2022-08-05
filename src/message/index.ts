@@ -1,7 +1,7 @@
 import { ChromeEvent } from '../utils/chrome-event'
 
 type Types =
-  'FocusChanged' |
+  'FocusControl' |
   'ChangeSearch' |
   'ChangeLaunchContextMenu' |
   'TryPoker'
@@ -12,7 +12,7 @@ type RuntimeMessage<T extends Types, P extends unknown> = {
 }
 
 export type Messages = {
-  FocusChanged: RuntimeMessage<'FocusChanged', boolean>
+  FocusControl: RuntimeMessage<'FocusControl', null>
   ChangeSearch: RuntimeMessage<'ChangeSearch', string>
   ChangeLaunchContextMenu: RuntimeMessage<'ChangeLaunchContextMenu', boolean>
   TryPoker: RuntimeMessage<'TryPoker', string>

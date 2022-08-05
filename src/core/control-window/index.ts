@@ -23,7 +23,7 @@ export async function controlIsLaunched() {
 export async function focusControlWindow() {
   const win_id = await getControlWindowID()
   if (win_id !== undefined) {
-    await chrome.windows.update(win_id, { focused: true })
+    await sendMessage('FocusControl', null)
     return true
   } else {
     return false
