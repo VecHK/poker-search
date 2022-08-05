@@ -47,8 +47,7 @@ type RL = ReturnType<typeof InitRefocusLayoutMemo>
  * 在这个时间内收到的 window_id ，根据收到的 window_id 来判断真正的 focusChanged
  *
  * 对于 (B)，使用了唤回窗来做，见 InitRefocusEvent、InitRefocusLayout。大概就是新建了
- * 一个窗口，然后点击这个窗口里的按钮后发送 REFOCUS 的消息,
- * 控制窗的 useReFocusMessage 钩子在收到这个消息的时候进行 poker layout 的重新焦聚
+ * 一个窗口，然后点击这个窗口里的按钮后就会重新焦距控制窗
  *
  * 对于 (C)，因为还原窗口原本是设想点击最大化按钮的，但 macOS 中并没有这种按钮
  * mac 里只有类似的全屏按钮，可是用全屏作为还原窗口的话看起来会很奇怪，而且在系统资源紧张

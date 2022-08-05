@@ -1,11 +1,10 @@
 import { thunkify } from 'ramda'
 import cfg from '../../config'
 import { Base, createBase, initLayoutInfo, RevertContainerID, selectSiteSettingsByFiltered } from '../../core/base'
-import { getControlWindowHeight } from '../../core/base/control-window-height'
-import { calcControlWindowPos } from '../../core/layout/control-window'
+import { getControlWindowHeight } from '../base/control-window-height'
+import { controlIsLaunched } from '../control-window'
+import { calcControlWindowPos } from '../layout/control-window'
 import { specifyFloorIdxBySearchText } from '../../hooks/useSearchForm'
-
-import { controlIsLaunched, setControlLaunch } from '../../x-state/control-window-launched'
 
 function getSiteSettings(base: Base, search_text: string) {
   const site_settings = selectSiteSettingsByFiltered(
@@ -95,8 +94,6 @@ export default async function launchControlWindow({ text, revert_container_id }:
     if (control_window_id === undefined) {
       throw Error('launchControlWindow: control_window_id is undefined')
     } else {
-      await setControlLaunch(control_window_id)
-
       if (state === 'fullscreen') {
         // prevent fullscreen
         await chrome.windows.update(control_window_id, { focused: true, state: 'normal' })

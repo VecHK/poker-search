@@ -26,7 +26,7 @@
 
 .FloorFilter {
   width: calc(100% - (var(--point-size) / 2 * 2));
-  margin: 0;
+  margin: 0 auto;
   position: relative;
 
   height: calc(

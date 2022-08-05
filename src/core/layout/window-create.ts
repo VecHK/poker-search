@@ -24,6 +24,7 @@ function OpenSearchWindow(url: string, CreateData: chrome.windows.CreateData) {
   }
 
   const createP = chrome.windows.create({
+    state: 'normal',
     ...CreateData,
     url,
   }).then(newWindow => {

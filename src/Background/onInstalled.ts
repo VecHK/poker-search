@@ -1,5 +1,4 @@
 import cfg from '../config'
-import { initControlWindowLaunched } from '../x-state/control-window-launched'
 
 import { presetLaunchContextMenu } from './modules/launch-contextmenu'
 import { presetSelectionContextMenu } from './modules/selection-contextmenu'
@@ -14,8 +13,6 @@ export default async function BackgroundOnInstalled(
   presetSelectionContextMenu()
 
   initLaunchContextMenu()
-
-  await initControlWindowLaunched()
 
   if (details.reason === 'install') {
     openInstalledWindow(false)
@@ -39,6 +36,7 @@ function openInstalledWindow(is_update: boolean) {
   return chrome.windows.create({
     focused: false,
     type: 'popup',
+    state: 'normal',
     width: cfg.INSTALLED_WINDOW_WIDTH,
     height: cfg.INSTALLED_WINDOW_HEIGHT,
     left: 0,

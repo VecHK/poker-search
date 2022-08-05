@@ -9,6 +9,8 @@ import { selectCol } from '../common'
 import TrustedEvents from './events'
 import WindowRevert from './window-revert'
 
+export type SearchLayout = Unpromise<ReturnType<typeof CreateSearchLayout>>
+
 export async function CreateSearchLayout({
   control_window_id,
   base,

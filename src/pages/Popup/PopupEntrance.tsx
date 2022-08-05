@@ -1,20 +1,32 @@
 import React, { useEffect } from 'react'
+import { focusControlWindow } from '../../core/control-window'
 import useControlWindowExists from '../../hooks/useControlWindowExists'
-import { sendMessage } from '../../message'
+import useWindowFocus from '../../hooks/useWindowFocus'
 
 import Popup from './Popup'
 
-export default function PopupEntrance() {
-  const control_window_exists = useControlWindowExists()
-  useEffect(function exitCurrentAppWhenControlWindowLaunched() {
-    if (control_window_exists) {
-      sendMessage('Refocus', null).finally(() => {
-        window.close()
-      })
-    }
-  }, [control_window_exists])
+function focusControlWindowAndExit() {
+  focusControlWindow().finally(() => {
+    window.close()
+  })
+}
 
-  if (control_window_exists) {
+export default function PopupEntrance() {
+  const control_is_launched = useControlWindowExists()
+  useEffect(function exitPopupWhenControlWindowLaunch() {
+    if (control_is_launched) {
+      focusControlWindowAndExit()
+    }
+  }, [control_is_launched])
+
+  const window_focused = useWindowFocus(true)
+  useEffect(function exitPopupWhenWindowBlur() {
+    if (!window_focused) {
+      focusControlWindowAndExit()
+    }
+  }, [window_focused])
+
+  if (control_is_launched) {
     return <></>
   } else {
     return <Popup />

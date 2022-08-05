@@ -2,8 +2,6 @@ import { ChromeEvent } from '../utils/chrome-event'
 
 type Types =
   'FocusChanged' |
-  'Refocus' |
-  'RefocusLayoutClose' |
   'ChangeSearch' |
   'ChangeLaunchContextMenu' |
   'TryPoker'
@@ -15,8 +13,6 @@ type RuntimeMessage<T extends Types, P extends unknown> = {
 
 export type Messages = {
   FocusChanged: RuntimeMessage<'FocusChanged', boolean>
-  Refocus: RuntimeMessage<'Refocus', null>
-  RefocusWindowClose: RuntimeMessage<'RefocusLayoutClose', null>
   ChangeSearch: RuntimeMessage<'ChangeSearch', string>
   ChangeLaunchContextMenu: RuntimeMessage<'ChangeLaunchContextMenu', boolean>
   TryPoker: RuntimeMessage<'TryPoker', string>

@@ -1,3 +1,4 @@
+import { prop } from 'ramda'
 import cfg from '../config'
 import InitStorage from '../utils/storage'
 import getDefaultPreferences from './default'
@@ -5,6 +6,7 @@ import checkPreferences from './check'
 
 import { AllVersion, checkVersion, CURRENT_PREFERENCES_VERSION, LatestVersion } from './versions'
 import { updatePreferences } from './versions/update'
+import { saveFilteredFloor } from '../x-state/filtered-floor'
 
 export * from './versions/'
 
@@ -15,6 +17,18 @@ const [
   saveStorage,
   isFoundStorage
 ] = InitStorage<AllVersion>(cfg.PREFERENCES_STORAGE_KEY)
+
+async function initPreferences() {
+  const default_preferences = getDefaultPreferences()
+
+  await save(default_preferences)
+
+  await saveFilteredFloor(
+    default_preferences.site_settings
+      .filter((f, idx) => idx !== 0)
+      .map(prop('id'))
+  )
+}
 
 export async function load(): Promise<Preferences> {
   if (await isFoundStorage()) {
@@ -28,7 +42,8 @@ export async function load(): Promise<Preferences> {
       return Object.freeze(preferences as Preferences)
     }
   } else {
-    return init({})
+    await initPreferences()
+    return load()
   }
 }
 
@@ -43,10 +58,4 @@ export async function save(preferences: AllVersion) {
       return saveStorage(preferences)
     }
   }
-}
-
-export async function init(append: Parameters<typeof getDefaultPreferences>[0]) {
-  const default_preferences = getDefaultPreferences(append)
-  await save(default_preferences)
-  return load()
 }

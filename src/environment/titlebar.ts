@@ -7,6 +7,7 @@ function calcTitleBarHeight(
 
 async function getTitleBarHeight(): Promise<number | null> {
   const window = await chrome.windows.create({
+    state: 'normal',
     type: 'popup',
     focused: true,
     url: 'http://example.com',

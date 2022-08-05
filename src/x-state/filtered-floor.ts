@@ -5,17 +5,13 @@ type IDList = SiteSettingFloorID[]
 
 const [ getStorage, setStorage ] = Storage<IDList>('X-FilteredFloor')
 
-export function initFilteredFloor() {
-  return cleanFilteredFloor()
-}
-
 export async function getFilteredFloor(): Promise<IDList> {
   try {
     return await getStorage()
   } catch (err) {
     if (err instanceof StorageError) {
       if (err.errorType === 'NOT_FOUND') {
-        await cleanFilteredFloor()
+        await initFilteredFloor()
         return []
       } else {
         throw err
@@ -24,6 +20,10 @@ export async function getFilteredFloor(): Promise<IDList> {
       throw err
     }
   }
+}
+
+function initFilteredFloor() {
+  return cleanFilteredFloor()
 }
 
 export function cleanFilteredFloor() {

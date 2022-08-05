@@ -10,7 +10,7 @@ const [ loadStorage, saveStorage ] = InitStorage<Environment>(cfg.ENVIRONMENT_ST
 
 export const load = () => loadStorage()
 
-export async function init({ window_height, inner_height }: {
+export async function initEnvironment({ window_height, inner_height }: {
   window_height: number,
   inner_height: number
 }): Promise<void> {

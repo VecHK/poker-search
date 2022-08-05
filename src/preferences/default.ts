@@ -20,7 +20,7 @@ export default function getDefaultPreferences(
   return {
     __is_poker__: true,
     version: 4,
-    fill_empty_window: true,
+    fill_empty_window: false,
     refocus_window: false,
     launch_poker_contextmenu: true,
     site_settings: getDefaultSiteSettings(),
