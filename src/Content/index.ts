@@ -21,8 +21,10 @@ const $ = (s: string) => document.querySelector(s)
 
 function createTryNode(getSearchText: () => string, style: React.CSSProperties = {}) {
   const node = document.createElement('div')
-  node.style.position = 'relative'
-  Object.assign(node.style, style)
+  Object.assign(node.style, {
+    position: 'relative',
+    ...style
+  })
   node.className = 'ext-try-poker'
   node.innerHTML = `找不到想要的结果？试试 <a style="cursor: pointer">Poker</a>`
 
@@ -115,8 +117,8 @@ const Series = [
             return input.value
           }
         }
-        insertAfter(result_molecule_search_tool, createTryNode(getSearchText, { color: '#9195a3' }))
-        insertBefore(result_molecule_page, createTryNode(getSearchText, { color: '#9195a3', paddingLeft: '150px' }))
+        insertAfter(result_molecule_search_tool, createTryNode(getSearchText, { color: '#9195a3', width: '500px' }))
+        insertBefore(result_molecule_page, createTryNode(getSearchText, { color: '#9195a3', paddingLeft: '150px', width: '500px' }))
       }
     }
   }),
