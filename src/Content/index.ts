@@ -260,7 +260,7 @@ const Series = [
           }
         }
         insertBefore(pagenation, createTryNode(
-          getSearchText, { color: 'rgba(62,70,94,.8)', paddingLeft: '20px' })
+          getSearchText, { color: 'rgba(62,70,94,.8)', padding: '20px' })
         )
 
         insertBefore(b_result, createTryNode(
