@@ -236,7 +236,7 @@ const Series = [
     name: 'Bing',
     cond() {
       const u = new URL(window.location.href)
-      const is_bing_hostname = /^((bing.com)|(cn.bing.com))/.test(u.hostname)
+      const is_bing_hostname = /^((www.bing.com)|(bing.com)|(cn.bing.com))/.test(u.hostname)
       const is_search_page = /^\/search/.test(u.pathname)
 
       const b_result = Boolean( $('#b_results') )
@@ -309,11 +309,11 @@ function startDecting() {
     setExecute(true)
     return
   } else {
-    let cleanIntervalDetecting = intervalDetecting();
+    let cleanIntervalDetecting = intervalDetecting()
 
     // 没有去调查为什么 navigation 对象不存在
     // 不知道是不是 chrome 的专有接口
-    ((window as any).navigation).addEventListener('navigate', () => {
+    ;((window as any).navigation).addEventListener('navigate', () => {
       if (!isExecuted()) {
         cleanIntervalDetecting()
         cleanIntervalDetecting = intervalDetecting()
