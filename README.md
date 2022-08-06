@@ -86,6 +86,7 @@ zip 文件文件的安装方式会麻烦一些，你需要进行如下步骤：
     <td align="center"><a href="https://github.com/nt-cubic"><img src="https://avatars.githubusercontent.com/u/88926027?v=4?s=100" width="100px;" alt=""/><br /><sub><b>NT³</b></sub></a><br /><a href="#design-nt-cubic" title="Design">🎨</a> <a href="#ideas-nt-cubic" title="Ideas, Planning, & Feedback">🤔</a></td>
     <td align="center"><a href="https://github.com/iwazaki-uta"><img src="https://avatars.githubusercontent.com/u/106610172?v=4?s=100" width="100px;" alt=""/><br /><sub><b>iwazaki-uta</b></sub></a><br /><a href="#ideas-iwazaki-uta" title="Ideas, Planning, & Feedback">🤔</a></td>
     <td align="center"><a href="http://sadnap.github.io"><img src="https://avatars.githubusercontent.com/u/86921621?v=4?s=100" width="100px;" alt=""/><br /><sub><b>SadnAp</b></sub></a><br /><a href="https://github.com/VecHK/poker-search/issues?q=author%3ASadnAp" title="Bug reports">🐛</a></td>
+    <td align="center"><a href="https://nebula-soft.com"><img src="https://avatars.githubusercontent.com/u/14970892?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Hanawa Hinata</b></sub></a><br /><a href="https://github.com/VecHK/poker-search/issues?q=author%3Abainesing" title="Bug reports">🐛</a></td>
   </tr>
 </table>
 
