@@ -196,14 +196,12 @@ export default function OptionsPage() {
 
                       {
                         !canUseRefocusWindow(platform) ? null : (
-                          <SettingItem>
-                            <SettingSwitch
-                              title="「唤回 Poker」窗口"
-                              description="开启后，左上角会出现一个小窗口。点击窗口中的「唤回 Poker」后，Poker 所有窗口都会置为最顶端"
-                              value={preferences.refocus_window}
-                              onChange={HandleSettingFieldChange('refocus_window')}
-                            />
-                          </SettingItem>
+                          <SettingSwitch
+                            title="「唤回 Poker」窗口"
+                            description="开启后，左上角会出现一个小窗口。点击窗口中的「唤回 Poker」后，Poker 所有窗口都会置为最顶端"
+                            value={preferences.refocus_window}
+                            onChange={HandleSettingFieldChange('refocus_window')}
+                          />
                         )
                       }
                     </SettingItem>
