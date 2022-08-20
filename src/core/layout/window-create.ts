@@ -6,6 +6,7 @@ import { isCurrentRow } from './matrix'
 import { renderMatrix } from './render'
 import { Signal } from 'vait'
 import { removeAllFakeUARules, setFakeUA } from '../../utils/fake-ua'
+import cfg from '../../config'
 
 type PlainUnit = null
 type Unit = PlainUnit | {
@@ -167,12 +168,10 @@ export async function constructSearchWindowsFast(
 
         if (is_debugger_attach) {
           // apply debugg attach
-          const mobileUserAgent = 'Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Mobile/15E148 Safari/604.1'
-
           await chrome.debugger.attach({ tabId }, '1.2')
           await Promise.all([
             chrome.debugger.sendCommand({ tabId }, 'Emulation.setUserAgentOverride', {
-              userAgent: mobileUserAgent
+              userAgent: cfg.MOBILE_USER_AGNET
             }),
             chrome.debugger.sendCommand({ tabId }, 'Emulation.setDeviceMetricsOverride',{
               mobile: true,
