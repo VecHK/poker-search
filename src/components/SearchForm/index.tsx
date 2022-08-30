@@ -59,6 +59,9 @@ const KeywordInput: React.FC<{
 }> = ({ value, placeholder, setValue, onFocus, onBlur }) => {
   return (
     <input
+      type="search"
+      autoComplete="off"
+      aria-autocomplete="both"
       alt="input-keyword"
       name="keyword"
       placeholder={placeholder}
