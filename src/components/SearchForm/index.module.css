@@ -35,6 +35,9 @@
   ;
 }
 
+.Input::-webkit-search-cancel-button {
+  display: none;
+}
 .Input {
   font-family: "Segoe UI", "Noto Sans CJK SC", "Source Han Sans", "Source Han Sans CN", "Microsoft JhengHei", DengXian, "微软雅黑", "黑体", sans-serif;
   background-color: transparent;

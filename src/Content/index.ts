@@ -21,8 +21,10 @@ const $ = (s: string) => document.querySelector(s)
 
 function createTryNode(getSearchText: () => string, style: React.CSSProperties = {}) {
   const node = document.createElement('div')
-  node.style.position = 'relative'
-  Object.assign(node.style, style)
+  Object.assign(node.style, {
+    position: 'relative',
+    ...style
+  })
   node.className = 'ext-try-poker'
   node.innerHTML = `找不到想要的结果？试试 <a style="cursor: pointer">Poker</a>`
 
@@ -115,8 +117,8 @@ const Series = [
             return input.value
           }
         }
-        insertAfter(result_molecule_search_tool, createTryNode(getSearchText, { color: '#9195a3' }))
-        insertBefore(result_molecule_page, createTryNode(getSearchText, { color: '#9195a3', paddingLeft: '150px' }))
+        insertAfter(result_molecule_search_tool, createTryNode(getSearchText, { color: '#9195a3', width: '500px' }))
+        insertBefore(result_molecule_page, createTryNode(getSearchText, { color: '#9195a3', paddingLeft: '150px', width: '500px' }))
       }
     }
   }),
@@ -234,7 +236,7 @@ const Series = [
     name: 'Bing',
     cond() {
       const u = new URL(window.location.href)
-      const is_bing_hostname = /^((bing.com)|(cn.bing.com))/.test(u.hostname)
+      const is_bing_hostname = /^((www.bing.com)|(bing.com)|(cn.bing.com))/.test(u.hostname)
       const is_search_page = /^\/search/.test(u.pathname)
 
       const b_result = Boolean( $('#b_results') )
@@ -258,7 +260,7 @@ const Series = [
           }
         }
         insertBefore(pagenation, createTryNode(
-          getSearchText, { color: 'rgba(62,70,94,.8)', paddingLeft: '20px' })
+          getSearchText, { color: 'rgba(62,70,94,.8)', padding: '20px' })
         )
 
         insertBefore(b_result, createTryNode(
@@ -307,11 +309,11 @@ function startDecting() {
     setExecute(true)
     return
   } else {
-    let cleanIntervalDetecting = intervalDetecting();
+    let cleanIntervalDetecting = intervalDetecting()
 
     // 没有去调查为什么 navigation 对象不存在
     // 不知道是不是 chrome 的专有接口
-    ((window as any).navigation).addEventListener('navigate', () => {
+    ;((window as any).navigation).addEventListener('navigate', () => {
       if (!isExecuted()) {
         cleanIntervalDetecting()
         cleanIntervalDetecting = intervalDetecting()
