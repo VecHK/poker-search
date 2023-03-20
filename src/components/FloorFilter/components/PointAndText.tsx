@@ -89,11 +89,10 @@ export default forwardRef<number, Props>(function PointAndText({
   )
 })
 
-const ONE_ANGLE = Math.PI / 180
-const deg = multiply(ONE_ANGLE)
-function calcHeight(angle: number, len: number) {
-  return Math.sin(angle) * len
-}
+const FLOOR_TEXT_ANGLE = 35
+const ONE_DEG_RADIUS = Math.PI / 180
+const toRAD = multiply(ONE_DEG_RADIUS)
+const calcFloorTextHeight = (angle: number, len: number) => Math.sin(toRAD(angle)) * len
 
 type FloorTextProps = {
   floorIdx: number
@@ -110,13 +109,15 @@ const FloorText = forwardRef<number, FloorTextProps>(({
 }, ref) => {
   const [offset_width, innerTextRef] = useOffsetWidth()
 
-  const angle = 35
+  const angle = FLOOR_TEXT_ANGLE
   const height = useMemo(() => (
-    calcHeight(deg(angle), offset_width)
-  ), [offset_width])
+    // 正确地计算出 FloorText 最顶点和最低点的高度差
+    // 原本只需要获取 offsetHeight 就可以得到的，
+    // 但此时这里的元素是有旋转角度的，因此并不准确
+    calcFloorTextHeight(angle, offset_width)
+  ), [angle, offset_width])
 
   const interval_top = 7
-
   useEffect(() => {
     if (typeof ref === 'function') {
       ref(height + interval_top)
