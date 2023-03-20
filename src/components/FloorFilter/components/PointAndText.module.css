@@ -28,7 +28,10 @@
   position: absolute;
   top: calc(-1em + var(--interval-top));
   left: calc(50% + 0em);
+
+  word-wrap: normal;
   word-break: keep-all;
+  white-space: nowrap;
 
   transform: rotate(var(--deg));
   transform-origin: bottom left;
