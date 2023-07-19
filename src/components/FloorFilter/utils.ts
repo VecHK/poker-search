@@ -9,11 +9,13 @@ export function incrementDetecting(p: number, filtered: number[]): number[] {
   }
 }
 
-type Range = Readonly<[number, number]>
+type FloorPoint = number
+type FloorPointMap = FloorPoint[]
+type Range = Readonly<[FloorPoint, FloorPoint]>
 
-export function getSelectedRange(selected_index_list: number[]): Array<Range> {
+export function getSelectedRangeList(selected_index_list: FloorPointMap): Array<Range> {
   let result: Array<Range> = []
-  let pass: number[] = []
+  let pass: FloorPoint[] = []
 
   selected_index_list.forEach((point, idx) => {
     if (pass.indexOf(idx) === -1) {
@@ -29,7 +31,13 @@ export function getSelectedRange(selected_index_list: number[]): Array<Range> {
   return result
 }
 
-export function rangeToFloors([start, end]: Range) {
+export function clearOutRangeFloors(max_floor: number, floors: FloorPointMap) {
+  return floors.filter((selected_floor_idx) => {
+    return (selected_floor_idx >= 0) && (selected_floor_idx < max_floor)
+  })
+}
+
+export function rangeToFloorsRaw([start, end]: Range) {
   if (Math.abs(end - start) === 0) {
     return [start]
   } else {
