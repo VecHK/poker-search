@@ -109,13 +109,12 @@ const FloorText = forwardRef<number, FloorTextProps>(({
 }, ref) => {
   const [offset_width, innerTextRef] = useOffsetWidth()
 
-  const angle = FLOOR_TEXT_ANGLE
   const height = useMemo(() => (
     // 正确地计算出 FloorText 最顶点和最低点的高度差
     // 原本只需要获取 offsetHeight 就可以得到的，
     // 但此时这里的元素是有旋转角度的，因此并不准确
-    calcFloorTextHeight(angle, offset_width)
-  ), [angle, offset_width])
+    calcFloorTextHeight(FLOOR_TEXT_ANGLE, offset_width)
+  ), [offset_width])
 
   const interval_top = 7
   useEffect(() => {
@@ -131,7 +130,7 @@ const FloorText = forwardRef<number, FloorTextProps>(({
       className={`${s.FloorText}`}
       style={{
         left: `calc(${floorIdx} * ${intervalWidth} - ( var(--text-width) / 2 ))`,
-        '--deg': `${angle}deg`,
+        '--deg': `${FLOOR_TEXT_ANGLE}deg`,
         '--interval-top': `${interval_top}px`
       } as CSSProperties}
     >
