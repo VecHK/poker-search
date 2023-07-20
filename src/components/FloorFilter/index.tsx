@@ -1,7 +1,7 @@
 import { compose, range, remove, sort, uniq } from 'ramda'
 import React, { CSSProperties, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
-import { getSelectedRange, rangeToFloors } from './utils'
+import { clearOutRangeFloors, getSelectedRangeList, rangeToFloorsRaw } from './utils'
 
 import PointAndText, { FloorLabel, FloorPoint } from './components/PointAndText'
 import Selected from './components/Selected'
@@ -88,7 +88,10 @@ function FloorFilterMulti({
     drag_start: number,
     drag_end: number
   ) => {
-    const selected = rangeToFloors([drag_start, drag_end])
+    const selected = clearOutRangeFloors(
+      totalFloor,
+      rangeToFloorsRaw([drag_start, drag_end])
+    )
     console.log('selected', selected)
 
     if (select_mode === 'NORMAL') {
@@ -102,7 +105,7 @@ function FloorFilterMulti({
       })
       return res
     }
-  }, [selectedFloors, formatFloors, select_mode])
+  }, [formatFloors, select_mode, selectedFloors, totalFloor])
 
   const dragging_selected_floors = useMemo(() => {
     if (!is_dragging) {
@@ -137,7 +140,7 @@ function FloorFilterMulti({
         intervalWidth={interval_width}
       />
 
-      {getSelectedRange(dragging_selected_floors).map(([start_point, end_point], idx) => {
+      {getSelectedRangeList(dragging_selected_floors).map(([start_point, end_point], idx) => {
         return (
           <Selected
             key={idx}

@@ -7,14 +7,14 @@
   --active-color: #3a3a45;
   --unactive-color: #3a3a4555;
 
-  --selected-color: hsl(240deg 9% 50%);
-  --unselected-color: hsl(240deg 9% 85%);
+  --selected-color: hsl(240deg 9% 61.8%);
+  --unselected-color: hsl(240deg 9% 87.5%);
 
   --filter-background-color: white;
 
   --text-height: 14px;
   --text-width: 64px;
-  --point-size: 12px;
+  --point-size: 14px;
   --ex-height: 0px;
 
   --track-height: 5px;

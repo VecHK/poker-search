@@ -4,10 +4,10 @@ import GlobalCommand from './modules/gloal-command'
 import Omnibox from './modules/omnibox'
 import LaunchContextMenu from './modules/launch-contextmenu'
 import SelectionContextMenu from './modules/selection-contextmenu'
+import TryPoker from './modules/try-poker'
 
 import BackgroundOnInstalled from './onInstalled'
 import runBackground from './run'
-import TryPoker from './modules/try-poker'
 
 console.log('Poker Background')
 

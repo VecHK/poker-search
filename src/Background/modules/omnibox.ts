@@ -8,6 +8,15 @@ import matchSearchPattern from '../../utils/match-search-pattern'
 type IndividualSearch = { id: string; url_pattern: string; search_text: string }
 const [getIndividualSearchInfo, setIndividualSearchInfo] = Memo<IndividualSearch | null>(null)
 
+function getURLSiteName(url_pattern: string): string {
+  try {
+    const u = new URL(url_pattern)
+    return u.hostname
+  } catch {
+    return url_pattern
+  }
+}
+
 export default function OmniboxEvent() {
   // omnibox 提交
   const [ applyOmniBoxInputEntered, cancelOmniBoxInputEntered ] = ChromeEvent(
@@ -43,7 +52,7 @@ export default function OmniboxEvent() {
         })
       }
       function setIndividualSearch(
-        site: string,
+        site_name: string,
         search_text: string,
         url_pattern: string
       ) {
@@ -55,7 +64,7 @@ export default function OmniboxEvent() {
         })
 
         chrome.omnibox.setDefaultSuggestion({
-          description: `使用${site}搜索: ${search_text}`,
+          description: `使用 ${site_name} 搜索: ${search_text}`,
         })
         suggest([
             {
@@ -87,7 +96,8 @@ export default function OmniboxEvent() {
             ))
 
           if (site_opt && remain_text.length) {
-            setIndividualSearch(site, remain_text, site_opt.url_pattern)
+            const site_name = getURLSiteName(site_opt.url_pattern)
+            setIndividualSearch(site_name, remain_text, site_opt.url_pattern)
           } else {
             return setNormalSearch()
           }
