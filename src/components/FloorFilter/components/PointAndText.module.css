@@ -73,6 +73,12 @@
     inset 0 -1px 0.5px 0.5px hsl(240deg 8% 35% / 50%),
     inset 0 2px 3px 0px rgba(255, 255, 255, 0.382)
   ;
+  box-shadow:
+    0 4px 4px -2px rgba(0, 0, 0, 0.5),
+    inset 0 0px 0px 1px hsla(240deg, 8%, 35%, 0.5),
+    inset 0 -1px 0.5px 0.5px hsla(240deg, 8%, 35%, 0.5),
+    inset 0 2px 3px 0px rgba(255, 255, 255, 0.382)
+  ;
 }
 
 .FloorFilter.isDragging .FloorPoint {
@@ -82,8 +88,8 @@
 .FloorPoint:before {
   content: " ";
   display: block;
-  width: calc(var(--point-size) - (3px * 2 + 1px));
-  height: calc(var(--point-size) - (3px * 2 + 1px));
+  width: calc(var(--point-size) - 8px);
+  height: calc(var(--point-size) - 8px);
   border-radius: var(--point-size);
 }
 .FloorPointWrap {
