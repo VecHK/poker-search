@@ -1,6 +1,6 @@
 import { Atomic } from 'vait'
 import { compose, equals, prop, thunkify } from 'ramda'
-import React, { ReactNode, useCallback, useEffect, useMemo } from 'react'
+import React, { ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
 
 import cfg from '../../config'
 
@@ -100,16 +100,6 @@ const ControlApp: React.FC<{
     }
   }, [constructSearchLayout, controlWindowId, focusControlWindow, layout_info, search_layout, submited_keyword])
 
-  useEffect(function setSearchwordFromURL() {
-    const search_word = getQuery(cfg.CONTROL_QUERY_TEXT)
-    if (search_word !== null) {
-      if (validKeyword(search_word)) {
-        setKeywordInput(search_word)
-        submitKeyword(search_word)
-      }
-    }
-  }, [setKeywordInput, submitKeyword])
-
   const moveControlWindow = useCallback(async (id: WindowID) => {
     const [ top, left ] = calcControlWindowPos(
       getControlWindowHeight(selected_site_settings),
@@ -138,7 +128,10 @@ const ControlApp: React.FC<{
 
   const handleSubmit = useCallback((newSearchKeyword: string) => {
     console.log('onSubmit')
-    if (validKeyword(newSearchKeyword)) {
+    const valid_msg = validKeyword(newSearchKeyword)
+    if (valid_msg) {
+      showTips(valid_msg)
+    } else {
       setKeywordInput(newSearchKeyword)
 
       controlProcessing(async () => {
@@ -158,7 +151,18 @@ const ControlApp: React.FC<{
         })
       })
     }
-  }, [closeSearchWindows, controlWindowId, moveControlWindow, search_layout, setKeywordInput, setLoading, setSearchLayout, submitKeyword])
+  }, [closeSearchWindows, controlWindowId, moveControlWindow, search_layout, setKeywordInput, setLoading, setSearchLayout, showTips, submitKeyword])
+
+  const [_can_preset_searchword, setSearchwordPresetStatus] = useState(true)
+  useEffect(function searchByOmnibox() {
+    const search_word = getQuery(cfg.CONTROL_QUERY_TEXT)
+    if (search_word !== null) {
+      if (_can_preset_searchword) {
+        setSearchwordPresetStatus(false)
+        handleSubmit(search_word)
+      }
+    }
+  }, [_can_preset_searchword, handleSubmit])
 
   useEffect(function receiveChangeSearchMessage() {
     const [ applyReceive, cancelReceive ] = MessageEvent('ChangeSearch', (new_keyword) => {
