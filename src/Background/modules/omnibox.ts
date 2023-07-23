@@ -1,4 +1,5 @@
 import { Atomic, Memo } from 'vait'
+import { WindowID } from '../../core/layout/window'
 import { submitSearch } from '../../core/control-window'
 import { load as loadPreferences } from '../../preferences'
 import { toSearchURL } from '../../preferences/site-settings'
@@ -17,6 +18,11 @@ function getURLSiteName(url_pattern: string): string {
   }
 }
 
+const getCurrentTabByWindowId = (windowId: WindowID) =>
+  chrome.tabs.query({ windowId }).then(
+    tabs => tabs.find(tab => tab.active)
+  )
+
 export default function OmniboxEvent() {
   // omnibox 提交
   const [ applyOmniBoxInputEntered, cancelOmniBoxInputEntered ] = ChromeEvent(
@@ -26,10 +32,19 @@ export default function OmniboxEvent() {
 
       if (ind_search && (ind_search.id === content)) {
         const { url_pattern, search_text } = ind_search
-        chrome.tabs.create({
-          url: toSearchURL(url_pattern, search_text),
-          windowId: chrome.windows.WINDOW_ID_CURRENT
-        })
+
+        console.warn('search_text', `[${search_text}]`);
+
+
+        // 不知道为什么在这种情况下调用 chrome.tabs.getCurrent
+        // 会得到 undefined，于是只能使用 getCurrentTabByWindowId 这样一个迂回的办法
+        getCurrentTabByWindowId(chrome.windows.WINDOW_ID_CURRENT).then(
+          current_tab => chrome.tabs.create({
+            index: current_tab ? current_tab.index + 1 : undefined,
+            url: toSearchURL(url_pattern, search_text),
+            windowId: chrome.windows.WINDOW_ID_CURRENT
+          })
+        )
       } else {
         chrome.windows.getCurrent(
           ({ id }) => submitSearch(content, id)
