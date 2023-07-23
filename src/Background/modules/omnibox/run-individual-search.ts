@@ -1,29 +1,25 @@
+import { equals, prop } from 'ramda'
 import { TabID, WindowID } from '../../../core/layout/window'
-import { toSearchURL } from '../../../preferences/site-settings'
 import { ChromeEvent } from '../../../utils/chrome-event'
+import { toSearchURL } from '../../../preferences/site-settings'
 
 const createdTabs = new Map<TabID, TabID[]>()
-const getCreatedTabs = (tab_id: TabID): TabID[] => {
-  if (createdTabs.has(tab_id)) {
-    return createdTabs.get(tab_id) as TabID[]
+const getCreatedTabs = (from_tab_id: TabID): TabID[] => {
+  if (createdTabs.has(from_tab_id)) {
+    return createdTabs.get(from_tab_id) as TabID[]
   } else {
-    createdTabs.set(tab_id, [])
-    return getCreatedTabs(tab_id) as TabID[]
+    createdTabs.set(from_tab_id, [])
+    return getCreatedTabs(from_tab_id)
   }
 }
 const removeCreatedTabs: (tab_id: TabID) => void = createdTabs.delete.bind(createdTabs)
-const addCreatedTabs = (start_tab_id: TabID, new_tab_id: TabID) => {
-  createdTabs.set(start_tab_id, [...getCreatedTabs(start_tab_id), new_tab_id])
-}
+const addCreatedTabs = (
+  from_tab_id: TabID,
+  new_tab_id: TabID
+) => createdTabs.set(from_tab_id, [...getCreatedTabs(from_tab_id), new_tab_id])
 
-// createdTabs 在tab页关掉的时候进行清理
-export function AutoClearEvent() {
-  const [ apply, cancal ] = ChromeEvent(
-    chrome.tabs.onRemoved,
-    removeCreatedTabs
-  )
-  return [apply, cancal]
-}
+// 在 tab 页关掉的时候自动清理 createdTabs
+export const AutoClearEvent = () => ChromeEvent(chrome.tabs.onRemoved, removeCreatedTabs)
 
 function getLatestIndex(
   window_tabs: chrome.tabs.Tab[],
@@ -44,10 +40,10 @@ function getLatestIndex(
 }
 
 function calcNewTabIndex(
-  start_tab_id: TabID,
+  from_tab_id: TabID,
   current_window_tabs: chrome.tabs.Tab[],
 ): number | undefined {
-  const start_tab = current_window_tabs.find(t => t.id === start_tab_id)
+  const start_tab = current_window_tabs.find(t => t.id === from_tab_id)
   if (start_tab?.id) {
     const created_tabs = getCreatedTabs(start_tab.id)
     return 1 + getLatestIndex(current_window_tabs, created_tabs, start_tab.index)
@@ -56,13 +52,15 @@ function calcNewTabIndex(
   }
 }
 
-const getCurrentTabByWindowId = async (windowId: WindowID) => {
-  const tabs = await chrome.tabs.query({ windowId })
-  return [
-    tabs.find(tab => tab.active),
-    tabs
-  ] as const
-}
+const getCurrentTabByWindowId = (windowId: WindowID) =>
+  chrome.tabs.query({ windowId }).then(
+    (tabs) => [
+      tabs.find(prop('active')),
+      tabs
+    ] as const
+  )
+
+const isPressEnterKey = equals<chrome.omnibox.OnInputEnteredDisposition>('currentTab')
 
 export async function runOmniboxIndividualSearch(
   disposition: chrome.omnibox.OnInputEnteredDisposition,
@@ -71,25 +69,20 @@ export async function runOmniboxIndividualSearch(
 ) {
   const url = toSearchURL(url_pattern, search_text)
 
-  // disposition 的应对情况没有依照普通 omnibox 的逻辑
-  // 按下 Shift+Command+Enter键 的时候，是创建一个新窗口
-  // 按下 Command+Enter键、Enter键 的时候，是创建一个 tab
   if (disposition === 'newForegroundTab') {
     chrome.windows.create({ url })
   } else {
-    // 不知道为什么在这种情况下调用 chrome.tabs.getCurrent
-    // 会得到 undefined，于是只能使用 getCurrentTabByWindowId 这样一个迂回的办法
-    const [current_tab, current_window_tabs] = await getCurrentTabByWindowId(chrome.windows.WINDOW_ID_CURRENT)
+    const { WINDOW_ID_CURRENT } = chrome.windows
+
+    // 不知道为什么在这种情况下调用 chrome.tabs.getCurrent 会得到 undefined
+    // 于是只能使用 getCurrentTabByWindowId 这样一个迂回的办法
+    const [current_tab, current_window_tabs] = await getCurrentTabByWindowId(WINDOW_ID_CURRENT)
 
     const new_tab = await chrome.tabs.create({
       url,
-      windowId: chrome.windows.WINDOW_ID_CURRENT,
-
-      // 只有按下 Enter 的时候 tab 才是活动状态
-      active: disposition === 'currentTab',
-
-      // 新创建的 tab 都会显示在当前 tab 的下一个位置中，而不是 tab 栏最末尾的位置
-      index: current_tab?.id && calcNewTabIndex(current_tab?.id, current_window_tabs)
+      windowId: WINDOW_ID_CURRENT,
+      active: isPressEnterKey(disposition),
+      index: current_tab?.id && calcNewTabIndex(current_tab.id, current_window_tabs)
     })
 
     if (current_tab?.id && new_tab?.id) {
