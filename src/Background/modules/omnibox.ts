@@ -1,5 +1,5 @@
 import { Atomic, Memo } from 'vait'
-import { WindowID } from '../../core/layout/window'
+import { TabID, WindowID } from '../../core/layout/window'
 import { submitSearch } from '../../core/control-window'
 import { load as loadPreferences } from '../../preferences'
 import { toSearchURL } from '../../preferences/site-settings'
@@ -18,37 +18,121 @@ function getURLSiteName(url_pattern: string): string {
   }
 }
 
-const getCurrentTabByWindowId = (windowId: WindowID) =>
-  chrome.tabs.query({ windowId }).then(
-    tabs => tabs.find(tab => tab.active)
-  )
+const createdTabs = new Map<TabID, TabID[]>()
+const getCreatedTabs = (tab_id: TabID): TabID[] => {
+  if (createdTabs.has(tab_id)) {
+    return createdTabs.get(tab_id) as TabID[]
+  } else {
+    createdTabs.set(tab_id, [])
+    return getCreatedTabs(tab_id) as TabID[]
+  }
+}
+const addCreatedTabs = (start_tab_id: TabID, new_tab_id: TabID) => {
+  createdTabs.set(start_tab_id, [...getCreatedTabs(start_tab_id), new_tab_id])
+}
+const removeCreatedTabs: (tab_id: TabID) => void = createdTabs.delete
+
+function getLatestIndex(
+  tabs: chrome.tabs.Tab[],
+  start_tab_id: TabID,
+  start_tab_idx: number,
+  next_tab_idx: number = start_tab_idx + 1,
+): number {
+  const next_tab = tabs.find(t => t.index === next_tab_idx)
+  if (next_tab?.id) {
+    const created_tabs = getCreatedTabs(start_tab_id)
+    if (created_tabs.indexOf(next_tab.id) !== -1) {
+      return getLatestIndex(tabs, start_tab_id, start_tab_idx, next_tab.index + 1)
+    } else {
+      return next_tab_idx
+    }
+  } else {
+    return next_tab_idx
+  }
+}
+
+function calcNewTabIndex(
+  start_tab_id: TabID,
+  current_window_tabs: chrome.tabs.Tab[],
+): number {
+  const start_tab = current_window_tabs.find(t => t.id === start_tab_id)
+  if (start_tab?.id) {
+    return getLatestIndex(current_window_tabs, start_tab_id, start_tab.index)
+  } else {
+    return -1
+  }
+}
+
+const getCurrentTabByWindowId = async (windowId: WindowID) => {
+  const tabs = await chrome.tabs.query({ windowId })
+  return [
+    tabs.find(tab => tab.active),
+    tabs
+  ] as const
+}
+
+async function omniboxIndividualSearch (
+  disposition: chrome.omnibox.OnInputEnteredDisposition,
+  url_pattern: string,
+  search_text: string
+) {
+  const url = toSearchURL(url_pattern, search_text)
+
+  // disposition 的应对情况没有依照普通 omnibox 的逻辑
+  // 按下 Shift+Command+Enter键 的时候，是创建一个新窗口
+  // 按下 Command+Enter键、Enter键 的时候，是创建一个 tab
+  if (disposition === 'newForegroundTab') {
+    chrome.windows.create({ url })
+  } else {
+    // 不知道为什么在这种情况下调用 chrome.tabs.getCurrent
+    // 会得到 undefined，于是只能使用 getCurrentTabByWindowId 这样一个迂回的办法
+    const [current_tab, current_window_tabs] = await getCurrentTabByWindowId(chrome.windows.WINDOW_ID_CURRENT)
+
+    const latest_tab_index = current_tab?.id ? calcNewTabIndex(current_tab?.id, current_window_tabs) : undefined
+
+    console.log('latest_tab_index', latest_tab_index)
+
+    const new_tab = await chrome.tabs.create({
+      url,
+      windowId: chrome.windows.WINDOW_ID_CURRENT,
+
+      // 只有按下 Enter 的时候 tab 才是活动状态
+      active: disposition === 'currentTab',
+
+      // 新创建的 tab 都会显示在当前 tab 的下一个位置中，而不是 tab 栏最末尾的位置
+      index: latest_tab_index,
+    })
+
+    if (current_tab?.id && new_tab?.id) {
+      console.log(`addCreatedTabs(${current_tab.id}, ${new_tab.id})`)
+      addCreatedTabs(current_tab.id, new_tab.id)
+    }
+  }
+}
 
 export default function OmniboxEvent() {
-  // omnibox 提交
-  const [ applyOmniBoxInputEntered, cancelOmniBoxInputEntered ] = ChromeEvent(
+  const [
+    applyAutoClear,
+    cancalAutoClear
+  ] = ChromeEvent(
+    chrome.tabs.onRemoved,
+    removeCreatedTabs
+  )
+
+  // omnibox 提交（即按下回车键的时候）
+  const [
+    applyOmniBoxInputEntered, cancelOmniBoxInputEntered
+  ] = ChromeEvent(
     chrome.omnibox.onInputEntered,
-    (content) => {
+    async (content, disposition) => {
       const ind_search = getIndividualSearchInfo()
 
       if (ind_search && (ind_search.id === content)) {
         const { url_pattern, search_text } = ind_search
-
-        console.warn('search_text', `[${search_text}]`);
-
-
-        // 不知道为什么在这种情况下调用 chrome.tabs.getCurrent
-        // 会得到 undefined，于是只能使用 getCurrentTabByWindowId 这样一个迂回的办法
-        getCurrentTabByWindowId(chrome.windows.WINDOW_ID_CURRENT).then(
-          current_tab => chrome.tabs.create({
-            index: current_tab ? current_tab.index + 1 : undefined,
-            url: toSearchURL(url_pattern, search_text),
-            windowId: chrome.windows.WINDOW_ID_CURRENT
-          })
-        )
+        omniboxIndividualSearch(disposition, url_pattern, search_text)
       } else {
-        chrome.windows.getCurrent(
-          ({ id }) => submitSearch(content, id)
-        )
+        const { id } = await chrome.windows.getCurrent()
+        submitSearch(content, id)
       }
     }
   )
@@ -56,7 +140,9 @@ export default function OmniboxEvent() {
   const loadingAtomic = Atomic()
 
   // 修改 omnibox 推荐字段
-  const [ applyOmniboxSuggest, cancelOmniboxSuggest ] = ChromeEvent(
+  const [
+    applyOmniboxSuggest, cancelOmniboxSuggest
+  ] = ChromeEvent(
     chrome.omnibox.onInputChanged,
     (text, suggest) => {
       function setNormalSearch() {
@@ -125,10 +211,12 @@ export default function OmniboxEvent() {
 
   return [
     function apply() {
+      applyAutoClear()
       applyOmniBoxInputEntered()
       applyOmniboxSuggest()
     },
     function cancel() {
+      cancalAutoClear()
       cancelOmniBoxInputEntered()
       cancelOmniboxSuggest()
     }
