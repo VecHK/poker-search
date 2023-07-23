@@ -30,36 +30,36 @@ const getCreatedTabs = (tab_id: TabID): TabID[] => {
 const addCreatedTabs = (start_tab_id: TabID, new_tab_id: TabID) => {
   createdTabs.set(start_tab_id, [...getCreatedTabs(start_tab_id), new_tab_id])
 }
-const removeCreatedTabs: (tab_id: TabID) => void = createdTabs.delete
+const removeCreatedTabs: (tab_id: TabID) => void = createdTabs.delete.bind(createdTabs)
 
 function getLatestIndex(
-  tabs: chrome.tabs.Tab[],
-  start_tab_id: TabID,
-  start_tab_idx: number,
-  next_tab_idx: number = start_tab_idx + 1,
+  window_tabs: chrome.tabs.Tab[],
+  created_tabs: TabID[],
+  current_tab_idx: number,
 ): number {
-  const next_tab = tabs.find(t => t.index === next_tab_idx)
+  const next_tab_idx = current_tab_idx + 1
+  const next_tab = window_tabs.find(t => t.index === next_tab_idx)
   if (next_tab?.id) {
-    const created_tabs = getCreatedTabs(start_tab_id)
     if (created_tabs.indexOf(next_tab.id) !== -1) {
-      return getLatestIndex(tabs, start_tab_id, start_tab_idx, next_tab.index + 1)
+      return getLatestIndex(window_tabs, created_tabs, next_tab_idx)
     } else {
-      return next_tab_idx
+      return current_tab_idx
     }
   } else {
-    return next_tab_idx
+    return current_tab_idx
   }
 }
 
 function calcNewTabIndex(
   start_tab_id: TabID,
   current_window_tabs: chrome.tabs.Tab[],
-): number {
+): number | undefined {
   const start_tab = current_window_tabs.find(t => t.id === start_tab_id)
   if (start_tab?.id) {
-    return getLatestIndex(current_window_tabs, start_tab_id, start_tab.index)
+    const created_tabs = getCreatedTabs(start_tab.id)
+    return 1 + getLatestIndex(current_window_tabs, created_tabs, start_tab.index)
   } else {
-    return -1
+    return undefined
   }
 }
 
@@ -88,10 +88,6 @@ async function omniboxIndividualSearch (
     // 会得到 undefined，于是只能使用 getCurrentTabByWindowId 这样一个迂回的办法
     const [current_tab, current_window_tabs] = await getCurrentTabByWindowId(chrome.windows.WINDOW_ID_CURRENT)
 
-    const latest_tab_index = current_tab?.id ? calcNewTabIndex(current_tab?.id, current_window_tabs) : undefined
-
-    console.log('latest_tab_index', latest_tab_index)
-
     const new_tab = await chrome.tabs.create({
       url,
       windowId: chrome.windows.WINDOW_ID_CURRENT,
@@ -100,11 +96,10 @@ async function omniboxIndividualSearch (
       active: disposition === 'currentTab',
 
       // 新创建的 tab 都会显示在当前 tab 的下一个位置中，而不是 tab 栏最末尾的位置
-      index: latest_tab_index,
+      index: current_tab?.id && calcNewTabIndex(current_tab?.id, current_window_tabs)
     })
 
     if (current_tab?.id && new_tab?.id) {
-      console.log(`addCreatedTabs(${current_tab.id}, ${new_tab.id})`)
       addCreatedTabs(current_tab.id, new_tab.id)
     }
   }
