@@ -16,14 +16,14 @@ const addCreatedTabs = (start_tab_id: TabID, new_tab_id: TabID) => {
   createdTabs.set(start_tab_id, [...getCreatedTabs(start_tab_id), new_tab_id])
 }
 
-// created tabs 在tab关掉的时候进行清理
-export const [
-  applyAutoClear,
-  cancalAutoClear
-] = ChromeEvent(
-  chrome.tabs.onRemoved,
-  removeCreatedTabs
-)
+// createdTabs 在tab页关掉的时候进行清理
+export function AutoClearEvent() {
+  const [ apply, cancal ] = ChromeEvent(
+    chrome.tabs.onRemoved,
+    removeCreatedTabs
+  )
+  return [apply, cancal]
+}
 
 function getLatestIndex(
   window_tabs: chrome.tabs.Tab[],

@@ -4,7 +4,7 @@ import { load as loadPreferences } from '../../../preferences'
 import { ChromeEvent } from '../../../utils/chrome-event'
 import matchSearchPattern from '../../../utils/match-search-pattern'
 
-import { applyAutoClear, cancalAutoClear, runOmniboxIndividualSearch } from './individual-search'
+import { AutoClearEvent, runOmniboxIndividualSearch } from './individual-search'
 
 type IndividualSearch = { id: string; url_pattern: string; search_text: string }
 const [getIndividualSearchInfo, setIndividualSearchInfo] = Memo<IndividualSearch | null>(null)
@@ -19,6 +19,11 @@ function getURLSiteName(url_pattern: string): string {
 }
 
 export default function OmniboxEvent() {
+  const [
+    applyAutoClearIndividualSearch,
+    cancalAutoClearIndividualSearch
+  ] = AutoClearEvent()
+
   // omnibox 提交（即按下回车键的时候）
   const [
     applyOmniBoxInputEntered, cancelOmniBoxInputEntered
@@ -111,12 +116,12 @@ export default function OmniboxEvent() {
 
   return [
     function apply() {
-      applyAutoClear()
+      applyAutoClearIndividualSearch()
       applyOmniBoxInputEntered()
       applyOmniboxSuggest()
     },
     function cancel() {
-      cancalAutoClear()
+      cancalAutoClearIndividualSearch()
       cancelOmniBoxInputEntered()
       cancelOmniboxSuggest()
     }
