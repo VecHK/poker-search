@@ -4,7 +4,7 @@ import { load as loadPreferences } from '../../../preferences'
 import { ChromeEvent } from '../../../utils/chrome-event'
 import matchSearchPattern from '../../../utils/match-search-pattern'
 
-import { AutoClearEvent, runOmniboxIndividualSearch } from './individual-search'
+import { AutoClearEvent, runOmniboxIndividualSearch } from './run-individual-search'
 
 type IndividualSearch = { id: string; url_pattern: string; search_text: string }
 const [getIndividualSearchInfo, setIndividualSearchInfo] = Memo<IndividualSearch | null>(null)
