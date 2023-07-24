@@ -10,7 +10,6 @@
   "permissions": [
     "system.display",
     "storage",
-    "search",
     "alarms",
     "declarativeNetRequest",
     "declarativeNetRequestWithHostAccess",
