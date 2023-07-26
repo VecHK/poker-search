@@ -1,4 +1,5 @@
 import { Memo } from 'vait'
+import getQuery from '../utils/get-query'
 import { sendMessage } from '../message'
 
 function devLog(message?: any, ...optionalParams: any[]) {
@@ -77,11 +78,16 @@ const Series = [
         return
       } else {
         const getSearchText = () => {
-          const input = document.querySelector<HTMLInputElement>('#searchform input')
-          if (input === null) {
-            throw Error('input is null')
+          const q = getQuery('q')
+          if ((typeof q === 'string') && q.length) {
+            return q
           } else {
-            return input.value
+            const input = document.querySelector<HTMLInputElement>('#searchform textarea')
+            if (input === null) {
+              throw Error('input is null')
+            } else {
+              return input.value
+            }
           }
         }
         extabar.parentNode?.appendChild(createTryNode(getSearchText, { color: '#70757a', lineHeight: '32px' }));
@@ -202,30 +208,35 @@ const Series = [
       const is_duckduckgo_hostname = u.hostname === 'duckduckgo.com'
       const is_search_query = Boolean( (new URLSearchParams(u.search)).get('q') )
 
-      const search_filters_wrap = Boolean( $('.search-filters-wrap') )
-      const links = Boolean( $('#links') )
+      const search_filters_wrap = $('.search-filters-wrap')
+      const more_results = $('#more-results')
 
-      return is_duckduckgo_hostname && is_search_query && search_filters_wrap && links
+      return (
+        is_duckduckgo_hostname &&
+        is_search_query &&
+        Boolean(search_filters_wrap) &&
+        Boolean(more_results)
+      )
     },
     async exec() {
       const search_filters_wrap = $('.search-filters-wrap')
-      const links = $('#links')
+      const more_results = $('#more-results')
 
-      if (!search_filters_wrap || !links) {
-        return
-      } else {
-        const getSearchText = () => {
-          const input = document.querySelector<HTMLInputElement>('#search_form input[type="text"]')
-          if (input === null) {
-            throw Error('input is null')
-          } else {
-            return input.value
-          }
+      const getSearchText = () => {
+        const input = document.querySelector<HTMLInputElement>('#search_form input[type="text"]')
+        if (input === null) {
+          throw Error('input is null')
+        } else {
+          return input.value
         }
+      }
+      if (search_filters_wrap) {
         insertAfter(search_filters_wrap, createTryNode(
           getSearchText, { color: 'rgba(62,70,94,.8)', paddingBottom: '16px', paddingLeft: '20px' })
         )
-        insertAfter(links, createTryNode(
+      }
+      if (more_results) {
+        insertBefore(more_results, createTryNode(
           getSearchText, { color: 'rgba(62,70,94,.8)', paddingBottom: '16px' })
         )
       }
