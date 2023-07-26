@@ -271,7 +271,7 @@ export default function OptionsPage() {
               </>
             )
           }
-        }, [HandleSettingFieldChange, adjustWidth, failure, handleSiteSettingsChange, has_control_window, limit, managerKey, platform, preferences, refreshManagerKey, setPreferences, updatePreferencesField])
+        }, [HandleSettingFieldChange, adjustWidth, failure, handleSiteSettingsChange, has_control_window, limit, managerKey, platform, preferences, refreshManagerKey, setPreferences, storageVersion, updatePreferencesField])
       }</div>
     </div>
   )
