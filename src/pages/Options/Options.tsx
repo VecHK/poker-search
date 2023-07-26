@@ -14,7 +14,7 @@ import { canUseRefocusWindow } from '../../can-i-use'
 import usePreferences, { requireCloseControlWindowTips } from './hooks/usePreferences'
 import useControlWindowExists from '../../hooks/useControlWindowExists'
 
-import SettingHeader from './components/SettingHeader'
+import SettingHeader, { useVersionLoading } from './components/SettingHeader'
 import SiteSettingsManager from './components/SiteSettingsManager'
 import Loading from '../../components/Loading'
 import Failure from './components/Failure'
@@ -104,8 +104,13 @@ export default function OptionsPage() {
   const [platform, setPlatform] = useState<Base['platform']>()
   const [failure, setFailure] = useState<Error>()
   const [managerKey, refreshManagerKey] = useRandomKey()
+  const storageVersion = useVersionLoading()
 
-  const isReady = Boolean(preferences) && Boolean(limit) && Boolean(platform)
+  const isReady =
+    Boolean(preferences) &&
+    Boolean(limit) &&
+    Boolean(platform) &&
+    Boolean(storageVersion)
 
   const refresh = useCallback(() => {
     setFailure(undefined)
@@ -155,13 +160,13 @@ export default function OptionsPage() {
         useMemo(() => {
           if (failure) {
             return <Failure error={failure} />
-          } else if (!preferences || !limit || !platform) {
+          } else if (!preferences || !limit || !platform || !storageVersion) {
             return <Loading />
           } else {
             return (
               <>
                 <header className={s.OptionsHeader}>
-                  <SettingHeader version={pkg.version} />
+                  <SettingHeader currentVersion={storageVersion} newVersion={pkg.version} />
                 </header>
                 <div className={s.OptionsCols}>
                   <div

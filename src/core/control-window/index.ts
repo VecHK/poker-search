@@ -45,6 +45,7 @@ export async function submitSearch(
   revert_container_id: RevertContainerID
 ) {
   if (await controlIsLaunched()) {
+    alert('change')
     await sendMessage('ChangeSearch', search_text)
   } else {
     await launchControlWindow({

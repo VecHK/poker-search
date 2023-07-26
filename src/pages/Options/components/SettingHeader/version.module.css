@@ -1,0 +1,33 @@
+.Version {
+  margin-top: 8px;
+  font-size: 20px;
+  line-height: 20px;
+  height: 20px;
+  color: rgba(0, 0, 0, 0.8)
+}
+
+.VersionInner {
+  display: inline-block;
+  position: relative;
+  line-height: 20px;
+  height: 20px;
+}
+
+.Old {
+  word-wrap: normal;
+  word-break: keep-all;
+  white-space: nowrap;
+}
+.New {
+  position: absolute;
+  top: 0;
+  left: 0;
+  word-wrap: normal;
+  word-break: keep-all;
+  white-space: nowrap;
+}
+
+.VersionChar {
+  display: inline-block;
+  transform: matrix(1, 0, 0, 1, 0, 0);
+}
