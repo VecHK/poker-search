@@ -1,10 +1,11 @@
+import { concat } from 'ramda'
 import React, { useEffect, useMemo, useState } from 'react'
 import { Transition } from 'react-transition-group'
 
-import s from './version.module.css'
 import useOffsetWidth from '../../../../components/FloorFilter/hooks/useOffsetWidth'
-import { concat } from 'ramda'
 import { saveStorageVersion } from '../../../../x-state/storage-version'
+
+import s from './version.module.css'
 
 function random(range: number) {
   return Math.floor(Math.random() * range)
@@ -31,7 +32,7 @@ function VersionString({ version, breaking }: { version: string, breaking: boole
     [...version].map((ch, idx) => ({
       ch,
       opacity: (mounted && breaking) ? 0 : 1,
-      x: (mounted && breaking) ? randomRange(150, 120) : 0,
+      x: (mounted && breaking) ? randomRange(150, 170) : 0,
       y: (mounted && breaking) ? randomRange(-20, 20) : 0,
       rotate: (mounted && breaking) ? randomRange(-12, 12) : 0,
     }))
@@ -51,7 +52,7 @@ function VersionString({ version, breaking }: { version: string, breaking: boole
               transform: `rotate(${b.rotate}deg) translate(${b.x}px, ${b.y}px)`,
               transitionTimingFunction: 'ease',
               transition: `opacity 200ms ease-in, transform 250ms cubic-bezier(0.21, 0.9, 1, 1)`,
-              transitionDelay: '160ms',
+              transitionDelay: '140ms',
             }}
           >{b.ch}</span>
         ))
@@ -64,7 +65,10 @@ function VersionInner({ current_version, new_version }: {
   current_version: string
   new_version: string
 }) {
-  const [inner_width, innerRef] = useOffsetWidth<HTMLDivElement>()
+  const [current_width, currentRef] = useOffsetWidth<HTMLDivElement>()
+  const [new_width, newRef] = useOffsetWidth<HTMLDivElement>()
+  const inner_width = Math.max(current_width, new_width)
+  // useOffsetWidth<HTMLDivElement>()
 
   const is_diff = current_version !== new_version
 
@@ -76,36 +80,39 @@ function VersionInner({ current_version, new_version }: {
   }
 
   return (
-    <div className={s.VersionInner} ref={innerRef}>
-        <Transition in={is_diff} timeout={160+282+350}>
-          {state => (
-            <>
-              <div
+    <div className={s.VersionInner}>
+      <Transition in={is_diff} timeout={160+282+350}>
+        {state => (
+          <>
+            <div
+              key={current_version}
+              ref={currentRef}
+              className={s.Old}
+              style={{}}
+            >
+              <VersionString
                 key={current_version}
-                className={s.Old}
-                style={{}}
-              >
-                <VersionString
-                  key={current_version}
-                  version={current_version}
-                  breaking={is_diff}
-                />
-              </div>
-              <div
-                className={s.New}
-                style={{
-                  transition: 'left 350ms cubic-bezier(0.72, 0.15, 0.34, 1.36) 0s, opacity 150ms ease-out 0s',
-                  ...transitionStyles[state],
-                }}
-              >
-                {/* new ver */}
-                <VersionString version={new_version} breaking={false} />
-                {/* 超过屏幕所能并列显示的窗口数{state} */}
-              </div>
-            </>
-          )}
-        </Transition>
-      </div>
+                version={current_version}
+                breaking={is_diff}
+              />
+            </div>
+            <div
+              // key={new_version}
+              className={s.New}
+              ref={newRef}
+              style={{
+                transition: 'left 300ms cubic-bezier(0.72, 0.15, 0.34, 1.36) 0s, opacity 150ms ease-out 0s',
+                ...transitionStyles[state],
+              }}
+            >
+              {/* new ver */}
+              <VersionString version={new_version} breaking={false} />
+              {/* 超过屏幕所能并列显示的窗口数{state} */}
+            </div>
+          </>
+        )}
+      </Transition>
+    </div>
   )
 }
 
