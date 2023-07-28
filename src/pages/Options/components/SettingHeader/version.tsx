@@ -1,44 +1,44 @@
 import { concat } from 'ramda'
-import React, { useEffect, useMemo, useState } from 'react'
-import { Transition } from 'react-transition-group'
+import BezierEasing from 'bezier-easing'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
-import useOffsetWidth from '../../../../components/FloorFilter/hooks/useOffsetWidth'
 import { saveStorageVersion } from '../../../../x-state/storage-version'
 
 import s from './version.module.css'
 
-function random(range: number) {
+function randomNumber(range: number) {
   return Math.floor(Math.random() * range)
 }
 function randomRange(val_1: number, val_2: number) {
   const min = Math.min(val_1, val_2)
-  return min + random( Math.max(val_1, val_2) - min )
+  return min + randomNumber( Math.max(val_1, val_2) - min )
 }
 
-function VersionString({ version, breaking }: { version: string, breaking: boolean }) {
-  // const str_arr = useMemo(() => [...version], [version])
-  const [mounted, setMounted] = useState(false)
-  useEffect(() => {
-    const han = setTimeout(() => {
-      setMounted(true)
-    }, 10)
-    return () => {
-      clearTimeout(han)
-      setMounted(false)
-    }
-  }, [])
+function sign(v: number) {
+  return (v < 0) ? -1 : 1
+}
+
+function VersionString({
+  version,
+  progress
+}: { version: string, progress: number }) {
+  const random_info = useMemo(() => (
+    [...version].map(() => ({
+      x: randomRange(150, 170),
+      y: randomRange(-20, 20),
+      r: randomRange(-12, 12),
+    }))
+  ), [version])
 
   const breaking_info = useMemo(() => (
-    [...version].map((ch, idx) => ({
-      ch,
-      opacity: (mounted && breaking) ? 0 : 1,
-      x: (mounted && breaking) ? randomRange(150, 170) : 0,
-      y: (mounted && breaking) ? randomRange(-20, 20) : 0,
-      rotate: (mounted && breaking) ? randomRange(-12, 12) : 0,
+    random_info.map((ri, idx) => ({
+      ch: version[idx],
+      opacity: 1 - progress,
+      r: sign(ri.r) * (Math.abs(ri.r) * progress),
+      x: sign(ri.x) * (Math.abs(ri.x) * progress),
+      y: sign(ri.y) * (Math.abs(ri.y) * progress),
     }))
-  ), [mounted, breaking, version])
-
-  console.log('breaking_info', breaking, version, breaking_info)
+  ), [progress, random_info, version])
 
   return useMemo(() => (
     <div key={version} className={s.VerSionString}>
@@ -49,10 +49,7 @@ function VersionString({ version, breaking }: { version: string, breaking: boole
             className={s.VersionChar}
             style={{
               opacity: b.opacity,
-              transform: `rotate(${b.rotate}deg) translate(${b.x}px, ${b.y}px)`,
-              transitionTimingFunction: 'ease',
-              transition: `opacity 200ms ease-in, transform 250ms cubic-bezier(0.21, 0.9, 1, 1)`,
-              transitionDelay: '140ms',
+              transform: `rotate(${b.r}deg) translate(${b.x}px, ${b.y}px)`,
             }}
           >{b.ch}</span>
         ))
@@ -61,57 +58,153 @@ function VersionString({ version, breaking }: { version: string, breaking: boole
   ), [breaking_info, version])
 }
 
+function VersionText({ version }: { version: string }) {
+  return (
+    <div key={version} className={s.VerSionString}>
+      {
+        [...version].map((ch, idx) => (
+          <span
+            key={idx}
+            className={s.VersionChar}
+          >{ch}</span>
+        ))
+      }
+    </div>
+  )
+}
+
+function useOffsetWidthFn<RefType extends HTMLElement>() {
+  const ref = useRef<RefType>(null)
+
+  const getOffsetWidth = useCallback(() => {
+    return ref.current?.offsetWidth
+  }, [])
+
+  return [getOffsetWidth, ref] as const
+}
+
+type AnimateState = 'playing' | 'done'
+
 function VersionInner({ current_version, new_version }: {
   current_version: string
   new_version: string
 }) {
-  const [current_width, currentRef] = useOffsetWidth<HTMLDivElement>()
-  const [new_width, newRef] = useOffsetWidth<HTMLDivElement>()
-  const inner_width = Math.max(current_width, new_width)
-  // useOffsetWidth<HTMLDivElement>()
+  const [getCurrentWidth, currentRef] = useOffsetWidthFn<HTMLDivElement>()
+  const [getNewWidth, newRef] = useOffsetWidthFn<HTMLDivElement>()
+
+  const [hide_old, setHideOld] = useState(false)
+  const [animate_state, setAnimateState] = useState<AnimateState>('done')
 
   const is_diff = current_version !== new_version
 
-  const transitionStyles: Record<string, React.CSSProperties> = {
-    entering: { opacity: 1, left: `0px` },
-    entered:  { opacity: 1, left: `0px` },
-    exiting:  { opacity: 0, left: `-${inner_width + 20}px`  },
-    exited:  { opacity: 0, left: `-${inner_width + 20}px` },
-  }
+  useEffect(() => {
+    if (is_diff) {
+      setAnimateState('playing')
+      setHideOld(() => false)
+    } else {
+      setAnimateState('done')
+    }
+  }, [is_diff])
+
+  const [new_info, setNewInfo] = useState({
+    opacity: 0,
+    moving: 0,
+  })
+  const [old_info, setOldInfo] = useState({
+    progress: 0,
+  })
+
+  useEffect(() => {
+    const INTERVAL = 15
+    const NEW_DURATION = 500
+    const OLD_DURATION = 250
+
+    if (animate_state === 'done') return ;
+
+    const current_width = getCurrentWidth()
+    const new_width = getNewWidth()
+    if (current_width === undefined || new_width === undefined) {
+      return
+    }
+
+    const newTextFadeInEase = BezierEasing(0, 0, 0.5, 1.0)
+    const newTextMovingEase = BezierEasing(0.72, 0.15, 0.34, 1.36)
+    const oldTextBreakingEase = BezierEasing(0.2, 0.3, 1, 1)
+
+    let new_text_starttime = -1
+    let old_text_start_time = -1
+    let end_time = -1
+    const handle = requestAnimationFrame(function applyAnimate(t) {
+      if (new_text_starttime === -1) {
+        new_text_starttime = t
+      }
+      if (end_time === -1) {
+        end_time = t + NEW_DURATION + OLD_DURATION
+      }
+
+      const progress_time = t - new_text_starttime
+      const is_timeout = progress_time > NEW_DURATION
+      let progress = is_timeout ? 1 : (progress_time / NEW_DURATION)
+
+      const moving_length = INTERVAL + new_width
+      const current_moving = moving_length * newTextMovingEase(progress)
+      const moving = -(moving_length - current_moving)
+      setNewInfo({
+        opacity: newTextFadeInEase(progress),
+        moving,
+      })
+      console.log(progress, newTextFadeInEase(progress), moving)
+
+      if (Math.abs(moving) < new_width) {
+        if (old_text_start_time === -1) {
+          old_text_start_time = t
+          end_time = Math.max(
+            new_text_starttime + NEW_DURATION,
+            t + OLD_DURATION
+          )
+        }
+        const old_progress_time = t - old_text_start_time
+        const old_is_timeout = old_progress_time >= OLD_DURATION
+        let old_progress = old_is_timeout ? 1 : (t - old_text_start_time) / (OLD_DURATION)
+        setOldInfo({
+          progress: oldTextBreakingEase(old_progress),
+        })
+      }
+
+      if (t <= end_time) {
+        requestAnimationFrame(applyAnimate)
+      } else {
+        setHideOld(() => true)
+      }
+    })
+
+    return () => {
+      cancelAnimationFrame(handle)
+    }
+  }, [animate_state, getCurrentWidth, getNewWidth])
 
   return (
     <div className={s.VersionInner}>
-      <Transition in={is_diff} timeout={160+282+350}>
-        {state => (
-          <>
-            <div
-              key={current_version}
-              ref={currentRef}
-              className={s.Old}
-              style={{}}
-            >
-              <VersionString
-                key={current_version}
-                version={current_version}
-                breaking={is_diff}
-              />
-            </div>
-            <div
-              // key={new_version}
-              className={s.New}
-              ref={newRef}
-              style={{
-                transition: 'left 300ms cubic-bezier(0.72, 0.15, 0.34, 1.36) 0s, opacity 150ms ease-out 0s',
-                ...transitionStyles[state],
-              }}
-            >
-              {/* new ver */}
-              <VersionString version={new_version} breaking={false} />
-              {/* 超过屏幕所能并列显示的窗口数{state} */}
-            </div>
-          </>
-        )}
-      </Transition>
+      {
+        hide_old ? null : (
+          <div
+            ref={currentRef}
+            className={s.Old}
+          >
+            <VersionString version={current_version} progress={old_info.progress} />
+          </div>
+        )
+      }
+      <div
+        ref={newRef}
+        className={s.New}
+        style={{
+          opacity: new_info.opacity,
+          transform: `translateX(${new_info.moving}px)`
+        }}
+      >
+        <VersionText version={new_version} />
+      </div>
     </div>
   )
 }
@@ -137,7 +230,6 @@ export default function Version({ currentVersion, newVersion }: {
         current_version={verPrefix(currentVersion)}
         new_version={verPrefix(new_version)}
       />
-      {/* <VersionString version={version_string} /> */}
     </div>
   )
 }

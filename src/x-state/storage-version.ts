@@ -1,4 +1,3 @@
-// import { SiteSettingFloorID } from '../preferences'
 import Storage, { StorageError } from '../utils/storage'
 import pkg from '../../package.json'
 const [ _getStorageVersion, setStorageVersion ] = Storage<string>('X-StorageVersion')
@@ -21,8 +20,7 @@ export async function getStorageVersion(): Promise<string> {
 }
 
 function initStorageVersion() {
-  // return setStorageVersion(pkg.version)
-  return setStorageVersion('1.6.8')
+  return setStorageVersion(pkg.version)
 }
 
 export function saveStorageVersion(v: string) {
