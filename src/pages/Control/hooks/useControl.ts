@@ -47,6 +47,7 @@ export default function useControl( base: Base ) {
     control_window_id: WindowID,
     layout_info: LayoutInfo,
     keyword: string,
+    keyword_input: string,
   ) => {
     console.log('refreshWindows')
     setLoading(true)
@@ -63,6 +64,7 @@ export default function useControl( base: Base ) {
         base,
         layout_info,
         keyword,
+        keyword_input,
         stop_creating_signal,
         creating_signal,
         async onRefocusLayoutClose() {

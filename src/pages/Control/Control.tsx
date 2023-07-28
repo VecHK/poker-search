@@ -89,17 +89,6 @@ const ControlApp: React.FC<{
     onPressDown: () => changeRow('next')
   })
 
-  useEffect(function openSearchWindows() {
-    console.log('openSearchWindows', controlWindowId, submited_keyword)
-    if (submited_keyword !== false) {
-      if (search_layout === null) {
-        constructSearchLayout(controlWindowId, layout_info, submited_keyword).finally(() => {
-          focusControlWindow()
-        })
-      }
-    }
-  }, [constructSearchLayout, controlWindowId, focusControlWindow, layout_info, search_layout, submited_keyword])
-
   const moveControlWindow = useCallback(async (id: WindowID) => {
     const [ top, left ] = calcControlWindowPos(
       getControlWindowHeight(selected_site_settings),
@@ -126,6 +115,19 @@ const ControlApp: React.FC<{
     }
   }, [base.limit, layout_info.total_height, selected_site_settings])
 
+  useEffect(function openSearchWindows() {
+    console.log('openSearchWindows', controlWindowId, submited_keyword)
+    if (submited_keyword !== false) {
+      if (search_layout === null) {
+        moveControlWindow(controlWindowId).then(() => {
+          constructSearchLayout(controlWindowId, layout_info, submited_keyword, keyword_input).finally(() => {
+            focusControlWindow()
+          })
+        })
+      }
+    }
+  }, [constructSearchLayout, controlWindowId, focusControlWindow, keyword_input, layout_info, moveControlWindow, search_layout, submited_keyword])
+
   const handleSubmit = useCallback((newSearchKeyword: string) => {
     console.log('onSubmit')
     const valid_msg = validKeyword(newSearchKeyword)
@@ -141,28 +143,28 @@ const ControlApp: React.FC<{
           search_layout.cancelAllEvent()
           await closeSearchWindows(search_layout)
         }
-        moveControlWindow(controlWindowId).then(() => {
-          setSearchLayout(() => {
-            // 写成这样是处理提交同样搜索词的时候的处理
-            // 因为是用 useEffect 来判断的，如果是相同的值就不会触发更新了
-            submitKeyword(newSearchKeyword)
-            return null
-          })
+        setSearchLayout(() => {
+          // 写成这样是处理提交同样搜索词的时候的处理
+          // 因为是用 useEffect 来判断的，如果是相同的值就不会触发更新了
+          submitKeyword(newSearchKeyword)
+          return null
         })
+        // moveControlWindow(controlWindowId).then(() => {
+        // })
       })
     }
-  }, [closeSearchWindows, controlWindowId, moveControlWindow, search_layout, setKeywordInput, setLoading, setSearchLayout, showTips, submitKeyword])
+  }, [closeSearchWindows, search_layout, setKeywordInput, setLoading, setSearchLayout, showTips, submitKeyword])
 
   const [_can_preset_searchword, setSearchwordPresetStatus] = useState(true)
   useEffect(function searchByOmnibox() {
-    const search_word = getQuery(cfg.CONTROL_QUERY_TEXT)
-    if (search_word !== null) {
+    const search_text = getQuery(cfg.CONTROL_QUERY_TEXT)
+    if (search_text !== null) {
       if (_can_preset_searchword) {
         setSearchwordPresetStatus(false)
-        handleSubmit(search_word)
+        handleSubmit(search_text)
       }
     }
-  }, [_can_preset_searchword, handleSubmit])
+  }, [_can_preset_searchword, handleSubmit, setKeywordInput])
 
   useEffect(function receiveChangeSearchMessage() {
     const [ applyReceive, cancelReceive ] = MessageEvent('ChangeSearch', (new_keyword) => {
@@ -175,7 +177,7 @@ const ControlApp: React.FC<{
     applyReceive()
 
     return cancelReceive
-  }, [controlWindowId, search_layout, handleSubmit])
+  }, [controlWindowId, search_layout, handleSubmit, submitKeyword])
 
   const searchFormNode = useMemo(() => {
     if (disable_search) {
