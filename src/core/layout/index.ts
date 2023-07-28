@@ -62,6 +62,7 @@ export async function CreateSearchLayout({
     cancelAllEvent,
     refocus_window_id,
   } = await TrustedEvents({
+    keyword,
     getRegIds,
     control_window_id,
     base,

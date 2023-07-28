@@ -1,29 +1,16 @@
 import { thunkify } from 'ramda'
 import cfg from '../../config'
-import { Base, createBase, initLayoutInfo, RevertContainerID, selectSiteSettingsByFiltered } from '../../core/base'
+import { createBase, getFilteredSiteSettingsBySearchText, initLayoutInfo, RevertContainerID } from '../../core/base'
 import { getControlWindowHeight } from '../base/control-window-height'
 import { controlIsLaunched } from '../control-window'
 import { calcControlWindowPos } from '../layout/control-window'
-import { specifyFloorIdxBySearchText } from '../../hooks/useSearchForm'
-
-function getSiteSettings(base: Base, search_text: string) {
-  const site_settings = selectSiteSettingsByFiltered(
-    base.preferences.site_settings,
-    base.init_filtered_floor
-  )
-  const floor_idx = specifyFloorIdxBySearchText(search_text, base.preferences.site_settings)
-  if (floor_idx.length) {
-    return floor_idx.map(idx => base.preferences.site_settings[idx])
-  } else {
-    return site_settings
-  }
-}
 
 async function controlBounds(search_keyword: string) {
   const base = await createBase(undefined)
-  const site_settings = getSiteSettings(
-    base,
-    search_keyword
+  const site_settings = getFilteredSiteSettingsBySearchText(
+    search_keyword,
+    base.preferences.site_settings,
+    base.init_filtered_floor
   )
 
   const info = initLayoutInfo(base.environment, base.limit, site_settings)

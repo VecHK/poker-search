@@ -1,7 +1,26 @@
 import { Memo } from 'vait'
 import cfg from '../../../config'
 import { ChromeEvent } from '../../../utils/chrome-event'
-import { Limit } from '../../base/limit'
+import { Base, getFilteredSiteSettingsBySearchText } from '../../base'
+import { hasStrongMobileAccessMode } from '../../base/control-window-height'
+
+function getRefocusWindowHeight(
+  base: Base,
+  search_text: string
+) {
+  const res = hasStrongMobileAccessMode(
+    getFilteredSiteSettingsBySearchText(
+      search_text,
+      base.preferences.site_settings,
+      base.init_filtered_floor,
+    )
+  )
+  if (res) {
+    return cfg.REFOCUS_LAYOUT_WINDOW_HEIGHT_WITH_DEBUGGER
+  } else {
+    return cfg.REFOCUS_LAYOUT_WINDOW_HEIGHT_WITH_NORMAL
+  }
+}
 
 function doNotOperate() {}
 
@@ -13,7 +32,8 @@ type InitRefocusEventReturn<RefocusWindowId> = Readonly<{
 
 export async function InitRefocusEvent(
   enableCond: () => boolean,
-  limit: Limit,
+  search_text: string,
+  base: Base,
   callbacks: {
     close: () => void
   }
@@ -31,10 +51,10 @@ export async function InitRefocusEvent(
       url: chrome.runtime.getURL('refocusLayout.html'),
       type: 'popup',
       state: 'normal',
-      left: limit.minX,
-      top: limit.minY,
+      left: base.limit.minX,
+      top: base.limit.minY,
       width: cfg.REFOCUS_LAYOUT_WINDOW_WIDTH,
-      height: cfg.REFOCUS_LAYOUT_WINDOW_HEIGHT,
+      height: getRefocusWindowHeight(base, search_text),
     })
 
     if (refocus_window_id === undefined) {

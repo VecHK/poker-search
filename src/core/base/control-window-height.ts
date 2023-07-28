@@ -1,7 +1,7 @@
 import cfg from '../../config'
 import { Preferences } from '../../preferences'
 
-const hasStrongMobileAccessMode = (
+export const hasStrongMobileAccessMode = (
   site_settings: Preferences['site_settings']
 ) => (
   site_settings.some(

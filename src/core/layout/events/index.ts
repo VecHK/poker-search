@@ -81,11 +81,13 @@ type RL = ReturnType<typeof InitRefocusLayoutMemo>
  * 不过似乎是没有冲突的。
  */
 export default async function TrustedEvents({
+  keyword,
   getRegIds,
   control_window_id,
   base,
   ...callbacks
 }: {
+  keyword: string
   getRegIds(): WindowID[]
   control_window_id: WindowID
   base: Base,
@@ -106,7 +108,7 @@ export default async function TrustedEvents({
 
   onRefocusLayoutClose(): Promise<void>
 }) {
-  const { limit, platform, preferences } = base
+  const { platform, preferences } = base
   const isNone = equals<WindowID>(chrome.windows.WINDOW_ID_NONE)
   const isControlWindow = equals(control_window_id)
   const isSearchWindow = (id: WindowID) => getRegIds().indexOf(id) !== -1
@@ -128,7 +130,8 @@ export default async function TrustedEvents({
     refocus_window_id,
   } = await InitRefocusEvent(
     enableRefocusWindowCond,
-    limit,
+    keyword,
+    base,
     {
       close() {
         console.log('InitRefocusEvent close callback')

@@ -8,15 +8,32 @@ import { autoAdjustHeight, autoAdjustWidth } from './auto-adjust'
 import { initSearchMatrix } from './search-matrix'
 import { getControlWindowHeight } from './control-window-height'
 import { getFilteredFloor } from '../../x-state/filtered-floor'
+import { specifyFloorIdxBySearchText } from '../../hooks/useSearchForm'
 
 export const selectSiteSettingsByFiltered = curry((
   source_site_settings: Preferences['site_settings'],
-  filteredFloor: SiteSettingFloorID[]
+  filtered_floors: SiteSettingFloorID[]
 ) => {
   return source_site_settings.filter(s => {
-    return filteredFloor.indexOf(s.id) === -1
+    return filtered_floors.indexOf(s.id) === -1
   })
 })
+
+export function getFilteredSiteSettingsBySearchText(
+  search_text: string,
+  source_site_settings: Preferences['site_settings'],
+  filtered_floors: SiteSettingFloorID[]
+) {
+  const floor_idx = specifyFloorIdxBySearchText(search_text, source_site_settings)
+  if (floor_idx.length) {
+    return floor_idx.map(idx => source_site_settings[idx])
+  } else {
+    return selectSiteSettingsByFiltered(
+      source_site_settings,
+      filtered_floors
+    )
+  }
+}
 
 export type LayoutInfo = ReturnType<typeof initLayoutInfo>
 export function initLayoutInfo(

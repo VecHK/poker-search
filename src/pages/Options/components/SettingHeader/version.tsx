@@ -153,7 +153,6 @@ function VersionInner({ current_version, new_version }: {
         opacity: newTextFadeInEase(progress),
         moving,
       })
-      console.log(progress, newTextFadeInEase(progress), moving)
 
       if (Math.abs(moving) < new_width) {
         if (old_text_start_time === -1) {
