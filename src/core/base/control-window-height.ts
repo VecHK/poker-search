@@ -1,15 +1,6 @@
 import cfg from '../../config'
 import { Preferences } from '../../preferences'
-
-export const hasStrongMobileAccessMode = (
-  site_settings: Preferences['site_settings']
-) => (
-  site_settings.some(
-    (settings) => settings.row.some(
-      opt => opt.access_mode === 'MOBILE-STRONG'
-    )
-  )
-)
+import { hasStrongMobileAccessMode } from '../../preferences/site-settings'
 
 export function getControlWindowHeight(
   site_settings: Preferences['site_settings']

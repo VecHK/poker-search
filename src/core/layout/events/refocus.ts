@@ -2,7 +2,7 @@ import { Memo } from 'vait'
 import cfg from '../../../config'
 import { ChromeEvent } from '../../../utils/chrome-event'
 import { Base, getFilteredSiteSettingsBySearchText } from '../../base'
-import { hasStrongMobileAccessMode } from '../../base/control-window-height'
+import { hasStrongMobileAccessMode } from '../../../preferences/site-settings'
 
 function getRefocusWindowHeight(
   base: Base,
