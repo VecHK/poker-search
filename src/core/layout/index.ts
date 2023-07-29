@@ -16,7 +16,7 @@ export async function CreateSearchLayout({
   base,
   layout_info,
   keyword,
-  keyword_input,
+  has_strong_mobile_mode,
   creating_signal,
   stop_creating_signal,
   onRemovedWindow,
@@ -26,7 +26,7 @@ export async function CreateSearchLayout({
   base: Base
   layout_info: LayoutInfo
   keyword: string
-  keyword_input: string
+  has_strong_mobile_mode: boolean
   creating_signal: Signal<void>
   stop_creating_signal: Signal<void>
   onRemovedWindow: () => Promise<void>
@@ -64,10 +64,10 @@ export async function CreateSearchLayout({
     cancelAllEvent,
     refocus_window_id,
   } = await TrustedEvents({
-    keyword_input,
     getRegIds,
     control_window_id,
     base,
+    has_strong_mobile_mode,
 
     onRemovedWindow,
 

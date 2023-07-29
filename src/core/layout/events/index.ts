@@ -81,13 +81,13 @@ type RL = ReturnType<typeof InitRefocusLayoutMemo>
  * 不过似乎是没有冲突的。
  */
 export default async function TrustedEvents({
-  keyword_input,
+  has_strong_mobile_mode,
   getRegIds,
   control_window_id,
   base,
   ...callbacks
 }: {
-  keyword_input: string
+  has_strong_mobile_mode: boolean
   getRegIds(): WindowID[]
   control_window_id: WindowID
   base: Base,
@@ -130,7 +130,7 @@ export default async function TrustedEvents({
     refocus_window_id,
   } = await InitRefocusEvent(
     enableRefocusWindowCond,
-    keyword_input,
+    has_strong_mobile_mode,
     base,
     {
       close() {

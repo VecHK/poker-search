@@ -5,8 +5,6 @@ import React, { ReactNode, useCallback, useEffect, useMemo, useState } from 'rea
 import cfg from '../../config'
 
 import { Base } from '../../core/base'
-import { getControlWindowHeight } from '../../core/base/control-window-height'
-import { calcControlWindowPos } from '../../core/layout/control-window'
 import { WindowID } from '../../core/layout/window'
 import { MessageEvent } from '../../message'
 
@@ -29,6 +27,46 @@ import BGSrc from '../../assets/control-bg.png'
 
 import './Control.css'
 import useFocusControlMessage from './hooks/useFocusControlMessage'
+import { hasStrongMobileAccessMode } from '../../preferences/site-settings'
+import { getControlBounds } from '../../core/control-window/launch'
+import { Preferences } from '../../preferences'
+
+async function resizeControlWindow({
+  control_win_id,
+  environment,
+  limit,
+  site_settings,
+}: {
+  control_win_id: WindowID,
+  environment: Base['environment'],
+  limit: Base['limit'],
+  site_settings: Preferences['site_settings']
+}) {
+  const { top, left, height } = getControlBounds(
+    environment,
+    limit,
+    site_settings
+  )
+
+  const win = await chrome.windows.get(control_win_id)
+
+  const not_move = equals(
+    [win.top, win.left, win.height],
+    [top, left, height]
+  )
+
+  if (!not_move) {
+    await animatingWindow(control_win_id, 382, {
+      top: win.top,
+      left: win.left,
+      height: win.height,
+    }, {
+      top,
+      left,
+      height,
+    })
+  }
+}
 
 const controlProcessing = Atomic()
 
@@ -89,44 +127,30 @@ const ControlApp: React.FC<{
     onPressDown: () => changeRow('next')
   })
 
-  const moveControlWindow = useCallback(async (id: WindowID) => {
-    const [ top, left ] = calcControlWindowPos(
-      getControlWindowHeight(selected_site_settings),
-      layout_info.total_height,
-      base.limit
-    )
-    const win = await chrome.windows.get(id)
-
-    const not_move = equals(
-      [win.top, win.left, win.height],
-      [top, left, getControlWindowHeight(selected_site_settings)]
-    )
-
-    if (!not_move) {
-      await animatingWindow(id, 382, {
-        top: win.top,
-        left: win.left,
-        height: win.height,
-      }, {
-        top,
-        left,
-        height: getControlWindowHeight(selected_site_settings),
-      })
-    }
-  }, [base.limit, layout_info.total_height, selected_site_settings])
-
   useEffect(function openSearchWindows() {
     console.log('openSearchWindows', controlWindowId, submited_keyword)
     if (submited_keyword !== false) {
       if (search_layout === null) {
-        moveControlWindow(controlWindowId).then(() => {
-          constructSearchLayout(controlWindowId, layout_info, submited_keyword, keyword_input).finally(() => {
+        const resizing = resizeControlWindow({
+          control_win_id: controlWindowId,
+          environment: base.environment,
+          limit: base.limit,
+          site_settings: selected_site_settings
+        })
+        resizing.then(() => {
+
+          constructSearchLayout(
+            hasStrongMobileAccessMode(selected_site_settings),
+            controlWindowId,
+            layout_info,
+            submited_keyword
+          ).finally(() => {
             focusControlWindow()
           })
         })
       }
     }
-  }, [constructSearchLayout, controlWindowId, focusControlWindow, keyword_input, layout_info, moveControlWindow, search_layout, submited_keyword])
+  }, [base.environment, base.limit, constructSearchLayout, controlWindowId, focusControlWindow, layout_info, search_layout, selected_site_settings, submited_keyword])
 
   const handleSubmit = useCallback((newSearchKeyword: string) => {
     console.log('onSubmit')

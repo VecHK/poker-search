@@ -1,26 +1,29 @@
 import { thunkify } from 'ramda'
 import cfg from '../../config'
 import { createBase, getFilteredSiteSettingsBySearchText, initLayoutInfo, RevertContainerID } from '../../core/base'
+import { Preferences } from '../../preferences'
+import { hasStrongMobileAccessMode } from '../../preferences/site-settings'
 import { getControlWindowHeight } from '../base/control-window-height'
 import { controlIsLaunched } from '../control-window'
 import { calcControlWindowPos } from '../layout/control-window'
+import { Environment } from '../../environment'
+import { Limit } from '../base/limit'
 
-async function controlBounds(search_keyword: string) {
-  const base = await createBase(undefined)
-  const site_settings = getFilteredSiteSettingsBySearchText(
-    search_keyword,
-    base.preferences.site_settings,
-    base.init_filtered_floor
+export function getControlBounds(
+  environment: Environment,
+  limit: Limit,
+  site_settings: Preferences['site_settings']
+) {
+  const control_window_height = getControlWindowHeight(
+    hasStrongMobileAccessMode(site_settings)
   )
 
-  const info = initLayoutInfo(base.environment, base.limit, site_settings)
-
-  const control_window_height = getControlWindowHeight(site_settings)
+  const layout_info = initLayoutInfo(environment, limit, site_settings)
 
   const [ top, left ] = calcControlWindowPos(
     control_window_height,
-    info.total_height,
-    base.limit
+    layout_info.total_height,
+    limit
   )
 
   return {
@@ -29,6 +32,19 @@ async function controlBounds(search_keyword: string) {
     width: cfg.CONTROL_WINDOW_WIDTH,
     height: control_window_height,
   } as const
+}
+
+async function calcControlBounds(search_keyword: string) {
+  const base = await createBase(undefined)
+  return getControlBounds(
+    base.environment,
+    base.limit,
+    getFilteredSiteSettingsBySearchText(
+      search_keyword,
+      base.preferences.site_settings,
+      base.init_filtered_floor
+    )
+  )
 }
 
 export const getControlWindowUrl = thunkify(chrome.runtime.getURL)(
@@ -62,7 +78,7 @@ export default async function launchControlWindow({ text, revert_container_id }:
   if (await controlIsLaunched()) {
     throw Error('control window is Launched')
   } else {
-    const { top, left, height, width } = await controlBounds(text || '')
+    const { top, left, height, width } = await calcControlBounds(text || '')
 
     const controlWindow = await chrome.windows.create({
       url: generateUrl({ text, revert_container_id }),

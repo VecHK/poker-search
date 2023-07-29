@@ -44,10 +44,10 @@ export default function useControl( base: Base ) {
   }, [closeSearchWindows, search_layout, stop_creating_signal])
 
   const constructSearchLayout = useCallback((
+    has_strong_mobile_mode: boolean,
     control_window_id: WindowID,
     layout_info: LayoutInfo,
     keyword: string,
-    keyword_input: string,
   ) => {
     console.log('refreshWindows')
     setLoading(true)
@@ -64,7 +64,7 @@ export default function useControl( base: Base ) {
         base,
         layout_info,
         keyword,
-        keyword_input,
+        has_strong_mobile_mode,
         stop_creating_signal,
         creating_signal,
         async onRefocusLayoutClose() {

@@ -1,21 +1,10 @@
 import { Memo } from 'vait'
 import cfg from '../../../config'
 import { ChromeEvent } from '../../../utils/chrome-event'
-import { Base, getFilteredSiteSettingsBySearchText } from '../../base'
-import { hasStrongMobileAccessMode } from '../../../preferences/site-settings'
+import { Base } from '../../base'
 
-function getRefocusWindowHeight(
-  base: Base,
-  search_text: string
-) {
-  const res = hasStrongMobileAccessMode(
-    getFilteredSiteSettingsBySearchText(
-      search_text,
-      base.preferences.site_settings,
-      base.init_filtered_floor,
-    )
-  )
-  if (res) {
+function getRefocusWindowHeight(has_strong_mobile_mode: boolean) {
+  if (has_strong_mobile_mode) {
     return cfg.REFOCUS_LAYOUT_WINDOW_HEIGHT_WITH_DEBUGGER
   } else {
     return cfg.REFOCUS_LAYOUT_WINDOW_HEIGHT_WITH_NORMAL
@@ -32,7 +21,7 @@ type InitRefocusEventReturn<RefocusWindowId> = Readonly<{
 
 export async function InitRefocusEvent(
   enableCond: () => boolean,
-  search_text: string,
+  has_strong_mobile_mode: boolean,
   base: Base,
   callbacks: {
     close: () => void
@@ -54,7 +43,7 @@ export async function InitRefocusEvent(
       left: base.limit.minX,
       top: base.limit.minY,
       width: cfg.REFOCUS_LAYOUT_WINDOW_WIDTH,
-      height: getRefocusWindowHeight(base, search_text),
+      height: getRefocusWindowHeight(has_strong_mobile_mode),
     })
 
     if (refocus_window_id === undefined) {

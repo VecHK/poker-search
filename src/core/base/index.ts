@@ -3,6 +3,7 @@ import { Memo } from 'vait'
 import cfg from '../../config'
 import { load as loadEnvironment, Environment } from '../../environment'
 import { load as loadPreferences, Preferences, SiteSettingFloorID, SiteSettings } from '../../preferences'
+import { hasStrongMobileAccessMode } from '../../preferences/site-settings'
 import { getCurrentDisplayLimit, Limit } from './limit'
 import { autoAdjustHeight, autoAdjustWidth } from './auto-adjust'
 import { initSearchMatrix } from './search-matrix'
@@ -46,8 +47,6 @@ export function initLayoutInfo(
     max_window_per_line, total_width, window_width
   } = autoAdjustWidth(gap_horizontal, limit.width)
 
-  const control_window_height = getControlWindowHeight(site_settings)
-
   const [
     total_row,
     search_matrix
@@ -55,7 +54,7 @@ export function initLayoutInfo(
 
   const { window_height, total_height } = autoAdjustHeight(
     [...cfg.SEARCH_WINDOW_HEIGHT_LIST],
-    control_window_height,
+    getControlWindowHeight( hasStrongMobileAccessMode(site_settings) ),
     total_row,
     environment.titlebar_height,
     limit.height
