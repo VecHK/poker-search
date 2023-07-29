@@ -1,7 +1,7 @@
 import { Memo } from 'vait'
 import cfg from '../../../config'
 import { ChromeEvent } from '../../../utils/chrome-event'
-import { Base } from '../../base'
+import { Limit } from '../../base/limit'
 
 function getRefocusWindowHeight(has_strong_mobile_mode: boolean) {
   if (has_strong_mobile_mode) {
@@ -22,7 +22,7 @@ type InitRefocusEventReturn<RefocusWindowId> = Readonly<{
 export async function InitRefocusEvent(
   enableCond: () => boolean,
   has_strong_mobile_mode: boolean,
-  base: Base,
+  limit: Limit,
   callbacks: {
     close: () => void
   }
@@ -40,8 +40,8 @@ export async function InitRefocusEvent(
       url: chrome.runtime.getURL('refocusLayout.html'),
       type: 'popup',
       state: 'normal',
-      left: base.limit.minX,
-      top: base.limit.minY,
+      left: limit.minX,
+      top: limit.minY,
       width: cfg.REFOCUS_LAYOUT_WINDOW_WIDTH,
       height: getRefocusWindowHeight(has_strong_mobile_mode),
     })

@@ -108,7 +108,7 @@ export default async function TrustedEvents({
 
   onRefocusLayoutClose(): Promise<void>
 }) {
-  const { platform, preferences } = base
+  const { limit, platform, preferences } = base
   const isNone = equals<WindowID>(chrome.windows.WINDOW_ID_NONE)
   const isControlWindow = equals(control_window_id)
   const isSearchWindow = (id: WindowID) => getRegIds().indexOf(id) !== -1
@@ -131,7 +131,7 @@ export default async function TrustedEvents({
   } = await InitRefocusEvent(
     enableRefocusWindowCond,
     has_strong_mobile_mode,
-    base,
+    limit,
     {
       close() {
         console.log('InitRefocusEvent close callback')

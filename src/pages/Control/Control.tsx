@@ -1,22 +1,24 @@
 import { Atomic } from 'vait'
-import { compose, equals, prop, thunkify } from 'ramda'
+import { compose, prop, thunkify } from 'ramda'
 import React, { ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
 
 import cfg from '../../config'
 
+import { hasStrongMobileAccessMode } from '../../preferences/site-settings'
 import { Base } from '../../core/base'
 import { WindowID } from '../../core/layout/window'
+import { resizeControlWindow } from '../../core/control-window/utils'
 import { MessageEvent } from '../../message'
 
 import getQuery from '../../utils/get-query'
 import { validKeyword } from '../../utils/search'
-import animatingWindow from '../../utils/animating-window'
 
 import useWindowFocus from '../../hooks/useWindowFocus'
 import useSearchForm from '../../hooks/useSearchForm'
 import useControl from './hooks/useControl'
 import useChangeRowShortcutKey from './hooks/useChangeRowShortcutKey'
 import useChangeRow from './hooks/useChangeRow'
+import useFocusControlMessage from './hooks/useFocusControlMessage'
 
 import Loading from '../../components/Loading'
 import SearchForm from '../../components/SearchForm'
@@ -26,47 +28,6 @@ import FloorFilter from '../../components/FloorFilter'
 import BGSrc from '../../assets/control-bg.png'
 
 import './Control.css'
-import useFocusControlMessage from './hooks/useFocusControlMessage'
-import { hasStrongMobileAccessMode } from '../../preferences/site-settings'
-import { getControlBounds } from '../../core/control-window/launch'
-import { Preferences } from '../../preferences'
-
-async function resizeControlWindow({
-  control_win_id,
-  environment,
-  limit,
-  site_settings,
-}: {
-  control_win_id: WindowID,
-  environment: Base['environment'],
-  limit: Base['limit'],
-  site_settings: Preferences['site_settings']
-}) {
-  const { top, left, height } = getControlBounds(
-    environment,
-    limit,
-    site_settings
-  )
-
-  const win = await chrome.windows.get(control_win_id)
-
-  const not_move = equals(
-    [win.top, win.left, win.height],
-    [top, left, height]
-  )
-
-  if (!not_move) {
-    await animatingWindow(control_win_id, 382, {
-      top: win.top,
-      left: win.left,
-      height: win.height,
-    }, {
-      top,
-      left,
-      height,
-    })
-  }
-}
 
 const controlProcessing = Atomic()
 
@@ -138,7 +99,6 @@ const ControlApp: React.FC<{
           site_settings: selected_site_settings
         })
         resizing.then(() => {
-
           constructSearchLayout(
             hasStrongMobileAccessMode(selected_site_settings),
             controlWindowId,
@@ -173,8 +133,6 @@ const ControlApp: React.FC<{
           submitKeyword(newSearchKeyword)
           return null
         })
-        // moveControlWindow(controlWindowId).then(() => {
-        // })
       })
     }
   }, [closeSearchWindows, search_layout, setKeywordInput, setLoading, setSearchLayout, showTips, submitKeyword])
@@ -188,7 +146,7 @@ const ControlApp: React.FC<{
         handleSubmit(search_text)
       }
     }
-  }, [_can_preset_searchword, handleSubmit, setKeywordInput])
+  }, [_can_preset_searchword, handleSubmit])
 
   useEffect(function receiveChangeSearchMessage() {
     const [ applyReceive, cancelReceive ] = MessageEvent('ChangeSearch', (new_keyword) => {
@@ -201,7 +159,7 @@ const ControlApp: React.FC<{
     applyReceive()
 
     return cancelReceive
-  }, [controlWindowId, search_layout, handleSubmit, submitKeyword])
+  }, [controlWindowId, handleSubmit, search_layout])
 
   const searchFormNode = useMemo(() => {
     if (disable_search) {
