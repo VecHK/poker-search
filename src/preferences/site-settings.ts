@@ -25,6 +25,16 @@ export function generateSiteSettingFloor(
   }
 }
 
+export const hasStrongMobileAccessMode = (
+  site_settings: Preferences['site_settings']
+) => (
+  site_settings.some(
+    (settings) => settings.row.some(
+      opt => opt.access_mode === 'MOBILE-STRONG'
+    )
+  )
+)
+
 export function toSearchURL(urlPattern: URLPattern, keyword: string) {
   try {
     return urlPattern

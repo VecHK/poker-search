@@ -3,20 +3,38 @@ import { Memo } from 'vait'
 import cfg from '../../config'
 import { load as loadEnvironment, Environment } from '../../environment'
 import { load as loadPreferences, Preferences, SiteSettingFloorID, SiteSettings } from '../../preferences'
+import { hasStrongMobileAccessMode } from '../../preferences/site-settings'
 import { getCurrentDisplayLimit, Limit } from './limit'
 import { autoAdjustHeight, autoAdjustWidth } from './auto-adjust'
 import { initSearchMatrix } from './search-matrix'
 import { getControlWindowHeight } from './control-window-height'
 import { getFilteredFloor } from '../../x-state/filtered-floor'
+import { specifyFloorIdxBySearchText } from '../../hooks/useSearchForm'
 
 export const selectSiteSettingsByFiltered = curry((
   source_site_settings: Preferences['site_settings'],
-  filteredFloor: SiteSettingFloorID[]
+  filtered_floors: SiteSettingFloorID[]
 ) => {
   return source_site_settings.filter(s => {
-    return filteredFloor.indexOf(s.id) === -1
+    return filtered_floors.indexOf(s.id) === -1
   })
 })
+
+export function getFilteredSiteSettingsBySearchText(
+  search_text: string,
+  source_site_settings: Preferences['site_settings'],
+  filtered_floors: SiteSettingFloorID[]
+) {
+  const floor_idx = specifyFloorIdxBySearchText(search_text, source_site_settings)
+  if (floor_idx.length) {
+    return floor_idx.map(idx => source_site_settings[idx])
+  } else {
+    return selectSiteSettingsByFiltered(
+      source_site_settings,
+      filtered_floors
+    )
+  }
+}
 
 export type LayoutInfo = ReturnType<typeof initLayoutInfo>
 export function initLayoutInfo(
@@ -29,8 +47,6 @@ export function initLayoutInfo(
     max_window_per_line, total_width, window_width
   } = autoAdjustWidth(gap_horizontal, limit.width)
 
-  const control_window_height = getControlWindowHeight(site_settings)
-
   const [
     total_row,
     search_matrix
@@ -38,7 +54,7 @@ export function initLayoutInfo(
 
   const { window_height, total_height } = autoAdjustHeight(
     [...cfg.SEARCH_WINDOW_HEIGHT_LIST],
-    control_window_height,
+    getControlWindowHeight( hasStrongMobileAccessMode(site_settings) ),
     total_row,
     environment.titlebar_height,
     limit.height
