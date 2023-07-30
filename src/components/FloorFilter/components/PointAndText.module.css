@@ -37,17 +37,20 @@
   transform-origin: bottom left;
 
   transition: transform 382ms, left 382ms;
-  height: 1em;
+
+  max-width: 96px;
+  text-overflow: ellipsis;
+  overflow: hidden;
+
+  color: var(--unactive-color);
+}
+.FloorTextInner.FloorTextHighlight {
+  color: var(--active-color)
 }
 
-.FloorLabel.FloorLabelHighlight {
-  color: rgba(0, 0, 0, 0.65);
-}
 .FloorLabel {
   font-family: Arial, Helvetica, sans-serif;
   font-weight: 600;
-
-  color: var(--unactive-color);
 
   font-size: 14px;
   line-height: 1em;

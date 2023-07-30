@@ -4,7 +4,7 @@
 
 .FloorFilterWrapper {
   width: 100%;
-  --active-color: #3a3a45;
+  --active-color: rgba(0, 0, 0, 0.65);
   --unactive-color: #3a3a4555;
 
   --selected-color: hsl(240deg 9% 61.8%);

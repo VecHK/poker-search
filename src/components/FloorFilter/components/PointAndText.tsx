@@ -135,16 +135,24 @@ const FloorText = forwardRef<number, FloorTextProps>(({
       } as CSSProperties}
     >
       {/* <div className={s.Height} style={{ height: `${height}px` }}></div> */}
-      <span ref={innerTextRef} className={s.FloorTextInner}>
-        <FloorLabel highlight={highlight}>{ text.length ? text : `${floorIdx + 1}F` }</FloorLabel>
+      <span
+        ref={innerTextRef}
+        className={`${s.FloorTextInner} ${highlight ? s.FloorTextHighlight : ''}`}
+      >
+        <FloorLabel>
+          {floorName(floorIdx, text)}
+        </FloorLabel>
       </span>
     </div>
   )
 })
 
+export function floorName(floor_idx:number, text: string | undefined) {
+  return text?.length ? text : `${floor_idx + 1}F`
+}
+
 export function FloorLabel({
-  highlight,
   children
-}: { highlight: boolean; children?: ReactNode }) {
-  return <span className={`${s.FloorLabel} ${highlight ? s.FloorLabelHighlight : ''}`}>{ children }</span>
+}: { children?: ReactNode }) {
+  return <span className={s.FloorLabel}>{ children }</span>
 }
