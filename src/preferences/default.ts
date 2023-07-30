@@ -19,7 +19,7 @@ export default function getDefaultPreferences(
 ): Preferences {
   return {
     __is_poker__: true,
-    version: 4,
+    version: 5,
     fill_empty_window: false,
     refocus_window: false,
     launch_poker_contextmenu: true,
@@ -35,5 +35,6 @@ export function generateExampleOption(): SiteOption {
     name: '_DEFAULT_NAME_',
     url_pattern: `https://example.com?search=${cfg.KEYWORD_REPLACEHOLDER}`,
     access_mode: 'MOBILE',
+    width_size: 1
   }
 }

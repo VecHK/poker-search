@@ -1,12 +1,12 @@
 type URLPattern = string
-export type SiteOption = {
+type SiteOption = {
   id: string
   icon: string
   name: string
   url_pattern: URLPattern
 }
-export type SiteRow = Array<SiteOption>
-export type SiteMatrix = Array<SiteRow>
+type SiteRow = Array<SiteOption>
+type SiteMatrix = Array<SiteRow>
 
 export type PreferencesV1 = Readonly<{
   version: 1
