@@ -6,6 +6,9 @@ import { saveStorageVersion } from '../../../../x-state/storage-version'
 
 import s from './version.module.css'
 
+const verPrefix = concat('v')
+const updateDescriptionURL = concat(`https://github.com/VecHK/poker-search/releases/tag/`)
+
 function randomNumber(range: number) {
   return Math.floor(Math.random() * range)
 }
@@ -41,7 +44,7 @@ function VersionString({
   ), [progress, random_info, version])
 
   return useMemo(() => (
-    <div key={version} className={s.VerSionString}>
+    <span key={version} className={s.VersionString}>
       {
         breaking_info.map((b, idx) => (
           <span
@@ -54,23 +57,8 @@ function VersionString({
           >{b.ch}</span>
         ))
       }
-    </div>
+    </span>
   ), [breaking_info, version])
-}
-
-function VersionText({ version }: { version: string }) {
-  return (
-    <div key={version} className={s.VerSionString}>
-      {
-        [...version].map((ch, idx) => (
-          <span
-            key={idx}
-            className={s.VersionChar}
-          >{ch}</span>
-        ))
-      }
-    </div>
-  )
 }
 
 function useOffsetWidthFn<RefType extends HTMLElement>() {
@@ -85,14 +73,14 @@ function useOffsetWidthFn<RefType extends HTMLElement>() {
 
 type AnimateState = 'playing' | 'done'
 
-function VersionInner({ current_version, new_version }: {
+function VersionInner({ current_version, new_version, onUpdateEffectPlayEnd }: {
   current_version: string
   new_version: string
+  onUpdateEffectPlayEnd: () => void
 }) {
-  const [getCurrentWidth, currentRef] = useOffsetWidthFn<HTMLDivElement>()
-  const [getNewWidth, newRef] = useOffsetWidthFn<HTMLDivElement>()
+  const [getCurrentWidth, currentRef] = useOffsetWidthFn<HTMLAnchorElement>()
+  const [getNewWidth, newRef] = useOffsetWidthFn<HTMLAnchorElement>()
 
-  const [hide_old, setHideOld] = useState(false)
   const [animate_state, setAnimateState] = useState<AnimateState>('done')
 
   const is_diff = current_version !== new_version
@@ -100,7 +88,6 @@ function VersionInner({ current_version, new_version }: {
   useEffect(() => {
     if (is_diff) {
       setAnimateState('playing')
-      setHideOld(() => false)
     } else {
       setAnimateState('done')
     }
@@ -173,61 +160,79 @@ function VersionInner({ current_version, new_version }: {
       if (t <= end_time) {
         requestAnimationFrame(applyAnimate)
       } else {
-        setHideOld(() => true)
+        onUpdateEffectPlayEnd()
       }
     })
 
     return () => {
       cancelAnimationFrame(handle)
     }
-  }, [animate_state, getCurrentWidth, getNewWidth])
+  }, [animate_state, getCurrentWidth, getNewWidth, onUpdateEffectPlayEnd])
 
   return (
     <div className={s.VersionInner}>
       {
-        hide_old ? null : (
-          <div
+        (animate_state === 'done') ? (
+          <a
             ref={currentRef}
             className={s.Old}
+            rel="noreferrer"
+            target="_blank"
+            href={updateDescriptionURL(current_version)}
+          >
+            <VersionString version={current_version} progress={0} />
+          </a>
+        ): (<>
+          <a
+            ref={currentRef}
+            className={s.Old}
+            rel="noreferrer"
+            target="_blank"
+            href={updateDescriptionURL(current_version)}
           >
             <VersionString version={current_version} progress={old_info.progress} />
-          </div>
-        )
+          </a>
+          <a
+            ref={newRef}
+            className={s.New}
+            rel="noreferrer"
+            target="_blank"
+            href={updateDescriptionURL(new_version)}
+            style={{
+              opacity: new_info.opacity,
+              transform: `translateX(${new_info.moving}px)`
+            }}
+          >
+            <VersionString version={new_version} progress={0} />
+          </a>
+        </>)
       }
-      <div
-        ref={newRef}
-        className={s.New}
-        style={{
-          opacity: new_info.opacity,
-          transform: `translateX(${new_info.moving}px)`
-        }}
-      >
-        <VersionText version={new_version} />
-      </div>
     </div>
   )
 }
 
-const verPrefix = concat('v')
-
-export default function Version({ currentVersion, newVersion }: {
+export default function Version({ currentVersion: _currentVersion, newVersion: _newVersion }: {
   currentVersion: string
   newVersion: string
 }) {
-  const [new_version, setNewVersion] = useState(currentVersion)
+  const [current_version, setCurrentVersion] = useState(_currentVersion)
+  const [new_version, setNewVersion] = useState(_currentVersion)
 
   useEffect(() => {
     setTimeout(() => {
-      setNewVersion(newVersion)
-      saveStorageVersion(newVersion)
+      setNewVersion(_newVersion)
     }, 1000)
-  }, [newVersion])
+  }, [_newVersion])
 
   return (
     <div className={s.Version}>
       <VersionInner
-        current_version={verPrefix(currentVersion)}
+        current_version={verPrefix(current_version)}
         new_version={verPrefix(new_version)}
+        onUpdateEffectPlayEnd={() => {
+          setCurrentVersion(_newVersion)
+          saveStorageVersion(_newVersion)
+        }}
       />
     </div>
   )
