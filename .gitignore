@@ -17,4 +17,5 @@
 .env.production.local
 .history
 
+.yarn
 yarn-error.log
