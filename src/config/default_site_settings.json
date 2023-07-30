@@ -86,13 +86,6 @@
           "url_pattern": "https://bangumi.tv/subject_search/%poker%?cat=all"
         },
         {
-          "access_mode": "DESKTOP",
-          "icon": null,
-          "id": "VFQYRDQFENJMVEGF",
-          "name": "_DEFAULT_NAME_",
-          "url_pattern": "https://www.vgtime.com/search/list.jhtml?keyword=%poker%"
-        },
-        {
           "access_mode": "MOBILE",
           "icon": null,
           "id": "MWHHYJZMSBIQQOFD",

@@ -9,7 +9,7 @@ type LayoutPosInfo = {
   gap_horizontal: number
   titlebar_height: number
 }
-export function calcLayoutPos(
+function calcLayoutPos(
   info: LayoutPosInfo,
   line: number,
   index: number

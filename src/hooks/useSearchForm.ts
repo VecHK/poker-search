@@ -55,7 +55,7 @@ function specifyFloorIdxByFloorName(
 ) {
   const idx_list = (
     site_settings.reduce<number[]>((idx_list, f, idx) => {
-      if (f.name === floor_name) {
+      if (f.name.toLocaleLowerCase() === floor_name.toLocaleLowerCase()) {
         return [...idx_list, idx]
       } else {
         return idx_list

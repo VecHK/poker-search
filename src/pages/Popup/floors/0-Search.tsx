@@ -103,7 +103,10 @@ function SearchLayout({ base, current_window_id, showTips, onSelectedFloorChange
           submitButtonActive={windowIsFocus}
           onSubmit={
             ({ keyword: newSearchKeyword }) => {
-              if (validKeyword(newSearchKeyword) === false) {
+              const valid_result = validKeyword(newSearchKeyword)
+              if (valid_result) {
+                showTips(valid_result)
+              } else {
                 processing(async () => {
                   try {
                     await submitSearch(newSearchKeyword, current_window_id)

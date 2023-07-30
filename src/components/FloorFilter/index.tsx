@@ -3,7 +3,7 @@ import React, { CSSProperties, useCallback, useEffect, useMemo, useRef, useState
 
 import { clearOutRangeFloors, getSelectedRangeList, rangeToFloorsRaw } from './utils'
 
-import PointAndText, { FloorLabel, FloorPoint } from './components/PointAndText'
+import PointAndText, { FloorLabel, FloorPoint, floorName } from './components/PointAndText'
 import Selected from './components/Selected'
 import useMouseDrag from './hooks/useMouseDrag'
 import useOffsetWidth from './hooks/useOffsetWidth'
@@ -197,7 +197,13 @@ function FloorFilterSingle({
         }}
       />
       <div className={s.Interval}></div>
-      <FloorLabel highlight={is_selected}>{siteSettings[0]?.name || '1F'}</FloorLabel>
+      <div style={{
+        color: `var(--${is_selected ? 'active-color' : 'unactive-color'})`
+      }}>
+        <FloorLabel>
+          { floorName(0, siteSettings[0]?.name) }
+        </FloorLabel>
+      </div>
     </div>
   )
 }

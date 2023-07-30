@@ -16,6 +16,7 @@ export async function CreateSearchLayout({
   base,
   layout_info,
   keyword,
+  has_strong_mobile_mode,
   creating_signal,
   stop_creating_signal,
   onRemovedWindow,
@@ -25,6 +26,7 @@ export async function CreateSearchLayout({
   base: Base
   layout_info: LayoutInfo
   keyword: string
+  has_strong_mobile_mode: boolean
   creating_signal: Signal<void>
   stop_creating_signal: Signal<void>
   onRemovedWindow: () => Promise<void>
@@ -65,6 +67,7 @@ export async function CreateSearchLayout({
     getRegIds,
     control_window_id,
     base,
+    has_strong_mobile_mode,
 
     onRemovedWindow,
 

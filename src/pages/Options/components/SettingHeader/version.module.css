@@ -1,0 +1,40 @@
+.Version {
+  margin-top: 8px;
+  font-size: 20px;
+  line-height: 20px;
+  height: 20px;
+}
+
+.VersionInner {
+  display: inline-block;
+  position: relative;
+  line-height: 20px;
+  height: 20px;
+}
+.VersionInner:hover .Old,
+.VersionInner:hover .New {
+  color: rgba(0, 0, 0, 0.7);
+  text-decoration: dashed;
+  border-bottom: solid 1px rgba(0, 0, 0, 0.2);
+}
+.Old, .New {
+  color: rgba(0, 0, 0, 0.8);
+}
+.Old {
+  word-wrap: normal;
+  word-break: keep-all;
+  white-space: nowrap;
+}
+.New {
+  position: absolute;
+  top: 0;
+  left: 0;
+  word-wrap: normal;
+  word-break: keep-all;
+  white-space: nowrap;
+}
+
+.VersionChar {
+  display: inline-block;
+  transform: matrix(1, 0, 0, 1, 0, 0);
+}

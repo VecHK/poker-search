@@ -1,9 +1,10 @@
 import { Atomic, Memo } from 'vait'
-import { submitSearch } from '../../core/control-window'
-import { load as loadPreferences } from '../../preferences'
-import { toSearchURL } from '../../preferences/site-settings'
-import { ChromeEvent } from '../../utils/chrome-event'
-import matchSearchPattern from '../../utils/match-search-pattern'
+import { submitSearch } from '../../../core/control-window'
+import { load as loadPreferences } from '../../../preferences'
+import { ChromeEvent } from '../../../utils/chrome-event'
+import matchSearchPattern from '../../../utils/match-search-pattern'
+
+import { AutoClearEvent, runOmniboxIndividualSearch } from './run-individual-search'
 
 type IndividualSearch = { id: string; url_pattern: string; search_text: string }
 const [getIndividualSearchInfo, setIndividualSearchInfo] = Memo<IndividualSearch | null>(null)
@@ -18,22 +19,25 @@ function getURLSiteName(url_pattern: string): string {
 }
 
 export default function OmniboxEvent() {
-  // omnibox 提交
-  const [ applyOmniBoxInputEntered, cancelOmniBoxInputEntered ] = ChromeEvent(
+  const [
+    applyAutoClearIndividualSearch,
+    cancalAutoClearIndividualSearch
+  ] = AutoClearEvent()
+
+  // omnibox 提交（即按下回车键的时候）
+  const [
+    applyOmniBoxInputEntered, cancelOmniBoxInputEntered
+  ] = ChromeEvent(
     chrome.omnibox.onInputEntered,
-    (content) => {
+    async (content, disposition) => {
       const ind_search = getIndividualSearchInfo()
 
       if (ind_search && (ind_search.id === content)) {
         const { url_pattern, search_text } = ind_search
-        chrome.tabs.create({
-          url: toSearchURL(url_pattern, search_text),
-          windowId: chrome.windows.WINDOW_ID_CURRENT
-        })
+        runOmniboxIndividualSearch(disposition, url_pattern, search_text)
       } else {
-        chrome.windows.getCurrent(
-          ({ id }) => submitSearch(content, id)
-        )
+        const { id } = await chrome.windows.getCurrent()
+        submitSearch(content, id)
       }
     }
   )
@@ -41,7 +45,9 @@ export default function OmniboxEvent() {
   const loadingAtomic = Atomic()
 
   // 修改 omnibox 推荐字段
-  const [ applyOmniboxSuggest, cancelOmniboxSuggest ] = ChromeEvent(
+  const [
+    applyOmniboxSuggest, cancelOmniboxSuggest
+  ] = ChromeEvent(
     chrome.omnibox.onInputChanged,
     (text, suggest) => {
       function setNormalSearch() {
@@ -110,10 +116,12 @@ export default function OmniboxEvent() {
 
   return [
     function apply() {
+      applyAutoClearIndividualSearch()
       applyOmniBoxInputEntered()
       applyOmniboxSuggest()
     },
     function cancel() {
+      cancalAutoClearIndividualSearch()
       cancelOmniBoxInputEntered()
       cancelOmniboxSuggest()
     }

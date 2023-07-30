@@ -61,21 +61,22 @@ jobs:
           body: |
             ## ⏬ 安装方式
 
-            安装方式有两种， 一种是去 Chrome 的 [Web Store](https://chrome.google.com/webstore/detail/poker-search/oojeodibjbmkclnocinjolfaigheengg) 上下载；另一种是下载这个 Release 条目下的 zip 文件来安装。
+            安装方式有两种， 一种是去 Chrome 的 [Web Store](https://chrome.google.com/webstore/detail/poker-search/oojeodibjbmkclnocinjolfaigheengg) 上下载；另一种是下载这个 Releases 条目下的 zip 文件来安装。
 
             zip 文件文件的安装方式会麻烦一些，你需要进行如下步骤：
 
-            1. 先打开 Chrome，在地址栏输入 chrome://extensions 后进入扩展程序管理页面
+            1. 先打开 Chrome，在地址栏输入 `chrome://extensions` 后进入扩展程序管理页面
             1. 启用页面右上角的「开发者模式」
             1. 然后解压 poker.zip ，将解压出来的文件夹拖拽到这个页面上，即可完成安装
 
-            两种安装方式似乎是没有什么区别的，不过因为谷歌审核的原因， Web Store 的更新都会稍慢一些。
+            两种安装方式似乎是没有什么区别的，不过因为谷歌审核的原因，Web Store 的更新都会稍慢一些。
 
             ## 🆕 更新点
 
             - **修正** AA
             - **优化** BB
             - **新增** CC
+            - **移除** DD
 
             ## 😮‍💨 已知问题
 

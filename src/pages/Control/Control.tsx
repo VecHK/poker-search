@@ -1,24 +1,24 @@
 import { Atomic } from 'vait'
-import { compose, equals, prop, thunkify } from 'ramda'
+import { compose, prop, thunkify } from 'ramda'
 import React, { ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
 
 import cfg from '../../config'
 
+import { hasStrongMobileAccessMode } from '../../preferences/site-settings'
 import { Base } from '../../core/base'
-import { getControlWindowHeight } from '../../core/base/control-window-height'
-import { calcControlWindowPos } from '../../core/layout/control-window'
 import { WindowID } from '../../core/layout/window'
+import { resizeControlWindow } from '../../core/control-window/utils'
 import { MessageEvent } from '../../message'
 
 import getQuery from '../../utils/get-query'
 import { validKeyword } from '../../utils/search'
-import animatingWindow from '../../utils/animating-window'
 
 import useWindowFocus from '../../hooks/useWindowFocus'
 import useSearchForm from '../../hooks/useSearchForm'
 import useControl from './hooks/useControl'
 import useChangeRowShortcutKey from './hooks/useChangeRowShortcutKey'
 import useChangeRow from './hooks/useChangeRow'
+import useFocusControlMessage from './hooks/useFocusControlMessage'
 
 import Loading from '../../components/Loading'
 import SearchForm from '../../components/SearchForm'
@@ -28,7 +28,6 @@ import FloorFilter from '../../components/FloorFilter'
 import BGSrc from '../../assets/control-bg.png'
 
 import './Control.css'
-import useFocusControlMessage from './hooks/useFocusControlMessage'
 
 const controlProcessing = Atomic()
 
@@ -93,38 +92,25 @@ const ControlApp: React.FC<{
     console.log('openSearchWindows', controlWindowId, submited_keyword)
     if (submited_keyword !== false) {
       if (search_layout === null) {
-        constructSearchLayout(controlWindowId, layout_info, submited_keyword).finally(() => {
-          focusControlWindow()
+        const resizing = resizeControlWindow({
+          control_win_id: controlWindowId,
+          environment: base.environment,
+          limit: base.limit,
+          site_settings: selected_site_settings
+        })
+        resizing.then(() => {
+          constructSearchLayout(
+            hasStrongMobileAccessMode(selected_site_settings),
+            controlWindowId,
+            layout_info,
+            submited_keyword
+          ).finally(() => {
+            focusControlWindow()
+          })
         })
       }
     }
-  }, [constructSearchLayout, controlWindowId, focusControlWindow, layout_info, search_layout, submited_keyword])
-
-  const moveControlWindow = useCallback(async (id: WindowID) => {
-    const [ top, left ] = calcControlWindowPos(
-      getControlWindowHeight(selected_site_settings),
-      layout_info.total_height,
-      base.limit
-    )
-    const win = await chrome.windows.get(id)
-
-    const not_move = equals(
-      [win.top, win.left, win.height],
-      [top, left, getControlWindowHeight(selected_site_settings)]
-    )
-
-    if (!not_move) {
-      await animatingWindow(id, 382, {
-        top: win.top,
-        left: win.left,
-        height: win.height,
-      }, {
-        top,
-        left,
-        height: getControlWindowHeight(selected_site_settings),
-      })
-    }
-  }, [base.limit, layout_info.total_height, selected_site_settings])
+  }, [base.environment, base.limit, constructSearchLayout, controlWindowId, focusControlWindow, layout_info, search_layout, selected_site_settings, submited_keyword])
 
   const handleSubmit = useCallback((newSearchKeyword: string) => {
     console.log('onSubmit')
@@ -141,25 +127,23 @@ const ControlApp: React.FC<{
           search_layout.cancelAllEvent()
           await closeSearchWindows(search_layout)
         }
-        moveControlWindow(controlWindowId).then(() => {
-          setSearchLayout(() => {
-            // 写成这样是处理提交同样搜索词的时候的处理
-            // 因为是用 useEffect 来判断的，如果是相同的值就不会触发更新了
-            submitKeyword(newSearchKeyword)
-            return null
-          })
+        setSearchLayout(() => {
+          // 写成这样是处理提交同样搜索词的时候的处理
+          // 因为是用 useEffect 来判断的，如果是相同的值就不会触发更新了
+          submitKeyword(newSearchKeyword)
+          return null
         })
       })
     }
-  }, [closeSearchWindows, controlWindowId, moveControlWindow, search_layout, setKeywordInput, setLoading, setSearchLayout, showTips, submitKeyword])
+  }, [closeSearchWindows, search_layout, setKeywordInput, setLoading, setSearchLayout, showTips, submitKeyword])
 
   const [_can_preset_searchword, setSearchwordPresetStatus] = useState(true)
   useEffect(function searchByOmnibox() {
-    const search_word = getQuery(cfg.CONTROL_QUERY_TEXT)
-    if (search_word !== null) {
+    const search_text = getQuery(cfg.CONTROL_QUERY_TEXT)
+    if (search_text !== null) {
       if (_can_preset_searchword) {
         setSearchwordPresetStatus(false)
-        handleSubmit(search_word)
+        handleSubmit(search_text)
       }
     }
   }, [_can_preset_searchword, handleSubmit])
@@ -175,7 +159,7 @@ const ControlApp: React.FC<{
     applyReceive()
 
     return cancelReceive
-  }, [controlWindowId, search_layout, handleSubmit])
+  }, [controlWindowId, handleSubmit, search_layout])
 
   const searchFormNode = useMemo(() => {
     if (disable_search) {

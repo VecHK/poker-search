@@ -3,6 +3,14 @@ import cfg from '../../../config'
 import { ChromeEvent } from '../../../utils/chrome-event'
 import { Limit } from '../../base/limit'
 
+function getRefocusWindowHeight(has_strong_mobile_mode: boolean) {
+  if (has_strong_mobile_mode) {
+    return cfg.REFOCUS_LAYOUT_WINDOW_HEIGHT_WITH_DEBUGGER
+  } else {
+    return cfg.REFOCUS_LAYOUT_WINDOW_HEIGHT_WITH_NORMAL
+  }
+}
+
 function doNotOperate() {}
 
 type InitRefocusEventReturn<RefocusWindowId> = Readonly<{
@@ -13,6 +21,7 @@ type InitRefocusEventReturn<RefocusWindowId> = Readonly<{
 
 export async function InitRefocusEvent(
   enableCond: () => boolean,
+  has_strong_mobile_mode: boolean,
   limit: Limit,
   callbacks: {
     close: () => void
@@ -34,7 +43,7 @@ export async function InitRefocusEvent(
       left: limit.minX,
       top: limit.minY,
       width: cfg.REFOCUS_LAYOUT_WINDOW_WIDTH,
-      height: cfg.REFOCUS_LAYOUT_WINDOW_HEIGHT,
+      height: getRefocusWindowHeight(has_strong_mobile_mode),
     })
 
     if (refocus_window_id === undefined) {
