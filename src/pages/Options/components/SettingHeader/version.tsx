@@ -24,7 +24,7 @@ function VersionString({
 }: { version: string, progress: number }) {
   const random_info = useMemo(() => (
     [...version].map(() => ({
-      x: randomRange(150, 170),
+      x: randomRange(120, 150),
       y: randomRange(-20, 20),
       r: randomRange(-12, 12),
     }))
@@ -117,7 +117,7 @@ function VersionInner({ current_version, new_version }: {
   useEffect(() => {
     const INTERVAL = 15
     const NEW_DURATION = 500
-    const OLD_DURATION = 250
+    const OLD_DURATION = 300
 
     if (animate_state === 'done') return ;
 
@@ -129,7 +129,7 @@ function VersionInner({ current_version, new_version }: {
 
     const newTextFadeInEase = BezierEasing(0, 0, 0.5, 1.0)
     const newTextMovingEase = BezierEasing(0.72, 0.15, 0.34, 1.36)
-    const oldTextBreakingEase = BezierEasing(0.2, 0.3, 1, 1)
+    const oldTextBreakingEase = BezierEasing(0.31, 0.17, 0.5, 1.00)
 
     let new_text_starttime = -1
     let old_text_start_time = -1
