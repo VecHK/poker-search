@@ -1,4 +1,4 @@
-import cfg from "../../config"
+import cfg from '../../config'
 
 export type Limit = Readonly<
   Record<
@@ -7,8 +7,9 @@ export type Limit = Readonly<
   >
 >
 export async function getCurrentDisplayLimit(): Promise<Limit> {
-  const displayInfoList = await chrome.system.display.getInfo()
-  const displayInfo = displayInfoList[0]
+  const displayInfo = findPrimaryDisplayInfo(
+    await chrome.system.display.getInfo()
+  )
 
   const {
     left: minX,
@@ -30,6 +31,22 @@ export async function getCurrentDisplayLimit(): Promise<Limit> {
     return debugLimit(returnValue)
   } else {
     return returnValue
+  }
+}
+
+function findPrimaryDisplayInfo(
+  info_list: chrome.system.display.DisplayInfo[]
+) {
+  if (info_list.length === 0) {
+    throw new Error('DisplayInfo 列表为空')
+  } else {
+    const idx = info_list.findIndex(d => d.isPrimary)
+    if (idx === -1) {
+      // 找不到主显时，默认返回 DisplayInfo 数组中的第一个元素作为主显示器
+      return info_list[0]
+    } else {
+      return info_list[idx]
+    }
   }
 }
 
