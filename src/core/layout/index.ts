@@ -35,7 +35,13 @@ export async function CreateSearchLayout({
   console.log('CreateSearchLayout')
 
   function getRegIds(): number[] {
-    return getMatrix().flat().filter(u => u.state !== 'EMPTY').map(u => u.windowId)
+    return (
+      getMatrix()
+        .flat()
+        .filter(u => u.type !== 'EMPTY')
+        .filter(u => u.type !== 'FILL')
+        .map(u => u.windowId)
+    )
   }
 
   async function refreshLayout(skip_ids: number[]) {
@@ -45,12 +51,12 @@ export async function CreateSearchLayout({
     }
   }
 
-  const { search_matrix } = layout_info
+  const { window_option_matrix } = layout_info
   const [getMatrix, setMatrix] = Memo(
     await constructSearchWindowsFast(
       base,
       layout_info,
-      search_matrix,
+      window_option_matrix,
       keyword,
       creating_signal,
       stop_creating_signal

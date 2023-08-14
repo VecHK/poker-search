@@ -5,22 +5,24 @@ import { isCurrentRow } from './matrix'
 import { SearchWindow } from './window'
 import { Limit } from '../base/limit'
 
-async function refreshWindow(
+async function resetSearchWindow(
   limit: Limit,
   layout_info: LayoutInfo,
   opts: {
     window: SearchWindow,
-    // windowId: number,
     focused?: boolean,
     resetSize?: boolean
     row: number
     col: number
   }
 ): Promise<void> {
-  const [left, top] = calcRealPos(limit, layout_info, opts.row, opts.col)
+  const [left, top] = calcRealPos(limit, layout_info, opts.row, opts.col, 1)
+  // opts.window.init_height
 
-  const { state, windowId } = opts.window
-  if (state === 'EMPTY') {
+  const { type, windowId } = opts.window
+  if (type === 'EMPTY') {
+    return
+  } if (type === 'FILL') {
     return
   } else {
     await chrome.windows.update(windowId, {
@@ -52,7 +54,7 @@ export async function renderMatrix(
       if (skip_ids.indexOf(win.windowId) !== -1) {
         promises.push(Promise.resolve(undefined))
       } else {
-        const p = refreshWindow(base.limit, layout_info, {
+        const p = resetSearchWindow(base.limit, layout_info, {
           window: win,
           focused: (presetFocused === undefined) ? (isWin || isLastLine) : presetFocused,
           resetSize,
@@ -82,7 +84,7 @@ export function renderCol(
     for (let [col, win] of line.entries()) {
       if (selectCol === col) {
         const isLastLine = isCurrentRow(matrix, row)
-        const p = refreshWindow(base.limit, layout_info, {
+        const p = resetSearchWindow(base.limit, layout_info, {
           window: win,
           focused: (presetFocused === undefined) ? (isWin || isLastLine) : presetFocused,
           resetSize,

@@ -1,14 +1,21 @@
 import { nth } from 'ramda'
+import { WindowOptionType } from '../base/search-matrix'
 
 export type WindowID = number
 export type TabID = number
 
-export type SearchWindowState = 'NORMAL' | 'EMPTY' | 'PLAIN'
+// export type SearchWindowState = 'NORMAL' | 'EMPTY' | 'PLAIN'
 export type SearchWindow = Readonly<{
-  state: SearchWindowState
+  // state: SearchWindowState
+  type: WindowOptionType
+
   windowId: WindowID
   tabId: TabID
   is_debugger_attach: boolean
+
+
+  init_width?: number
+  init_height?: number
 }>
 export type SearchWindowRow = Array<SearchWindow>
 export type SearchWindowMatrix = Array<SearchWindowRow>
