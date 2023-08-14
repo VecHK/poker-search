@@ -39,11 +39,14 @@ export default function useChangeRow(
             }
 
             await renderMatrix(
-              base,
+              base.platform,
+              base.limit,
               layout_info,
               newMatrix,
-              type === 'next' ? true : undefined,
-              true
+              {
+                preset_focused: type === 'next' ? true : undefined,
+                reset_size: true
+              }
             )
 
             search_layout.setMatrix(newMatrix)

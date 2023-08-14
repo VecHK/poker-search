@@ -1,21 +1,21 @@
-export type URLPattern = string
-export type SiteOption = {
+import { DefinePreferences } from './'
+
+type URLPattern = string
+type SiteOption = {
   id: string
   icon: string | null
   name: string
   url_pattern: URLPattern
   enable_mobile: boolean
 }
-export type SiteSettingsRow = {
+type SiteSettingsRow = {
   id: string
   name: string
   row: Array<SiteOption>
 }
-export type SiteSettings = Array<SiteSettingsRow>
+type SiteSettings = Array<SiteSettingsRow>
 
-export type PreferencesV3 = Readonly<{
-  __is_poker__: true,
-  version: 3
+export type PreferencesV3 = DefinePreferences<3, {
   launch_poker_contextmenu: boolean
   site_settings: SiteSettings
 }>

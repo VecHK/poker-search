@@ -4,6 +4,7 @@ import { getFormItem } from '../../../../utils/form'
 
 import AccessModeSetting from './AccessModeSetting'
 import s from './EditLayout.module.css'
+import { pipe } from 'ramda'
 
 function getAccessMode(formData: FormData): SiteOption['access_mode'] {
   const val = formData.get('access_mode')
@@ -22,6 +23,7 @@ function formDataTransform(sourceOption: SiteOption, e: React.FormEvent<HTMLForm
 
   return {
     ...sourceOption,
+    width_size: Number(getFormItem(formData, 'width_size')),
     url_pattern: getFormItem(formData, 'url_pattern'),
     access_mode: getAccessMode(formData),
   }
@@ -48,6 +50,19 @@ type EditLayoutProps = {
   onClickForceMobileAccessTipsCircle?: () => void
 }
 
+function getChangeValue<T extends HTMLInputElement>(e: React.ChangeEvent<T>) {
+  return e.target.value
+}
+
+function parseWidthSizeInput(raw: string) {
+  const v = parseInt(raw)
+  if (isNaN(v)) {
+    return 1
+  } else {
+    return v
+  }
+}
+
 export function RenderEditLayout({
   formRef,
   siteOption,
@@ -67,6 +82,7 @@ export function RenderEditLayout({
   const [failure, setFailure] = useState<Error | null>(null)
   const [urlPattern, setUrlPattern] = useState(siteOption.url_pattern)
   const [accessMode, setAccessMode] = useState(siteOption.access_mode)
+  const [widthSize, setWidthSize] = useState(siteOption.width_size)
 
   const failureNode = useMemo(() => {
     if (failure) {
@@ -108,9 +124,9 @@ export function RenderEditLayout({
                 <span>URL</span>
                 <input
                   className={s.UrlPatternInput}
-                  value={ urlPattern }
-                  onChange={(e) => setUrlPattern(e.target.value)}
                   name="url_pattern"
+                  value={ urlPattern }
+                  onChange={ pipe(getChangeValue, setUrlPattern) }
                 />
               </label>
               <AccessModeSetting
@@ -119,6 +135,15 @@ export function RenderEditLayout({
                 showForceMobileAccessTips={showForceMobileAccessTips}
                 onClickForceMobileAccessTipsCircle={onClickForceMobileAccessTipsCircle}
               />
+              <label>
+                <span>窗口宽度</span>
+                <input
+                  className={s.WidthSize}
+                  name="width_size"
+                  value={ widthSize }
+                  onChange={ pipe(getChangeValue, parseWidthSizeInput, setWidthSize) }
+                />
+              </label>
             </div>
           ),
           buttonGroup: (

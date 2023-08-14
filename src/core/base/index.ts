@@ -6,7 +6,7 @@ import { load as loadPreferences, Preferences, SiteSettingFloorID, SiteSettings 
 import { hasStrongMobileAccessMode } from '../../preferences/site-settings'
 import { getCurrentDisplayLimit, Limit } from './limit'
 import { autoAdjustHeight, autoAdjustWidth } from './auto-adjust'
-import { initSearchMatrix } from './search-matrix'
+import { initWindowOptionMatrix } from './window-option-matrix'
 import { getControlWindowHeight } from './control-window-height'
 import { getFilteredFloor } from '../../x-state/filtered-floor'
 import { specifyFloorIdxBySearchText } from '../../hooks/useSearchForm'
@@ -47,10 +47,13 @@ export function initLayoutInfo(
     max_window_per_line, total_width, window_width
   } = autoAdjustWidth(gap_horizontal, limit.width)
 
+  console.warn('max_window_per_line', max_window_per_line)
+
   const [
     total_row,
-    search_matrix
-  ] = initSearchMatrix(max_window_per_line, site_settings)
+    window_option_matrix,
+    // search_matrix
+  ] = initWindowOptionMatrix(max_window_per_line, site_settings)
 
   const { window_height, total_height } = autoAdjustHeight(
     [...cfg.SEARCH_WINDOW_HEIGHT_LIST],
@@ -67,7 +70,7 @@ export function initLayoutInfo(
     total_width,
     window_width,
     total_row,
-    search_matrix,
+    window_option_matrix,
     window_height,
     total_height
   } as const

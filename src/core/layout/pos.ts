@@ -3,23 +3,43 @@ import { LayoutInfo } from '../base'
 import { calcWindowsTotalWidth } from '../base/auto-adjust'
 import { Limit } from '../base/limit'
 
+// function calcWindowLeft(
+//   previous_width_size_map: number[],
+//   gap_horizontal: number,
+//   window_width: number
+// ) {
+//   const gap_total = previous_width_size_map.reduce((v, width_size) => {
+//     return v + (width_size * gap_horizontal)
+//   }, 0)
+//   return gap_total + (
+//     previous_width_size_map
+//       .map(ws => ws * window_width)
+//       .reduce((v, a) => v + a, 0)
+//   )
+// }
+
 type Pos = Readonly<[number, number]>
-type LayoutPosInfo = {
+type WindowInfo = {
+  width_size: number
   window_width: number
   gap_horizontal: number
   titlebar_height: number
 }
-function calcLayoutPos(
-  info: LayoutPosInfo,
+function calcWindowPos(
+  info: WindowInfo,
   line: number,
-  index: number
+  index: number,
 ): Pos {
   const total_width = calcWindowsTotalWidth(
     index + 1,
     info.window_width,
     info.gap_horizontal
   )
-  const left = total_width - info.window_width
+  const left = total_width - calcWindowsTotalWidth(
+    info.width_size,
+    info.window_width,
+    info.gap_horizontal
+  )
   const top = line * info.titlebar_height
   return [left, top]
 }
@@ -28,14 +48,16 @@ export function calcRealPos(
   limit: Limit,
   info: LayoutInfo,
   line: number,
-  index: number
+  index: number,
+  width_size: number
 ) {
   const [toRealLeft, toRealTop] = ToRealPos(
     limit,
     info.total_width,
     info.total_height,
   )
-  const [l, t] = calcLayoutPos({
+  const [l, t] = calcWindowPos({
+    width_size,
     window_width: info.window_width,
     gap_horizontal: info.gap_horizontal,
     titlebar_height: info.titlebar_height

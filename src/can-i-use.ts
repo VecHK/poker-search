@@ -1,7 +1,7 @@
 import { Base } from './core/base'
 
-const isWindowsOS = (platform: Base['platform']) => platform.os === 'win'
-const isMacOS = (platform: Base['platform']) => platform.os === 'mac'
+export const isWindowsOS = (platform: Base['platform']) => platform.os === 'win'
+export const isMacOS = (platform: Base['platform']) => platform.os === 'mac'
 
 const InitCanIUse = <A extends any[]>(
   fn: (...args: A) => boolean

@@ -6,8 +6,7 @@ export function updater(v3: PreferencesV3): PreferencesV4 {
     __is_poker__: true,
     version: 4,
 
-    launch_poker_contextmenu: true,
-
+    launch_poker_contextmenu: v3.launch_poker_contextmenu,
     fill_empty_window: true,
     refocus_window: true,
 

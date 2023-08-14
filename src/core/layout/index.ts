@@ -35,22 +35,32 @@ export async function CreateSearchLayout({
   console.log('CreateSearchLayout')
 
   function getRegIds(): number[] {
-    return getMatrix().flat().filter(u => u.state !== 'EMPTY').map(u => u.windowId)
+    return (
+      getMatrix()
+        .flat()
+        .filter(u => u.type !== 'EMPTY')
+        .filter(u => u.type !== 'FILL')
+        .map(u => u.windowId)
+    )
   }
 
   async function refreshLayout(skip_ids: number[]) {
-    await renderMatrix(base, layout_info, getMatrix(), true, false, skip_ids)
+    await renderMatrix(base.platform, base.limit, layout_info, getMatrix(), {
+      preset_focused: true,
+      reset_size: false,
+      skip_ids
+    })
     if (skip_ids.indexOf(control_window_id) === -1) {
       await chrome.windows.update(control_window_id, { focused: true })
     }
   }
 
-  const { search_matrix } = layout_info
+  const { window_option_matrix } = layout_info
   const [getMatrix, setMatrix] = Memo(
     await constructSearchWindowsFast(
       base,
       layout_info,
-      search_matrix,
+      window_option_matrix,
       keyword,
       creating_signal,
       stop_creating_signal
@@ -78,7 +88,12 @@ export async function CreateSearchLayout({
       const [need_update, update] = selectWindow(getMatrix(), focused_window_id)
       if (need_update) {
         const col_refresh_waiting = renderCol(
-          base, layout_info, update.new_matrix, update.col, true, true
+          base.platform, base.limit, layout_info, update.new_matrix,
+          {
+            select_col: update.col,
+            preset_focused: true,
+            reset_size: true
+          }
         )
 
         if (needRefocusingLayout()) {

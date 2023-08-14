@@ -4,7 +4,7 @@ import InitStorage from '../utils/storage'
 import getDefaultPreferences from './default'
 import checkPreferences from './check'
 
-import { AllVersion, checkVersion, CURRENT_PREFERENCES_VERSION, LatestVersion } from './versions'
+import { AllVersion, versionNeedUpdate, CURRENT_PREFERENCES_VERSION, LatestVersion } from './versions'
 import { updatePreferences } from './versions/update'
 import { saveFilteredFloor } from '../x-state/filtered-floor'
 
@@ -33,7 +33,7 @@ async function initPreferences() {
 export async function load(): Promise<Preferences> {
   if (await isFoundStorage()) {
     const preferences = await loadStorage()
-    if (checkVersion(preferences)) {
+    if (versionNeedUpdate(preferences)) {
       const updated_preferences = updatePreferences(preferences)
       console.log('new', updated_preferences)
       await save(updated_preferences)
