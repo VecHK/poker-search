@@ -12,7 +12,7 @@ async function resetSearchWindow(
   opts: {
     window: SearchWindow,
     focused?: boolean,
-    resetSize?: boolean
+    reset_size?: boolean
     row: number
     col: number
   }
@@ -30,8 +30,8 @@ async function resetSearchWindow(
       focused: opts.focused,
       left,
       top,
-      width: opts.resetSize ? layout_info.window_width : undefined,
-      height: opts.resetSize ? layout_info.window_height : undefined,
+      width: opts.reset_size ? layout_info.window_width : undefined,
+      height: opts.reset_size ? layout_info.window_height : undefined,
     })
     return
   }
@@ -42,9 +42,11 @@ export async function renderMatrix(
   limit: Limit,
   layout_info: LayoutInfo,
   matrix: Matrix<SearchWindow>,
-  presetFocused: undefined | boolean = undefined,
-  resetSize: boolean = false,
-  skip_ids: number[] = []
+  { preset_focused, reset_size = false, skip_ids = [] }: {
+    preset_focused?: boolean,
+    reset_size?: boolean
+    skip_ids?: number[]
+  }
 ) {
   const promises: Promise<void>[] = []
   for (let [row, line] of matrix.entries()) {
@@ -56,8 +58,8 @@ export async function renderMatrix(
       } else {
         const p = resetSearchWindow(limit, layout_info, {
           window: win,
-          focused: (presetFocused === undefined) ? (isWindowsOS(platform) || isLastLine) : presetFocused,
-          resetSize,
+          focused: (preset_focused === undefined) ? (isWindowsOS(platform) || isLastLine) : preset_focused,
+          reset_size,
           row,
           col,
         })
@@ -74,19 +76,21 @@ export function renderCol(
   limit: Limit,
   layout_info: LayoutInfo,
   matrix: Matrix<SearchWindow>,
-  selectCol: number,
-  presetFocused: undefined | boolean = undefined,
-  resetSize: boolean = false
+  { select_col, preset_focused, reset_size = false }: {
+    select_col: number,
+    preset_focused?: boolean,
+    reset_size?: boolean
+  }
 ) {
   const promises: Promise<void>[] = []
   for (let [row, line] of matrix.entries()) {
     for (let [col, win] of line.entries()) {
-      if (selectCol === col) {
+      if (select_col === col) {
         const isLastLine = isCurrentRow(matrix, row)
         const p = resetSearchWindow(limit, layout_info, {
           window: win,
-          focused: (presetFocused === undefined) ? (isWindowsOS(platform) || isLastLine) : presetFocused,
-          resetSize,
+          focused: (preset_focused === undefined) ? (isWindowsOS(platform) || isLastLine) : preset_focused,
+          reset_size,
           row,
           col
         })

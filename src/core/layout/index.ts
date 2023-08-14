@@ -45,7 +45,11 @@ export async function CreateSearchLayout({
   }
 
   async function refreshLayout(skip_ids: number[]) {
-    await renderMatrix(base.platform, base.limit, layout_info, getMatrix(), true, false, skip_ids)
+    await renderMatrix(base.platform, base.limit, layout_info, getMatrix(), {
+      preset_focused: true,
+      reset_size: false,
+      skip_ids
+    })
     if (skip_ids.indexOf(control_window_id) === -1) {
       await chrome.windows.update(control_window_id, { focused: true })
     }
@@ -84,7 +88,12 @@ export async function CreateSearchLayout({
       const [need_update, update] = selectWindow(getMatrix(), focused_window_id)
       if (need_update) {
         const col_refresh_waiting = renderCol(
-          base.platform, base.limit, layout_info, update.new_matrix, update.col, true, true
+          base.platform, base.limit, layout_info, update.new_matrix,
+          {
+            select_col: update.col,
+            preset_focused: true,
+            reset_size: true
+          }
         )
 
         if (needRefocusingLayout()) {

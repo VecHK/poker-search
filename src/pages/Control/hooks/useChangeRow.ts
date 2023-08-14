@@ -43,8 +43,10 @@ export default function useChangeRow(
               base.limit,
               layout_info,
               newMatrix,
-              type === 'next' ? true : undefined,
-              true
+              {
+                preset_focused: type === 'next' ? true : undefined,
+                reset_size: true
+              }
             )
 
             search_layout.setMatrix(newMatrix)

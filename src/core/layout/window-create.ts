@@ -236,7 +236,10 @@ async function openingSearchWindowMatrixEffect(
 
   new_matrix = [...new_matrix].reverse()
 
-  const waitting_render = renderMatrix(base.platform, base.limit, layout_info, new_matrix, true, false)
+  const waitting_render = renderMatrix(base.platform, base.limit, layout_info, new_matrix, {
+    preset_focused: true,
+    reset_size: false
+  })
   await waitting_render
 
   // 要在 renderMatrix 之后才取消 stop_creating_signal 的监听
