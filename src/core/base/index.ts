@@ -6,7 +6,7 @@ import { load as loadPreferences, Preferences, SiteSettingFloorID, SiteSettings 
 import { hasStrongMobileAccessMode } from '../../preferences/site-settings'
 import { getCurrentDisplayLimit, Limit } from './limit'
 import { autoAdjustHeight, autoAdjustWidth } from './auto-adjust'
-import { initWindowOptionMatrix } from './search-matrix'
+import { initWindowOptionMatrix } from './window-option-matrix'
 import { getControlWindowHeight } from './control-window-height'
 import { getFilteredFloor } from '../../x-state/filtered-floor'
 import { specifyFloorIdxBySearchText } from '../../hooks/useSearchForm'

@@ -1,6 +1,6 @@
 import { SearchWindowMatrix, SearchWindowRow, TabID, WindowID } from './window'
 import { Base, LayoutInfo } from '../base'
-import { WindowOption, WindowOptionMatrix } from '../base/search-matrix'
+import { WindowOption, WindowOptionMatrix } from '../base/window-option-matrix'
 import { calcRealPos } from './pos'
 import { isCurrentRow } from './matrix'
 import { renderMatrix } from './render'
