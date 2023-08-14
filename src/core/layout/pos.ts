@@ -3,20 +3,20 @@ import { LayoutInfo } from '../base'
 import { calcWindowsTotalWidth } from '../base/auto-adjust'
 import { Limit } from '../base/limit'
 
-function calcWindowLeft(
-  previous_width_size_map: number[],
-  gap_horizontal: number,
-  window_width: number
-) {
-  const gap_total = previous_width_size_map.reduce((v, width_size) => {
-    return v + (width_size * gap_horizontal)
-  }, 0)
-  return gap_total + (
-    previous_width_size_map
-      .map(ws => ws * window_width)
-      .reduce((v, a) => v + a, 0)
-  )
-}
+// function calcWindowLeft(
+//   previous_width_size_map: number[],
+//   gap_horizontal: number,
+//   window_width: number
+// ) {
+//   const gap_total = previous_width_size_map.reduce((v, width_size) => {
+//     return v + (width_size * gap_horizontal)
+//   }, 0)
+//   return gap_total + (
+//     previous_width_size_map
+//       .map(ws => ws * window_width)
+//       .reduce((v, a) => v + a, 0)
+//   )
+// }
 
 type Pos = Readonly<[number, number]>
 type WindowInfo = {

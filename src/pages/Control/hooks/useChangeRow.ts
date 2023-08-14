@@ -39,7 +39,8 @@ export default function useChangeRow(
             }
 
             await renderMatrix(
-              base,
+              base.platform,
+              base.limit,
               layout_info,
               newMatrix,
               type === 'next' ? true : undefined,

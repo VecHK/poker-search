@@ -1,10 +1,12 @@
 import { SearchWindowMatrix, SearchWindowRow, TabID, WindowID } from './window'
 import { Base, LayoutInfo } from '../base'
+import { Limit } from '../base/limit'
+import { Preferences } from '../../preferences'
 import { WindowOption, WindowOptionMatrix } from '../base/window-option-matrix'
 import { calcRealPos } from './pos'
 import { isCurrentRow } from './matrix'
 import { renderMatrix } from './render'
-import { Signal } from 'vait'
+import { Signal, timeout } from 'vait'
 import { removeAllFakeUARules, setFakeUA } from '../../utils/fake-ua'
 import cfg from '../../config'
 import { calcWindowsTotalWidth } from '../base/auto-adjust'
@@ -58,18 +60,13 @@ type Preparation = {
   window_data: chrome.windows.CreateData
 }
 
-export async function constructSearchWindowsFast(
-  base: Base,
-  layout_info: LayoutInfo,
-  window_option_matrix: WindowOptionMatrix,
+function createPreparationMatrix(
   keyword: string,
-  creating_signal: Signal<void>,
-  stop_creating_signal: Signal<void>,
-): Promise<SearchWindowMatrix> {
-  window_option_matrix = [...window_option_matrix].reverse()
-
-  console.log('window_option_matrix', window_option_matrix)
-
+  limit: Limit,
+  layout_info: LayoutInfo,
+  preferences: Preferences,
+  window_option_matrix: WindowOptionMatrix
+): Preparation[][] {
   const preparation_matrix: Preparation[][] = []
 
   for (let [row, cols] of window_option_matrix.entries()) {
@@ -80,7 +77,7 @@ export async function constructSearchWindowsFast(
       const { composeSearchURL, type, width_size } = window_option
       const url = composeSearchURL(keyword)
 
-      const [left, top] = calcRealPos(base.limit, layout_info, row, col, 1)
+      const [left, top] = calcRealPos(limit, layout_info, row, col, 1)
 
       console.log('left, top', left, top)
 
@@ -91,7 +88,7 @@ export async function constructSearchWindowsFast(
           window_data: {}
         })
       }
-      else if ((type === 'PLAIN') && (!base.preferences.fill_empty_window)) {
+      else if ((type === 'PLAIN') && (!preferences.fill_empty_window)) {
         preparation_row.push({
           url: '',
           window_option,
@@ -132,6 +129,16 @@ export async function constructSearchWindowsFast(
     }
   }
 
+  return preparation_matrix
+}
+
+async function openingSearchWindowMatrixEffect(
+  creating_signal: Signal<void>,
+  stop_creating_signal: Signal<void>,
+  preparation_matrix: Preparation[][],
+  base: Base,
+  layout_info: LayoutInfo,
+): Promise<SearchWindowMatrix> {
   let __suspend__ = false
   const handler_list: ((closedWindowId: number) => void)[] = []
   const created_window_ids: number[] = []
@@ -229,7 +236,7 @@ export async function constructSearchWindowsFast(
 
   new_matrix = [...new_matrix].reverse()
 
-  const waitting_render = renderMatrix(base, layout_info, new_matrix, true, false)
+  const waitting_render = renderMatrix(base.platform, base.limit, layout_info, new_matrix, true, false)
   await waitting_render
 
   // 要在 renderMatrix 之后才取消 stop_creating_signal 的监听
@@ -241,4 +248,27 @@ export async function constructSearchWindowsFast(
   return new_matrix
 }
 
-const timeout = (ms: number) => new Promise(res => setTimeout(res, ms))
+export async function constructSearchWindowsFast(
+  base: Base,
+  layout_info: LayoutInfo,
+  window_option_matrix: WindowOptionMatrix,
+  keyword: string,
+  creating_signal: Signal<void>,
+  stop_creating_signal: Signal<void>,
+): Promise<SearchWindowMatrix> {
+  const preparation_matrix = createPreparationMatrix(
+    keyword,
+    base.limit,
+    layout_info,
+    base.preferences,
+    [...window_option_matrix].reverse()
+  )
+
+  return openingSearchWindowMatrixEffect(
+    creating_signal,
+    stop_creating_signal,
+    preparation_matrix,
+    base,
+    layout_info
+  )
+}

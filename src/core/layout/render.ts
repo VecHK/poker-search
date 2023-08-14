@@ -4,6 +4,7 @@ import { calcRealPos } from './pos'
 import { isCurrentRow } from './matrix'
 import { SearchWindow } from './window'
 import { Limit } from '../base/limit'
+import { isWindowsOS } from '../../can-i-use'
 
 async function resetSearchWindow(
   limit: Limit,
@@ -37,15 +38,14 @@ async function resetSearchWindow(
 }
 
 export async function renderMatrix(
-  base: Base,
+  platform: Base['platform'],
+  limit: Limit,
   layout_info: LayoutInfo,
   matrix: Matrix<SearchWindow>,
   presetFocused: undefined | boolean = undefined,
   resetSize: boolean = false,
   skip_ids: number[] = []
 ) {
-  const isWin = base.platform.os === 'win'
-
   const promises: Promise<void>[] = []
   for (let [row, line] of matrix.entries()) {
     for (let [col, win] of line.entries()) {
@@ -54,9 +54,9 @@ export async function renderMatrix(
       if (skip_ids.indexOf(win.windowId) !== -1) {
         promises.push(Promise.resolve(undefined))
       } else {
-        const p = resetSearchWindow(base.limit, layout_info, {
+        const p = resetSearchWindow(limit, layout_info, {
           window: win,
-          focused: (presetFocused === undefined) ? (isWin || isLastLine) : presetFocused,
+          focused: (presetFocused === undefined) ? (isWindowsOS(platform) || isLastLine) : presetFocused,
           resetSize,
           row,
           col,
@@ -70,23 +70,22 @@ export async function renderMatrix(
 }
 
 export function renderCol(
-  base: Base,
+  platform: Base['platform'],
+  limit: Limit,
   layout_info: LayoutInfo,
   matrix: Matrix<SearchWindow>,
   selectCol: number,
   presetFocused: undefined | boolean = undefined,
   resetSize: boolean = false
 ) {
-  const isWin = base.platform.os === 'win'
-
   const promises: Promise<void>[] = []
   for (let [row, line] of matrix.entries()) {
     for (let [col, win] of line.entries()) {
       if (selectCol === col) {
         const isLastLine = isCurrentRow(matrix, row)
-        const p = resetSearchWindow(base.limit, layout_info, {
+        const p = resetSearchWindow(limit, layout_info, {
           window: win,
-          focused: (presetFocused === undefined) ? (isWin || isLastLine) : presetFocused,
+          focused: (presetFocused === undefined) ? (isWindowsOS(platform) || isLastLine) : presetFocused,
           resetSize,
           row,
           col
